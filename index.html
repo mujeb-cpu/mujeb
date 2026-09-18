@@ -6,12 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mujeeb — Return decisions, explained</title>
     <meta name="description" content="Turn approved return rules into clear answers for customers—and a decision trail your team can inspect." />
-    <meta property="og:image" content="https://bolt.new/static/og_default.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
-</head>
+    <meta property="og:title" content="Mujeeb — Return decisions, explained" />
+    <meta property="og:description" content="Turn approved return rules into clear answers for customers—and a decision trail your team can inspect." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Resolve the theme before first paint so a hard refresh never flashes
+      // the wrong background. Mirrors ThemeProvider's "theme" storage key.
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var dark =
+            stored === "dark" ||
+            ((!stored || stored === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          // Only set the class. The stylesheet owns the background via
+          // `html { background: var(--background) }`, so nothing goes stale
+          // inline when the user later toggles themes.
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.classList.toggle("light", !dark);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="padding: 48px 20px; text-align: center; font-family: system-ui, sans-serif">
+        <h1>Mujeeb — Return decisions, explained</h1>
+        <p>Enable JavaScript to explore the interactive demo.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

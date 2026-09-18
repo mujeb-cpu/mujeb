@@ -1,0 +1,4 @@
+-- Run the two migrations below in filename order from the Supabase SQL Editor:
+-- 1. supabase/migrations/202609180001_initial_mvp.sql
+-- 2. supabase/migrations/202609180002_channels_and_integrations.sql
+-- Keeping migrations separate makes failures visible and deployments repeatable.

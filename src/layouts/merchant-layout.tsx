@@ -25,25 +25,34 @@ import {
   Plug,
   Settings,
   ExternalLink,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { services } from "@/lib/services";
-
-const PRIMARY_NAV = [
-  { label: "Overview", href: "/app", icon: LayoutDashboard, end: true },
-  { label: "Policies", href: "/app/policies", icon: FileText },
-  { label: "Return cases", href: "/app/cases", icon: PackageOpen },
-];
-
-const SECONDARY_NAV = [
-  { label: "Integrations", href: "/app/integrations", icon: Plug },
-  { label: "Settings", href: "/app/settings", icon: Settings },
-];
+import { useAuth } from "@/components/auth-provider";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/components/language-provider";
 
 export function MerchantLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const storeName = services.getStoreName();
+  const auth = useAuth();
+  const { t } = useLanguage();
+  const primaryNav = [
+    { label: t("Overview", "نظرة عامة"), href: "/app", icon: LayoutDashboard, end: true },
+    { label: t("Policies", "السياسات"), href: "/app/policies", icon: FileText },
+    { label: t("Return cases", "طلبات الإرجاع"), href: "/app/cases", icon: PackageOpen },
+  ];
+  const secondaryNav = [
+    { label: t("Integrations", "التكاملات"), href: "/app/integrations", icon: Plug },
+    { label: t("Settings", "الإعدادات"), href: "/app/settings", icon: Settings },
+  ];
+  const storeName = auth.workspace?.storeName ?? services.getStoreName();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/auth", { replace: true });
+  };
 
   const isActive = (href: string, end?: boolean) =>
     end ? location.pathname === href : location.pathname.startsWith(href);
@@ -63,7 +72,9 @@ export function MerchantLayout() {
           </button>
           <div className="px-2 group-data-[collapsible=icon]:hidden">
             <div className="rounded-lg bg-muted px-3 py-2">
-              <div className="text-xs text-muted-foreground">Demo workspace</div>
+              <div className="text-xs text-muted-foreground">
+                {auth.user ? t("Merchant workspace", "مساحة عمل التاجر") : t("Demo workspace", "مساحة عمل تجريبية")}
+              </div>
               <div className="text-sm font-medium text-foreground">{storeName}</div>
             </div>
           </div>
@@ -71,10 +82,10 @@ export function MerchantLayout() {
         <SidebarSeparator />
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("Workspace", "مساحة العمل")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {PRIMARY_NAV.map((item) => (
+                {primaryNav.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isActive(item.href, item.end)}
@@ -90,10 +101,10 @@ export function MerchantLayout() {
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Configure</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("Configure", "الإعداد")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {SECONDARY_NAV.map((item) => (
+                {secondaryNav.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isActive(item.href)}
@@ -112,9 +123,15 @@ export function MerchantLayout() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => navigate("/")} tooltip="View public site">
+              <SidebarMenuButton onClick={() => navigate("/")} tooltip={t("View public site", "عرض الموقع العام")}>
                 <ExternalLink className="size-4" />
-                <span>View public site</span>
+                <span>{t("View public site", "عرض الموقع العام")}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => void handleSignOut()} tooltip={auth.user ? t("Sign out", "تسجيل الخروج") : t("Exit demo", "الخروج من النسخة التجريبية")}>
+                <LogOut className="size-4" />
+                <span>{auth.user ? t("Sign out", "تسجيل الخروج") : t("Exit demo", "الخروج من النسخة التجريبية")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -127,6 +144,7 @@ export function MerchantLayout() {
             <Breadcrumb pathname={location.pathname} />
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ModeToggle />
           </div>
         </header>
@@ -141,15 +159,16 @@ export function MerchantLayout() {
 }
 
 function Breadcrumb({ pathname }: { pathname: string }) {
+  const { t } = useLanguage();
   const segments = pathname.split("/").filter(Boolean);
   const labels: Record<string, string> = {
-    app: "Overview",
-    policies: "Policies",
-    new: "New policy",
-    review: "Review",
-    cases: "Return cases",
-    integrations: "Integrations",
-    settings: "Settings",
+    app: t("Overview", "نظرة عامة"),
+    policies: t("Policies", "السياسات"),
+    new: t("New policy", "سياسة جديدة"),
+    review: t("Review", "المراجعة"),
+    cases: t("Return cases", "طلبات الإرجاع"),
+    integrations: t("Integrations", "التكاملات"),
+    settings: t("Settings", "الإعدادات"),
   };
 
   return (

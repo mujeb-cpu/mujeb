@@ -1,0 +1,239 @@
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Check, FileText, Sparkles } from "lucide-react";
+import { SAMPLE_POLICY_RULES } from "@/lib/fixtures";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
+
+const DEMO_RULES = SAMPLE_POLICY_RULES.slice(0, 3);
+
+const SOURCE_SECTIONS = [
+  {
+    title: "1. Return Window",
+    excerpt: DEMO_RULES[0].sourceExcerpt,
+    remainder:
+      "The return window starts from the confirmed delivery date shown in the order tracking system.",
+  },
+  {
+    title: "2. Eligible Reasons",
+    excerpt: DEMO_RULES[1].sourceExcerpt,
+    remainder: "Returns for “changed mind” are not accepted.",
+  },
+  {
+    title: "3. Item Condition",
+    excerpt: DEMO_RULES[2].sourceExcerpt,
+    remainder: "Used items are not eligible for return.",
+  },
+];
+
+export function PolicyTransformation() {
+  const { t } = useLanguage();
+  const [active, setActive] = useState(0);
+  // Which rules the visitor has approved. Approving all three publishes.
+  const [approved, setApproved] = useState<boolean[]>([false, false, false]);
+  const reduceMotion = useReducedMotion();
+  const approvedCount = approved.filter(Boolean).length;
+  const published = approvedCount === DEMO_RULES.length;
+
+  const approve = (index: number) => {
+    if (approved[index]) return;
+    const next = [...approved];
+    next[index] = true;
+    setApproved(next);
+    // Advance to the next still-unapproved rule so the flow keeps moving.
+    const pending = next.findIndex((ok) => !ok);
+    if (pending !== -1) setActive(pending);
+  };
+
+  return (
+    <section id="how-it-works" className="scroll-mt-20 bg-muted/30">
+      <div className="mx-auto max-w-[1200px] px-5 py-20 md:py-28">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="text-sm font-semibold text-primary">
+            {t("From language to approved rules", "من نص السياسة إلى قواعد معتمدة")}
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.025em] text-foreground md:text-[42px] md:leading-[1.08]">
+            {t("Every rule stays connected to the sentence that produced it.", "كل قاعدة مرتبطة بالنص الذي استُخرجت منه.")}
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+            {t("AI proposes a structured interpretation. You see its source, review it, and decide what becomes active.", "يقترح الذكاء الاصطناعي تفسيرًا منظمًا. ترى مصدر كل قاعدة، وتراجعها، ثم تقرر ما يُنشر منها.")}
+          </p>
+        </div>
+
+        <div className="policy-workspace mt-12 overflow-hidden rounded-[28px] border border-border/75 bg-card shadow-[0_30px_90px_-55px_rgba(8,42,34,.55)] md:mt-16">
+          {/* Workspace bar: progress lives here, not in a separate panel. */}
+          <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <FileText className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {t("Nova Store return policy", "سياسة الإرجاع لمتجر نوفا")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {published
+                    ? t("Published as Policy v1.0", "نُشرت باسم السياسة v1.0")
+                    : t(`${approvedCount} of ${DEMO_RULES.length} rules approved`, `تم اعتماد ${approvedCount} من ${DEMO_RULES.length} قواعد`)}
+                </p>
+              </div>
+            </div>
+            <span
+              className={cn(
+                "policy-status shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold",
+                published
+                  ? "border-eligible/25 bg-eligible-muted text-eligible"
+                  : "border-review/25 bg-review-muted text-review",
+              )}
+            >
+              {published ? t("Published", "منشورة") : t("Unpublished draft", "مسودة غير منشورة")}
+            </span>
+          </div>
+
+          <div className="grid lg:grid-cols-[1fr_1fr]">
+            {/* Source document — the active clause lights up. */}
+            <div className="hidden border-b border-border/70 bg-background/50 p-5 sm:p-7 lg:block lg:border-b-0 lg:border-r">
+              <div className="lg:sticky lg:top-24">
+                <p className="mb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {t("Source policy", "نص السياسة")}
+                </p>
+                <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+                  <div className="mb-6 flex items-center gap-2 border-b border-border/60 pb-4">
+                    <span className="size-2 rounded-full bg-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("Returns and Refunds Policy", "سياسة الإرجاع والاسترداد")}
+                    </span>
+                  </div>
+                  <div className="space-y-6">
+                    {SOURCE_SECTIONS.map((section, index) => (
+                      <div
+                        key={section.title}
+                        className="policy-source-block"
+                        data-active={active === index}
+                      >
+                        <p className="mb-2 text-xs font-semibold text-foreground">
+                          {t(section.title, ["1. مدة الإرجاع", "2. أسباب الإرجاع المقبولة", "3. حالة المنتج"][index])}
+                        </p>
+                        <p className="text-sm leading-7 text-muted-foreground">
+                          <mark
+                            className="policy-source-highlight"
+                            data-active={active === index}
+                          >
+                            {t(section.excerpt, ["يمكن للعملاء إرجاع المنتجات المؤهلة خلال 14 يومًا من تاريخ التسليم.", "تُقبل المرتجعات في حالات المنتج المعيب أو استلام منتج خاطئ أو عدم مطابقته للوصف أو تضرره أثناء الشحن.", "يجب أن يكون المنتج جديدًا وغير مفتوح، أو مفتوحًا دون استخدام مع كامل التغليف والملحقات الأصلية."][index])}
+                          </mark>{" "}
+                          {t(section.remainder, ["تبدأ مدة الإرجاع من تاريخ التسليم المؤكد في نظام تتبع الطلب.", "لا يُقبل الإرجاع بسبب تغيير الرأي.", "المنتجات المستخدمة غير مؤهلة للإرجاع."][index])}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Proposed rules — compact rows, each approvable. */}
+            <div className="p-5 sm:p-7">
+              <div className="mb-5 flex items-center justify-between text-xs">
+                <span className="font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {t("Proposed rules", "القواعد المقترحة")}
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-primary">
+                  <Sparkles className="size-3.5" />
+                  {t("AI-assisted", "بمساعدة الذكاء الاصطناعي")}
+                </span>
+              </div>
+
+              <ul className="space-y-3">
+                {DEMO_RULES.map((rule, index) => {
+                  const isApproved = approved[index];
+                  const isActive = active === index;
+                  return (
+                    <li key={rule.id}>
+                      <div
+                        data-policy-rule={index + 1}
+                        data-active={isActive}
+                        data-approved={isApproved}
+                        onMouseEnter={() => setActive(index)}
+                        onFocusCapture={() => setActive(index)}
+                        className="policy-rule-card rounded-2xl border border-border/70 bg-background p-4 sm:p-5"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="policy-rule-index mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg font-mono text-[11px] font-bold">
+                            {isApproved ? (
+                              <Check className="size-3.5" strokeWidth={3} />
+                            ) : (
+                              String(index + 1).padStart(2, "0")
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold leading-snug text-foreground">
+                              {t(rule.name, ["مدة الإرجاع", "أسباب الإرجاع المقبولة", "حالات المنتج المقبولة"][index])}
+                            </p>
+                            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                              {t(rule.description, ["يجب إرجاع المنتجات خلال 14 يومًا من التسليم", "منتج معيب، منتج خاطئ، غير مطابق للوصف، أو متضرر أثناء الشحن", "جديد وغير مفتوح، أو مفتوح دون استخدام"][index])}
+                            </p>
+
+                            {/* Source shown inline on small screens, where the
+                                document column is hidden. */}
+                            <p className="mt-3 border-l-2 border-primary/25 pl-3 text-xs leading-relaxed text-muted-foreground lg:hidden">
+                              {t(SOURCE_SECTIONS[index].excerpt, ["يمكن للعملاء إرجاع المنتجات المؤهلة خلال 14 يومًا من تاريخ التسليم.", "تُقبل المرتجعات للأسباب المحددة في السياسة.", "يجب أن يكون المنتج جديدًا وغير مفتوح أو مفتوحًا دون استخدام."][index])}
+                            </p>
+
+                            <div className="mt-3 flex items-center justify-between gap-3">
+                              <span className="text-xs text-muted-foreground">
+                                {t(`Clause ${index + 1}`, `البند ${index + 1}`)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => approve(index)}
+                                disabled={isApproved}
+                                className="policy-approve-btn rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+                              >
+                                {isApproved ? t("Approved", "معتمدة") : t("Approve", "اعتماد")}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <p className="mt-5 text-center text-xs text-muted-foreground">
+                {published
+                  ? t("Published rules — not the AI — decide every return.", "القواعد المنشورة، وليس الذكاء الاصطناعي، هي التي تقرر نتيجة كل طلب.")
+                  : t("Nothing goes live until you approve it.", "لن تُنشر أي قاعدة قبل اعتمادك لها.")}
+              </p>
+            </div>
+          </div>
+
+          {/* Publication bar appears only once every rule is approved. */}
+          <motion.div
+            initial={false}
+            animate={{
+              height: published ? "auto" : 0,
+              opacity: published ? 1 : 0,
+            }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.42,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t border-eligible/20 bg-eligible-muted/60 px-5 py-4 text-center">
+              <span className="flex size-6 items-center justify-center rounded-full bg-eligible text-eligible-foreground">
+                <Check className="size-3.5" strokeWidth={3} />
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {t("Policy v1.0 published.", "تم نشر السياسة v1.0.")}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {t("Ready to answer customer requests.", "جاهزة لتقييم طلبات العملاء.")}
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}

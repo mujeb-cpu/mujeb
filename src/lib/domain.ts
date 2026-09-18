@@ -167,17 +167,20 @@ export function daysBetween(a: Date, b: Date): number {
 }
 
 export function formatSAR(amount: number): string {
-  return `SAR ${amount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
+  return new Intl.NumberFormat(locale, { style: "currency", currency: "SAR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 }
 
 export function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
+  return d.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 }
 
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleString("en-US", {
+  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
+  return d.toLocaleString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",

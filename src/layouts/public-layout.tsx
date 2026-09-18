@@ -5,156 +5,250 @@ import { PageTransition } from "@/components/page-transition";
 import { CurtainReveal } from "@/components/curtain-reveal";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-  { label: "Product", href: "/#product" },
-  { label: "How it works", href: "/#how-it-works" },
-];
+import { WhatsAppChannel } from "@/components/phone-frame";
+import { AuthDialog } from "@/components/auth-dialog";
+import { useAuth } from "@/components/auth-provider";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/components/language-provider";
 
 export function PublicLayout() {
   const [scrolled, setScrolled] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const auth = useAuth();
+  const { t } = useLanguage();
+  const navLinks = [
+    { label: t("Product", "المنتج"), href: "/#product" },
+    { label: t("How it works", "كيف يعمل"), href: "/#how-it-works" },
+  ];
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("auth") === "1") setAuthOpen(true);
+  }, [location.search]);
+
+  const handleAuthOpenChange = (open: boolean) => {
+    setAuthOpen(open);
+    if (!open && new URLSearchParams(location.search).has("auth")) {
+      navigate(`${location.pathname}${location.hash}`, { replace: true });
+    }
+  };
+
+  // Lock body scroll and allow Escape to close while the overlay is open.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 40);
     };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
     if (location.hash) {
-      const el = document.querySelector(location.hash);
+      const el = document.getElementById(
+        decodeURIComponent(location.hash.slice(1)),
+      );
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        el.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "instant"
+            : "smooth",
+          block: "start",
+        });
       }
     } else {
-      window.scrollTo(0, 0);
+      // Explicit "instant": html has scroll-behavior:smooth for anchor jumps,
+      // which would otherwise animate the whole page on every route change.
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
   }, [location]);
 
   return (
     <div className="flex min-h-svh flex-col">
-      <CurtainReveal>
-        <header
-          className={cn(
-            "sticky z-50 mx-auto transition-all duration-300 ease-out",
-            scrolled ? "top-3 w-[calc(100%-2rem)] max-w-[980px]" : "top-0 w-full",
-          )}
-          style={{
-            transitionProperty: "transform, opacity, top, width, max-width, padding",
-          }}
-        >
-          <div
-            className={cn(
-              "transition-all duration-300 ease-out",
-              scrolled
-                ? "flex items-center justify-between rounded-2xl border border-border/60 bg-background/80 px-4 shadow-lg backdrop-blur-xl"
-                : "flex w-full items-center justify-between px-5",
-            )}
-            style={{
-              transitionProperty: "max-width, height, padding, border-radius, background, backdrop-filter, box-shadow",
-            }}
-          >
-            <div
-              className={cn(
-                "flex w-full items-center justify-between transition-all duration-300 ease-out",
-                scrolled ? "h-12 max-w-[920px]" : "mx-auto h-16 max-w-[1200px]",
-              )}
-              style={{
-                transitionProperty: "max-width, height",
-              }}
-            >
-              <Link to="/" className="shrink-0 transition-transform duration-300">
-                <MujeebLogo
-                  className={cn("transition-all duration-300", scrolled ? "scale-90" : "scale-100")}
-                />
-              </Link>
+      <header
+        className={cn("public-header", scrolled && "public-header-scrolled")}
+      >
+        <div className="public-header-surface">
+          <div className="public-header-inner">
+            <Link to="/" className="rounded-lg p-1 shrink-0 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+              <MujeebLogo
+                className={cn(
+                  "transition-all duration-300",
+                  scrolled ? "scale-90" : "scale-100",
+                )}
+              />
+            </Link>
 
-              <nav className="hidden items-center gap-0.5 md:flex">
-                {NAV_LINKS.map((link) => (
-                  <button
-                    key={link.href}
-                    onClick={() => navigate(link.href)}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-                  >
-                    {link.label}
-                  </button>
-                ))}
-              </nav>
+            <nav aria-label="Primary navigation" className="public-nav hidden items-center gap-1 p-1 md:flex">
+              {navLinks.map((link) => (
+                <button
+                  key={link.href}
+                  onClick={() => navigate(link.href)}
+                  aria-current={location.hash === link.href.slice(1) ? "page" : undefined}
+                  className="public-nav-link rounded-full px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground aria-[current=page]:text-foreground"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </nav>
 
-              <div className="flex items-center gap-2">
-                <div className="hidden items-center gap-2 md:flex">
-                  <button
-                    onClick={() => navigate("/auth")}
-                    className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-                  >
-                    Sign in
-                  </button>
+            <div className="flex items-center gap-1.5">
+              <div className="hidden items-center gap-1 md:flex">
+                <Link
+                  to="/#whatsapp"
+                  className="nav-ghost hidden rounded-full px-3 py-2 lg:inline-flex"
+                >
+                  <WhatsAppChannel showStatus={false} />
+                </Link>
+                {auth.user ? (
                   <Button
                     size="sm"
                     onClick={() => navigate("/app")}
-                    className="transition-all duration-200 hover:-translate-y-px hover:shadow-md active:translate-y-0"
+                    className="nav-cta rounded-full px-4"
                   >
-                    Open demo
+                    {t("Workspace", "مساحة العمل")}
                   </Button>
-                </div>
-                <ModeToggle />
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="md:hidden">
-                      <Menu className="size-5" />
-                      <span className="sr-only">Open menu</span>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setAuthOpen(true)}
+                      className="nav-ghost rounded-full px-3 py-2 text-sm font-medium"
+                    >
+                      {t("Sign in", "تسجيل الدخول")}
+                    </button>
+                    <Button
+                      size="sm"
+                      onClick={() => setAuthOpen(true)}
+                      className="nav-cta rounded-full px-4"
+                    >
+                      {t("Get started", "ابدأ الآن")}
                     </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[280px]">
-                    <SheetHeader>
-                      <SheetTitle>
-                        <MujeebLogo />
-                      </SheetTitle>
-                    </SheetHeader>
-                    <nav className="flex flex-col gap-1 p-4">
-                      {NAV_LINKS.map((link) => (
-                        <SheetClose asChild key={link.href}>
-                          <Button
-                            variant="ghost"
-                            className="justify-start"
-                            onClick={() => navigate(link.href)}
-                          >
-                            {link.label}
-                          </Button>
-                        </SheetClose>
-                      ))}
-                      <div className="my-2 h-px bg-border" />
-                      <SheetClose asChild>
-                        <Button variant="ghost" className="justify-start" onClick={() => navigate("/auth")}>
-                          Sign in
-                        </Button>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Button className="justify-start" onClick={() => navigate("/app")}>
-                          Open demo
-                        </Button>
-                      </SheetClose>
-                    </nav>
-                  </SheetContent>
-                </Sheet>
+                  </>
+                )}
               </div>
+              <LanguageToggle compact className="size-8" />
+              <ModeToggle className="size-8" />
+              <button
+                type="button"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                className="nav-ghost menu-toggle grid size-8 place-items-center rounded-full md:hidden"
+                data-open={menuOpen}
+              >
+                {/* Both icons stay mounted and cross-fade, so the swap eases
+                    instead of popping. */}
+                <Menu className="menu-toggle-icon menu-toggle-open size-5" />
+                <X className="menu-toggle-icon menu-toggle-close size-5" />
+                <span className="sr-only">
+                  {menuOpen
+                    ? t("Close menu", "إغلاق القائمة")
+                    : t("Open menu", "فتح القائمة")}
+                </span>
+              </button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex-1">
+      {/* Full-screen overlay menu: the modern mobile pattern — the page fades
+          out, large tap targets fill the screen, no cramped side drawer. */}
+      <div
+        id="mobile-menu"
+        className="mobile-menu md:hidden"
+        data-open={menuOpen}
+        aria-hidden={!menuOpen}
+      >
+        <nav className="flex flex-col px-6">
+          {navLinks.map((link, i) => (
+            <button
+              key={link.href}
+              onClick={() => {
+                setMenuOpen(false);
+                navigate(link.href);
+              }}
+              style={{ ["--i" as string]: String(i) }}
+              className="mobile-menu-item border-b border-border/70 py-4 text-start text-[17px] font-medium text-foreground"
+            >
+              {link.label}
+            </button>
+          ))}
+          <Link
+            to="/#whatsapp"
+            onClick={() => setMenuOpen(false)}
+            style={{ ["--i" as string]: String(navLinks.length) }}
+            className="mobile-menu-item flex items-center border-b border-border/70 py-4 text-[17px] font-medium text-foreground"
+          >
+            <WhatsAppChannel className="text-[17px] font-medium text-foreground" />
+          </Link>
+        </nav>
+
+        <div className="mt-auto flex flex-col gap-2 px-6 pb-10 pt-8">
+          {auth.user ? (
+            <Button
+              style={{ ["--i" as string]: String(navLinks.length + 1) }}
+              className="mobile-menu-item nav-cta h-11 w-full rounded-full"
+              onClick={() => {
+                setMenuOpen(false);
+                navigate("/app");
+              }}
+            >
+              {t("Workspace", "مساحة العمل")}
+            </Button>
+          ) : (
+            <>
+              <Button
+                style={{ ["--i" as string]: String(navLinks.length + 1) }}
+                className="mobile-menu-item nav-cta h-11 w-full rounded-full"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setAuthOpen(true);
+                }}
+              >
+                {t("Get started", "ابدأ الآن")}
+              </Button>
+              <button
+                style={{ ["--i" as string]: String(navLinks.length + 2) }}
+                className="mobile-menu-item h-11 w-full rounded-full text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setAuthOpen(true);
+                }}
+              >
+                {t("Sign in", "تسجيل الدخول")}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <CurtainReveal>
+        <main className="min-h-svh pt-16">
           <PageTransition>
             <Outlet />
           </PageTransition>
         </main>
       </CurtainReveal>
+      <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} />
     </div>
   );
 }

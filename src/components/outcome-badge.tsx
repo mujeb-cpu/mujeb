@@ -6,6 +6,7 @@ import {
   OUTCOME_LABELS,
   CASE_STATUS_LABELS,
 } from "@/lib/domain";
+import { useLanguage } from "@/components/language-provider";
 
 export function OutcomeBadge({
   outcome,
@@ -16,20 +17,21 @@ export function OutcomeBadge({
   className?: string;
   size?: "sm" | "default";
 }) {
+  const { t } = useLanguage();
   const config = {
     ELIGIBLE: {
       icon: CheckCircle2,
-      label: OUTCOME_LABELS[outcome],
+      label: t(OUTCOME_LABELS[outcome], "مؤهل للإرجاع"),
       className: "bg-eligible-muted text-eligible border-eligible/20",
     },
     NOT_ELIGIBLE: {
       icon: XCircle,
-      label: OUTCOME_LABELS[outcome],
+      label: t(OUTCOME_LABELS[outcome], "غير مؤهل للإرجاع"),
       className: "bg-not-eligible-muted text-not-eligible border-not-eligible/20",
     },
     MANUAL_REVIEW: {
       icon: AlertCircle,
-      label: OUTCOME_LABELS[outcome],
+      label: t(OUTCOME_LABELS[outcome], "يتطلب مراجعة بشرية"),
       className: "bg-review-muted text-review border-review/20",
     },
   };
@@ -60,6 +62,7 @@ export function CaseStatusBadge({
   className?: string;
   size?: "sm" | "default";
 }) {
+  const { t } = useLanguage();
   const config: Record<CaseStatus, string> = {
     OPEN: "bg-accent text-accent-foreground border-border",
     AWAITING_ITEM: "bg-review-muted text-review border-review/20",
@@ -77,7 +80,7 @@ export function CaseStatusBadge({
         className,
       )}
     >
-      {CASE_STATUS_LABELS[status]}
+      {t(CASE_STATUS_LABELS[status], ({ OPEN: "مفتوح", AWAITING_ITEM: "بانتظار المنتج", RECEIVED: "تم الاستلام", RESOLVED: "مغلق", CANCELLED: "ملغى" } as Record<CaseStatus, string>)[status])}
     </span>
   );
 }

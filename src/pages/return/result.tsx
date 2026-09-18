@@ -28,9 +28,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/language-provider";
 
 export function ReturnResultPage() {
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
   const [decision, setDecision] = useState<EligibilityDecision | null>(null);
   const [order, setOrder] = useState<DeliveryFacts | null>(null);
   const [context, setContext] = useState<{ orderId: string; itemId: string; quantity: number; reason: string; condition: string } | null>(null);
@@ -65,30 +67,30 @@ export function ReturnResultPage() {
     );
     setCaseId(newCase.id);
     setSubmitted(true);
-    toast.success("Return request submitted");
+    toast.success(t("Return request submitted", "تم إرسال طلب الإرجاع"));
   };
 
   const outcomeConfig = {
     ELIGIBLE: {
       icon: CheckCircle2,
-      headline: "This item qualifies for return.",
-      subtext: "All policy conditions are met.",
+      headline: t("This item qualifies for return.", "هذا المنتج مؤهل للإرجاع."),
+      subtext: t("All policy conditions are met.", "تم استيفاء جميع شروط السياسة."),
       color: "text-eligible",
       bg: "bg-eligible-muted",
       border: "border-eligible/30",
     },
     NOT_ELIGIBLE: {
       icon: XCircle,
-      headline: "This item is outside the return policy.",
-      subtext: "One or more policy conditions were not met.",
+      headline: t("This item is outside the return policy.", "هذا المنتج غير مشمول بسياسة الإرجاع."),
+      subtext: t("One or more policy conditions were not met.", "لم يتم استيفاء شرط أو أكثر من شروط السياسة."),
       color: "text-not-eligible",
       bg: "bg-not-eligible-muted",
       border: "border-not-eligible/30",
     },
     MANUAL_REVIEW: {
       icon: AlertCircle,
-      headline: "Your store needs to take a closer look.",
-      subtext: "Some details need manual verification.",
+      headline: t("Your store needs to take a closer look.", "يحتاج المتجر إلى مراجعة الطلب."),
+      subtext: t("Some details need manual verification.", "تتطلب بعض التفاصيل تحققًا بشريًا."),
       color: "text-review",
       bg: "bg-review-muted",
       border: "border-review/30",
@@ -111,23 +113,23 @@ export function ReturnResultPage() {
           <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
             {cfg.headline}
           </h1>
-          <p className="max-w-sm text-sm text-muted-foreground">{decision.explanation}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">{decision.outcome === "ELIGIBLE" ? cfg.subtext : decision.outcome === "MANUAL_REVIEW" ? t(decision.explanation, "لا يتوفر تاريخ التسليم، لذلك لا يمكن حساب مدة الإرجاع. يحتاج المتجر إلى مراجعة الطلب.") : t(decision.explanation, "لا يستوفي هذا المنتج شروط سياسة الإرجاع المنشورة.")}</p>
           <OutcomeBadge outcome={decision.outcome} />
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Request details</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("Request details", "تفاصيل الطلب")}</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <Detail label="Order" value={order.orderId} />
-            <Detail label="Item" value={order.items.find((i) => i.id === context?.itemId)?.name ?? "—"} />
-            <Detail label="Quantity" value={String(context?.quantity ?? 1)} />
-            <Detail label="Reason" value={context ? REASON_LABELS[context.reason as never] : "—"} />
-            <Detail label="Condition" value={context ? CONDITION_LABELS[context.condition as never] : "—"} />
-            <Detail label="Policy version" value={decision.policyVersionLabel} />
-            <Detail label="Evaluated" value={formatDateTime(decision.evaluatedAt)} />
-            {decision.deadline && <Detail label="Return deadline" value={formatDate(decision.deadline)} />}
+            <Detail label={t("Order", "الطلب")} value={order.orderId} />
+            <Detail label={t("Item", "المنتج")} value={order.items.find((i) => i.id === context?.itemId)?.name ?? "—"} />
+            <Detail label={t("Quantity", "الكمية")} value={String(context?.quantity ?? 1)} />
+            <Detail label={t("Reason", "السبب")} value={context ? t(REASON_LABELS[context.reason as never], ({ defective: "المنتج معيب", wrong_item: "تم استلام منتج غير صحيح", not_as_described: "غير مطابق للوصف", changed_mind: "تغيير الرأي", damaged_in_transit: "تضرر أثناء الشحن" } as Record<string,string>)[context.reason]) : "—"} />
+            <Detail label={t("Condition", "الحالة")} value={context ? t(CONDITION_LABELS[context.condition as never], ({ new_unopened: "جديد وغير مفتوح", opened_unused: "مفتوح وغير مستخدم", used: "مستخدم" } as Record<string,string>)[context.condition]) : "—"} />
+            <Detail label={t("Policy version", "إصدار السياسة")} value={decision.policyVersionLabel} />
+            <Detail label={t("Evaluated", "وقت التقييم")} value={formatDateTime(decision.evaluatedAt)} />
+            {decision.deadline && <Detail label={t("Return deadline", "آخر موعد للإرجاع")} value={formatDate(decision.deadline)} />}
           </div>
         </CardContent>
       </Card>
@@ -138,7 +140,7 @@ export function ReturnResultPage() {
             <CardContent className="flex items-center justify-between py-4 cursor-pointer">
               <div className="flex items-center gap-2">
                 <FileText className="size-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Applied rules</span>
+                <span className="text-sm font-medium text-foreground">{t("Applied rules", "القواعد المطبقة")}</span>
                 <Badge variant="outline" className="text-[10px]">{appliedRules.length}</Badge>
               </div>
               <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", showRules && "rotate-180")} />
@@ -163,7 +165,7 @@ export function ReturnResultPage() {
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">{ar.rule.description}</p>
                         <div className="mt-1 text-xs">
-                          <span className="text-muted-foreground">Evaluated: </span>
+                          <span className="text-muted-foreground">{t("Evaluated", "القيمة المقيمة")}: </span>
                           <code className="rounded bg-card px-1.5 py-0.5 text-foreground">{ar.evaluatedValue}</code>
                         </div>
                       </div>
@@ -171,7 +173,7 @@ export function ReturnResultPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No rules were applied for this evaluation.</p>
+                <p className="text-sm text-muted-foreground">{t("No rules were applied for this evaluation.", "لم تُطبق أي قواعد في هذا التقييم.")}</p>
               )}
             </div>
           </CollapsibleContent>
@@ -185,33 +187,33 @@ export function ReturnResultPage() {
               <Check className="size-5" />
             </div>
             <div>
-              <h2 className="font-display text-base font-semibold text-foreground">Return request submitted</h2>
-              <p className="text-sm text-muted-foreground">Case ID: <span className="font-mono">{caseId}</span></p>
+              <h2 className="font-display text-base font-semibold text-foreground">{t("Return request submitted", "تم إرسال طلب الإرجاع")}</h2>
+              <p className="text-sm text-muted-foreground">{t("Case ID", "رقم الحالة")}: <span className="font-mono">{caseId}</span></p>
             </div>
-            <p className="text-xs text-muted-foreground">Your store will review this request. You'll receive an update soon.</p>
+            <p className="text-xs text-muted-foreground">{t("Your store will review this request. You'll receive an update soon.", "سيراجع المتجر طلبك، وستصلك حالة الطلب قريبًا.")}</p>
           </CardContent>
         </Card>
       ) : (
         <div className="flex flex-col gap-2">
           {decision.outcome === "ELIGIBLE" && (
             <Button size="lg" onClick={handleSubmit} className="group">
-              Create return request
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              {t("Create return request", "إنشاء طلب الإرجاع")}
+              <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
             </Button>
           )}
           {decision.outcome === "MANUAL_REVIEW" && (
             <Button size="lg" onClick={handleSubmit} className="group">
-              Submit for review
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              {t("Submit for review", "إرسال للمراجعة")}
+              <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
             </Button>
           )}
           {decision.outcome === "NOT_ELIGIBLE" && (
             <div className="rounded-lg border border-border bg-muted/20 p-4 text-center text-sm text-muted-foreground">
-              This item does not meet the return policy conditions. If you believe this is an error, please contact the store directly.
+              {t("This item does not meet the return policy conditions. If you believe this is an error, please contact the store directly.", "هذا المنتج لا يستوفي شروط سياسة الإرجاع. إذا كنت تعتقد أن هناك خطأ، فتواصل مع المتجر مباشرة.")}
             </div>
           )}
           <Button variant="outline" onClick={() => navigate("/return")}>
-            Start a new return
+            {t("Start a new return", "بدء طلب إرجاع جديد")}
           </Button>
         </div>
       )}
@@ -219,20 +221,20 @@ export function ReturnResultPage() {
       <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/70">
         <span className="flex items-center gap-1">
           <ShieldCheck className="size-3" />
-          Human-approved rules
+          {t("Human-approved rules", "قواعد معتمدة من التاجر")}
         </span>
         <span className="flex items-center gap-1">
           <Lock className="size-3" />
-          Frozen evidence
+          {t("Frozen evidence", "أدلة محفوظة")}
         </span>
         <span className="flex items-center gap-1">
           <Clock className="size-3" />
-          Instant evaluation
+          {t("Instant evaluation", "تقييم فوري")}
         </span>
       </div>
 
       <p className="text-center text-[11px] text-muted-foreground/70">
-        Eligibility does not mean a refund has been issued. The store will process your request.
+        {t("Eligibility does not mean a refund has been issued. The store will process your request.", "الأهلية لا تعني إصدار المبلغ المسترد. سيتولى المتجر معالجة الطلب.")}
       </p>
     </div>
   );
@@ -248,7 +250,8 @@ function Detail({ label, value }: { label: string; value: string }) {
 }
 
 function ProgressIndicator({ currentStep }: { currentStep: number }) {
-  const steps = ["Verify", "Details", "Answer"];
+  const { t } = useLanguage();
+  const steps = [t("Verify", "التحقق"), t("Details", "التفاصيل"), t("Answer", "النتيجة")];
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       {steps.map((label, i) => {

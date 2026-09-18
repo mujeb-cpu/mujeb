@@ -68,37 +68,37 @@
 :root {
   --radius: 0.75rem;
   --background: #faf9f6;
-  --foreground: #1a1a2e;
+  --foreground: #202623;
   --card: #ffffff;
-  --card-foreground: #1a1a2e;
+  --card-foreground: #202623;
   --popover: #ffffff;
-  --popover-foreground: #1a1a2e;
-  --primary: #4f46e5;
+  --popover-foreground: #202623;
+  --primary: #0f766e;
   --primary-foreground: #ffffff;
-  --secondary: #f0f0fa;
-  --secondary-foreground: #1a1a2e;
-  --muted: #f4f4f8;
-  --muted-foreground: #6b6b80;
-  --accent: #ede9fe;
-  --accent-foreground: #312e81;
+  --secondary: #eef3f0;
+  --secondary-foreground: #202623;
+  --muted: #f0f3ef;
+  --muted-foreground: #626e68;
+  --accent: #e0f2ee;
+  --accent-foreground: #115e59;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e8e8f2;
-  --input: #d8d8e4;
-  --ring: #4f46e5;
-  --chart-1: #4f46e5;
+  --border: #dde5df;
+  --input: #c8d5ce;
+  --ring: #0f766e;
+  --chart-1: #0f766e;
   --chart-2: #f59e0b;
-  --chart-3: #6b6b80;
-  --chart-4: #818cf8;
+  --chart-3: #626e68;
+  --chart-4: #5eead4;
   --chart-5: #dc2626;
   --sidebar: #f8f7f4;
-  --sidebar-foreground: #1a1a2e;
-  --sidebar-primary: #4f46e5;
+  --sidebar-foreground: #202623;
+  --sidebar-primary: #0f766e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ede9fe;
-  --sidebar-accent-foreground: #312e81;
-  --sidebar-border: #e8e8f2;
-  --sidebar-ring: #4f46e5;
+  --sidebar-accent: #e0f2ee;
+  --sidebar-accent-foreground: #115e59;
+  --sidebar-border: #dde5df;
+  --sidebar-ring: #0f766e;
   --eligible: #059669;
   --eligible-foreground: #ffffff;
   --eligible-muted: #d1fae5;
@@ -108,51 +108,54 @@
   --review: #d97706;
   --review-foreground: #ffffff;
   --review-muted: #fef3c7;
-  --brand-tint: #ede9fe;
+  --brand-tint: #e0f2ee;
   --saffron: #f59e0b;
-  --saffron-foreground: #1a1a2e;
+  --saffron-foreground: #202623;
   --saffron-muted: #fef3c7;
-  --footer-bg: #0a0a14;
-  --footer-fg: #e8e8f4;
-  --footer-muted: #9b9bb8;
-  --footer-subtle: #2a2a3e;
-  --footer-gold: #818cf8;
-  --footer-gold-foreground: #0a0a14;
+  /* Light-mode footer: a distinctly deeper tinted surface than the page panel
+     (#faf9f6) — enough separation for the curtain reveal to read, while still
+     clearly a light surface. */
+  --footer-bg: #c7d5ce;
+  --footer-fg: #16211e;
+  --footer-muted: #44544e;
+  --footer-subtle: #a9bdb4;
+  --footer-gold: #0f766e;
+  --footer-gold-foreground: #ffffff;
 }
 
 .dark {
-  --background: #0a0a14;
-  --foreground: #e8e8f4;
-  --card: #14141e;
-  --card-foreground: #e8e8f4;
-  --popover: #1a1a28;
-  --popover-foreground: #e8e8f4;
-  --primary: #818cf8;
-  --primary-foreground: #0a0a14;
-  --secondary: #1e1e2e;
-  --secondary-foreground: #e8e8f4;
-  --muted: #1a1a26;
-  --muted-foreground: #9b9bb8;
-  --accent: #2a2a3e;
-  --accent-foreground: #c7d2fe;
+  --background: #0d1110;
+  --foreground: #f1f5f3;
+  --card: #151a18;
+  --card-foreground: #f1f5f3;
+  --popover: #1b211f;
+  --popover-foreground: #f1f5f3;
+  --primary: #14b8a6;
+  --primary-foreground: #061311;
+  --secondary: #1b211f;
+  --secondary-foreground: #f1f5f3;
+  --muted: #191f1d;
+  --muted-foreground: #9ca9a3;
+  --accent: #222a27;
+  --accent-foreground: #ccfbf1;
   --destructive: #f87171;
   --destructive-foreground: #1a0a0a;
-  --border: #2a2a3e;
-  --input: #3a3a4e;
-  --ring: #818cf8;
-  --chart-1: #818cf8;
+  --border: #29322e;
+  --input: #36413c;
+  --ring: #5eead4;
+  --chart-1: #5eead4;
   --chart-2: #fbbf24;
-  --chart-3: #9b9bb8;
-  --chart-4: #a5b4fc;
+  --chart-3: #a3b5ac;
+  --chart-4: #99f6e4;
   --chart-5: #f87171;
-  --sidebar: #0e0e18;
-  --sidebar-foreground: #e8e8f4;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #0a0a14;
-  --sidebar-accent: #1e1e2e;
-  --sidebar-accent-foreground: #c7d2fe;
-  --sidebar-border: #2a2a3e;
-  --sidebar-ring: #818cf8;
+  --sidebar: #111513;
+  --sidebar-foreground: #f1f5f3;
+  --sidebar-primary: #14b8a6;
+  --sidebar-primary-foreground: #061311;
+  --sidebar-accent: #1b211f;
+  --sidebar-accent-foreground: #ccfbf1;
+  --sidebar-border: #29322e;
+  --sidebar-ring: #5eead4;
   --eligible: #34d399;
   --eligible-foreground: #0a1a14;
   --eligible-muted: #0a2a1e;
@@ -162,31 +165,78 @@
   --review: #fbbf24;
   --review-foreground: #1a1408;
   --review-muted: #2a2414;
-  --brand-tint: #1e1e2e;
+  --brand-tint: #172421;
   --saffron: #fbbf24;
   --saffron-foreground: #1a1408;
   --saffron-muted: #2a2414;
-  --footer-bg: #050508;
-  --footer-fg: #e8e8f4;
-  --footer-muted: #9b9bb8;
-  --footer-subtle: #1a1a26;
-  --footer-gold: #a5b4fc;
-  --footer-gold-foreground: #050508;
+  --footer-bg: #090c0b;
+  --footer-fg: #f1f5f3;
+  --footer-muted: #9ca9a3;
+  --footer-subtle: #202725;
+  --footer-gold: #5eead4;
+  --footer-gold-foreground: #061311;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  /* Anchor jumps ease instead of snapping. Scoped to in-page navigation only —
+     no scroll hijacking, so native wheel/trackpad/keyboard scrolling, the
+     sticky footer, and the pinned outcome section all keep working as-is.
+     The reduced-motion block below overrides this to `auto`. */
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  /* Two fixed half-height layers paint the rubber-band overscroll area: page
+     colour above, footer colour below. Must be CSS rather than an inline
+     style, or it goes stale when the theme is toggled. */
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background:
+      linear-gradient(var(--background) 0 0) top / 100% 50% no-repeat fixed,
+      linear-gradient(var(--footer-bg) 0 0) bottom / 100% 50% no-repeat fixed;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: var(--font-display);
   }
+}
+
+html[dir="rtl"] body {
+  font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] h5,
+html[dir="rtl"] .font-display {
+  font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[autocomplete="email"],
+html[dir="rtl"] .font-mono {
+  direction: ltr;
+  text-align: start;
 }
 
 @layer utilities {
@@ -208,58 +258,110 @@
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-right {
-  from { opacity: 0; transform: translateX(-16px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--primary) / 0; }
-  50% { box-shadow: 0 0 20px 4px color-mix(in srgb, var(--primary) 15%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--primary) / 0;
+  }
+  50% {
+    box-shadow: 0 0 20px 4px color-mix(in srgb, var(--primary) 15%, transparent);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes draw-line {
-  from { stroke-dashoffset: 100%; }
-  to { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: 100%;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes curtain-drop {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes curtain-reveal {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(100%); }
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
 @keyframes ink-spread {
-  0% { clip-path: inset(0 100% 0 0); }
-  100% { clip-path: inset(0 0 0 0); }
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 .animate-fade-up {
@@ -292,18 +394,31 @@
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--muted-foreground) 8%, transparent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--muted-foreground) 8%, transparent),
+    transparent
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 .bg-grid {
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--border) 60%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 24px 24px;
 }
 
 .bg-dots {
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--muted-foreground) 20%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--muted-foreground) 20%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 16px 16px;
 }
 
@@ -315,19 +430,28 @@
   position: relative;
   z-index: 1;
   background: var(--background);
-  border-bottom-left-radius: 6.5rem;
-  border-bottom-right-radius: 6.5rem;
+  border-bottom-left-radius: 9rem;
+  border-bottom-right-radius: 9rem;
   overflow: clip;
-  margin-bottom: 100dvh;
-  contain: paint;
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  /* A deep drop shadow sells the panel as a physical sheet lifting away from
+     the surface beneath it — the reveal is only legible if the edge casts. */
+  box-shadow:
+    0 40px 80px -20px rgb(10 30 26 / 0.45),
+    0 16px 32px -12px rgb(10 30 26 / 0.3),
+    0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.dark .curtain-content {
+  box-shadow:
+    0 44px 88px -18px rgb(0 0 0 / 0.95),
+    0 18px 36px -12px rgb(0 0 0 / 0.7),
+    0 0 0 1px rgb(255 255 255 / 0.08);
 }
 
 @media (max-width: 640px) {
   .curtain-content {
-    border-bottom-left-radius: 3.5rem;
-    border-bottom-right-radius: 3.5rem;
+    border-bottom-left-radius: 4.5rem;
+    border-bottom-right-radius: 4.5rem;
   }
 }
 
@@ -337,25 +461,33 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 96px;
-  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--foreground) 8%, transparent));
+  height: 140px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--foreground) 6%, transparent) 55%,
+    color-mix(in srgb, var(--foreground) 16%, transparent)
+  );
   pointer-events: none;
   z-index: 2;
 }
 
+.dark .curtain-content::after {
+  background: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.45));
+}
+
 @media (max-width: 640px) {
   .curtain-content::after {
-    height: 56px;
+    height: 72px;
   }
 }
 
 .footer-surface {
-  position: fixed;
-  inset-inline: 0;
+  position: sticky;
   bottom: 0;
   z-index: 0;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100svh;
+  overflow: clip;
   background: var(--footer-bg);
   color: var(--footer-fg);
 }
@@ -366,23 +498,1050 @@
   width: 100%;
 }
 
-.footer-glow {
+/* Debossed wordmark — letters cut into the surface. The illusion needs the
+   glyph tinted slightly darker than its ground, a shadow pressed in along the
+   TOP edge, and a bright catch-light on the BOTTOM edge where the cut meets
+   the surface again. */
+/* Debossed on a light surface: the glyph sits slightly darker than its ground,
+   shadow pressed into the TOP edge, bright catch-light on the BOTTOM edge where
+   the cut rises back to the surface. Deeper values than before so the engraving
+   actually reads rather than hinting at itself. */
+.footer-wordmark {
+  color: color-mix(in srgb, var(--footer-bg) 90%, #36514a);
+  text-shadow:
+    0 -1px 1px rgb(14 32 27 / 0.42),
+    0 -3px 6px rgb(14 32 27 / 0.24),
+    0 1px 0 rgb(255 255 255 / 0.92),
+    0 3px 6px rgb(255 255 255 / 0.55);
+}
+
+.dark .footer-wordmark {
+  color: color-mix(in srgb, var(--footer-bg) 86%, #8fa9a0);
+  text-shadow:
+    0 -1px 1px rgb(0 0 0 / 0.95),
+    0 -2px 4px rgb(0 0 0 / 0.6),
+    0 1px 0 rgb(255 255 255 / 0.16),
+    0 2px 3px rgb(255 255 255 / 0.06);
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding-inline: 2px;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 180ms ease;
+}
+.footer-link:hover { color: var(--footer-fg); }
+.footer-link:focus-visible { outline: 2px solid var(--footer-gold); outline-offset: 5px; }
+
+/* Underline wipes in from the left on hover. */
+.footer-link {
+  position: relative;
+}
+
+.footer-link::after {
+  content: "";
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 800px;
-  height: 100%;
-  background: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--footer-gold) 35%, transparent), transparent 62%);
-  pointer-events: none;
+  left: 2px;
+  right: 2px;
+  bottom: 9px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0.55;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-link:hover::after {
+  transform: scaleX(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  .footer-link::after {
+    transition: none;
+  }
+}
+
+/* Full-bleed so the ellipse is never clipped by a narrow viewport — a capped
+   width made the gradient end in a hard vertical edge on phones. The ellipse
+   is sized in percentages so it scales with the screen instead of the box. */
+.footer-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 130% 58% at 50% 106%,
+    color-mix(in srgb, var(--footer-gold) 13%, transparent),
+    color-mix(in srgb, var(--footer-gold) 6%, transparent) 32%,
+    color-mix(in srgb, var(--footer-gold) 2%, transparent) 52%,
+    transparent 72%
+  );
+}
+
+/* Wider and multi-stop so it falls off gradually instead of banding. */
+.dark .footer-glow {
+  background: radial-gradient(
+    ellipse 130% 58% at 50% 106%,
+    color-mix(in srgb, var(--footer-gold) 26%, transparent),
+    color-mix(in srgb, var(--footer-gold) 12%, transparent) 32%,
+    color-mix(in srgb, var(--footer-gold) 4%, transparent) 52%,
+    transparent 72%
+  );
+}
+
+/* A narrow line of light directly under the curtain's edge — enough to separate
+   the two dark surfaces, without hazing the area behind it. */
+.footer-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--footer-gold) 22%, transparent) 30%,
+    color-mix(in srgb, var(--footer-gold) 22%, transparent) 70%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark .footer-surface::before {
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--footer-gold) 55%, transparent) 30%,
+    color-mix(in srgb, var(--footer-gold) 55%, transparent) 70%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Full-bleed at rest: the surface spans the viewport edge to edge, so no page
+   content shows in a gutter beside it. The scrolled state insets to a pill. */
+.public-header {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 100%;
+  padding-inline: 0;
+  transform: translateX(-50%);
+  transition:
+    top 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Translucent at rest: a low-alpha tint plus saturation boost, so page content
+   scrolling underneath stays visible but text on top never loses contrast.
+   (A fully opaque background would make the backdrop-filter a no-op.) */
+.public-header-surface {
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--background) 78%, transparent);
+  /* Modest saturation: at 180% the blurred page tints the bar noticeably,
+     which reads as a coloured slab rather than glass. */
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
+  transition:
+    border-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 420ms ease-out,
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fallback: without backdrop-filter support, go opaque so text stays readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .public-header-surface {
+    background: var(--background);
+  }
+}
+
+/* Full-screen mobile menu. Sits below the header (z-40 vs z-50) so the logo
+   and close button stay visible and in place — no separate header inside the
+   panel, which is what makes the overlay feel like the page transforming
+   rather than a second surface sliding over it. */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding-top: 84px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--background);
+  opacity: 0;
+  visibility: hidden;
+  /* The panel only fades; the items carry the movement. Two things translating
+     at once reads as drift rather than one deliberate motion. */
+  transition:
+    opacity 180ms ease-out,
+    visibility 0s linear 180ms;
+}
+
+.mobile-menu[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 200ms ease-out,
+    visibility 0s;
+}
+
+/* Hamburger / close cross-fade with a slight counter-rotation. */
+.menu-toggle-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-toggle-close {
+  opacity: 0;
+  transform: rotate(-45deg) scale(0.8);
+}
+
+.menu-toggle[data-open="true"] .menu-toggle-open {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.menu-toggle[data-open="true"] .menu-toggle-close {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+.mobile-menu-item {
+  opacity: 0;
+  transform: translateY(8px);
+  /* Closing is fast and un-staggered — a menu should dismiss the instant it is
+     asked to. The stagger belongs to the opening only. */
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out;
+}
+
+.mobile-menu[data-open="true"] .mobile-menu-item {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(60ms + var(--i, 0) * 40ms);
+}
+
+/* Press feedback on the nav links, once the entrance stagger has settled. */
+.mobile-menu[data-open="true"] nav .mobile-menu-item:active {
+  opacity: 0.55;
+  transition: opacity 80ms ease-out;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu,
+  .mobile-menu-item,
+  .mobile-menu[data-open="true"] .mobile-menu-item,
+  .menu-toggle-icon {
+    transition: none;
+    transition-delay: 0s;
+  }
+  .mobile-menu-item,
+  .mobile-menu[data-open="true"] .mobile-menu-item {
+    transform: none;
+  }
+}
+
+/* Borderless: the tinted fill alone groups the links. */
+.public-nav {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 72%, transparent);
+}
+
+/* Nav links: the pill grows from the centre rather than snapping in. */
+.public-nav-link {
+  position: relative;
+  isolation: isolate;
+  /* Slightly darker than --muted-foreground: the header is translucent, so a
+     dark section scrolling underneath would otherwise drop these below AA. */
+  color: color-mix(in srgb, var(--muted-foreground) 78%, var(--foreground));
+}
+
+.public-nav-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--background);
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.public-nav-link:hover::before,
+.public-nav-link[aria-current="page"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.public-nav-link[aria-current="page"]::before {
+  box-shadow: 0 1px 2px rgb(16 25 24 / 0.08);
+}
+
+/* Ghost controls (Sign in, WhatsApp): same grow-from-centre treatment. */
+.nav-ghost {
+  position: relative;
+  isolation: isolate;
+  color: var(--muted-foreground);
+  transition: color 200ms ease;
+}
+
+.nav-ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--muted);
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-ghost:hover {
+  color: var(--foreground);
+}
+
+.nav-ghost:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Primary CTA: lift plus a soft brand glow, settling on press. */
+.nav-cta {
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 22%, transparent);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 16px -4px color-mix(in srgb, var(--primary) 42%, transparent),
+    0 2px 4px color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+.nav-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-nav-link::before,
+  .nav-ghost::before,
+  .nav-cta {
+    transition: none;
+  }
+  .nav-cta:hover {
+    transform: none;
+  }
+}
+
+.public-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+  /* Content stays within the page grid even though the surface is full-bleed. */
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  transition:
+    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.public-header-scrolled {
+  top: 12px;
+  max-width: 1100px;
+  padding-inline: 16px;
+}
+
+/* Scrolled: condenses into a floating pill. Slightly more opaque than at rest
+   because it now sits over arbitrary page content, and a hairline edge catches
+   the light so the glass reads as a distinct surface. */
+.public-header-scrolled .public-header-surface {
+  border-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--background) 76%, transparent);
+  backdrop-filter: blur(26px) saturate(130%);
+  -webkit-backdrop-filter: blur(26px) saturate(130%);
+  box-shadow:
+    0 16px 40px -24px rgb(8 35 29 / 0.34),
+    0 4px 14px -8px rgb(0 0 0 / 0.16),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+
+/* Dark mode needs a darker tint and a dimmer inner highlight — a bright inset
+   line that reads as glass on white looks like a seam on near-black. */
+.dark .public-header-scrolled .public-header-surface {
+  border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+  background: color-mix(in srgb, var(--background) 76%, transparent);
+  box-shadow:
+    0 16px 40px -24px rgb(0 0 0 / 0.7),
+    0 4px 14px -8px rgb(0 0 0 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .public-header-scrolled .public-header-surface {
+    background: var(--background);
+  }
+}
+
+.public-header-scrolled .public-header-inner {
+  height: 48px;
+  padding-inline: 16px;
+}
+
+/* Keep every footer link reachable when the viewport is shorter than its content. */
+.phone-device {
+  box-shadow: 0 32px 56px -22px rgb(12 18 30 / .34), 0 10px 18px -9px rgb(0 0 0 / .35), inset 1px 2px 1px rgb(255 255 255 / .65), inset -2px -2px 2px rgb(0 0 0 / .8);
+}
+.phone-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgb(255 255 255 / .10), transparent 28%, transparent 78%, rgb(255 255 255 / .035));
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / .25), inset 0 0 7px rgb(0 0 0 / .12);
+}
+.dark .phone-device {
+  border-color: #888c98;
+  box-shadow: 0 36px 64px -18px rgb(0 0 0 / .8), 0 0 32px -15px color-mix(in srgb, var(--primary) 25%, transparent), inset 1px 2px 1px rgb(255 255 255 / .6), inset -2px -2px 2px #000;
+}
+/* Hero scene — ambient depth so the phone sits in a space rather than floating in a void.
+   All glow is bounded inside the section; nothing bleeds past .curtain-content's clip. */
+.hero-scene {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 78% 42%,
+      color-mix(in srgb, var(--primary) 16%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 12% 26%,
+      color-mix(in srgb, var(--primary) 9%, transparent),
+      transparent 70%
+    );
+  /* Fade in below the fixed header so the tint never meets it as a hard seam. */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 132px);
+}
+
+/* A soft grid that fades out, giving the dark ground texture instead of flat black. */
+.hero-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--border) 55%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 40%, #000 20%, transparent 78%);
+  opacity: 0.5;
+}
+
+.hero-gradient-text {
+  background: linear-gradient(
+    102deg,
+    var(--primary),
+    color-mix(in srgb, var(--primary) 62%, var(--saffron))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.principles-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.principles-track {
+  display: flex;
+  width: max-content;
+  animation: principles-scroll 24s linear infinite;
+}
+
+.principles-marquee:hover .principles-track {
+  animation-play-state: paused;
+}
+
+.calculator-range {
+  height: 4px;
+  cursor: pointer;
+  appearance: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 18%, var(--border));
+  accent-color: var(--primary);
+}
+.calculator-range::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  appearance: none;
+  border: 3px solid var(--background);
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent), 0 3px 8px rgb(0 0 0 / .18);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.calculator-range:hover::-webkit-slider-thumb,
+.calculator-range:focus-visible::-webkit-slider-thumb { transform: scale(1.15); box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 14%, transparent); }
+.calculator-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--background);
+  border-radius: 999px;
+  background: var(--primary);
+}
+.calculator-range:focus-visible { outline: none; }
+.calculator-assumptions[data-open="true"] .calculator-chevron { transform: rotate(45deg); }
+.calculator-chevron { display: inline-block; transition: transform 220ms cubic-bezier(.22,1,.36,1); }
+
+/* Animating grid rows 0fr -> 1fr expands to the content's natural height
+   without per-frame measurement, so the panel opens without jitter. */
+.calculator-assumptions-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  /* visibility (not `inert`) keeps the collapsed fields out of the tab order.
+     `inert` pulls focus back to the toggle when it is applied, and the browser
+     then treats that focus as keyboard-initiated, flashing a focus ring on
+     what was a plain mouse click. */
+  visibility: hidden;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease-out,
+    visibility 0s linear 280ms;
+}
+
+.calculator-assumptions-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease-out,
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calculator-assumptions-panel {
+    transition: none;
+  }
+}
+
+.policy-source-block {
+  border-radius: 12px;
+  transition: opacity 300ms ease, transform 300ms cubic-bezier(.22,1,.36,1);
+  opacity: .55;
+}
+.policy-source-block[data-active="true"] { opacity: 1; transform: translateX(3px); }
+.policy-source-highlight {
+  color: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 19%, transparent), color-mix(in srgb, var(--primary) 10%, transparent)) no-repeat;
+  background-size: 0 100%;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size 500ms cubic-bezier(.22,1,.36,1), color 300ms ease;
+}
+.policy-source-highlight[data-active="true"] { background-size: 100% 100%; color: var(--foreground); }
+.policy-rule-card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 29px;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: right;
+  background: var(--primary);
+  opacity: .55;
+  transition: transform 400ms cubic-bezier(.22,1,.36,1);
+}
+.policy-rule-card[data-active="true"] {
+  border-color: color-mix(in srgb, var(--primary) 38%, var(--border));
+  background: color-mix(in srgb, var(--background) 95%, var(--primary));
+  box-shadow: 0 18px 42px -30px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+.policy-rule-card[data-active="true"]::before { transform: scaleX(1); }
+@media (max-width: 1023px) {
+  .policy-rule-card::before { display: none; }
+}
+
+.policy-rule-card {
+  position: relative;
+  transition:
+    border-color 300ms ease,
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+/* Approved: the card settles into a calm green state. */
+.policy-rule-card[data-approved="true"] {
+  border-color: color-mix(in srgb, var(--eligible) 32%, var(--border));
+  background: color-mix(in srgb, var(--background) 94%, var(--eligible));
+}
+
+.policy-rule-index {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.policy-rule-card[data-approved="true"] .policy-rule-index {
+  background: var(--eligible);
+  color: var(--eligible-foreground);
+  transform: scale(1.06);
+}
+
+.policy-approve-btn {
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary);
+}
+
+.policy-approve-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.policy-approve-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.policy-approve-btn:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: var(--eligible);
+  cursor: default;
+}
+
+.policy-status {
+  transition:
+    background-color 400ms ease,
+    border-color 400ms ease,
+    color 400ms ease;
+}
+
+@keyframes principles-scroll {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .principles-marquee {
+    mask-image: none;
+    padding-inline: 20px;
+  }
+  .principles-track {
+    width: 100%;
+    animation: none;
+  }
+  .principles-track > div:first-child {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 32px;
+    padding-right: 0;
+  }
+  .principles-track > div[aria-hidden="true"] { display: none; }
+}
+
+.hero-phone-glow {
+  position: absolute;
+  inset: 8% 2%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    color-mix(in srgb, var(--primary) 30%, transparent),
+    transparent 66%
+  );
+  filter: blur(46px);
+}
+
+/* Subtle tilt gives the device presence; it straightens on hover. */
+.hero-stage {
+  /* Shorter distance = stronger foreshortening, so the tilt reads deeper. */
+  perspective: 1150px;
+  perspective-origin: 50% 42%;
+}
+.hero-phone {
+  width: min(338px, 86vw);
+  transform: rotateY(-22deg) rotateX(5deg) rotateZ(-1.5deg) translateZ(22px);
+  transform-style: preserve-3d;
+  transition:
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  /* Offset right/down, away from the turned face, so the tilt looks lit. */
+  box-shadow:
+    3px 4px 8px -2px rgb(6 20 16 / 0.3),
+    18px 26px 40px -14px rgb(6 20 16 / 0.34),
+    44px 60px 90px -30px rgb(6 20 16 / 0.42),
+    inset 1px 2px 1px rgb(255 255 255 / 0.65),
+    inset -2px -2px 2px rgb(0 0 0 / 0.8);
+}
+
+.dark .hero-phone {
+  box-shadow:
+    3px 4px 8px -2px rgb(0 0 0 / 0.6),
+    18px 26px 44px -14px rgb(0 0 0 / 0.7),
+    48px 64px 96px -28px rgb(0 0 0 / 0.85),
+    inset 1px 2px 1px rgb(255 255 255 / 0.6),
+    inset -2px -2px 2px #000;
+}
+
+.hero-stage:hover .hero-phone {
+  transform: rotateY(-8deg) rotateX(2deg) rotateZ(0deg) translateZ(40px);
+}
+
+@media (max-width: 767px) {
+  .hero-phone,
+  .hero-stage:hover .hero-phone {
+    transform: rotateY(-4deg) rotateX(1deg) translateZ(12px);
+    /* Near-flat on small screens, so the shadow recentres too. */
+    box-shadow:
+      0 4px 8px -2px rgb(6 20 16 / 0.28),
+      0 18px 32px -14px rgb(6 20 16 / 0.32),
+      inset 1px 2px 1px rgb(255 255 255 / 0.65),
+      inset -2px -2px 2px rgb(0 0 0 / 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-phone,
+  .hero-stage:hover .hero-phone {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Chat surface and bubbles live here (not inline) so the dark overrides have
+   a single source of truth and the wallpaper can drop out entirely in dark mode. */
+.phone-chat {
+  background-color: #ece5dd;
+  background-image:
+    radial-gradient(circle at 15% 25%, #bec6b650 1px, transparent 2px),
+    radial-gradient(circle at 75% 65%, #bec6b650 1px, transparent 2px);
+  background-size: 29px 37px;
+}
+.phone-bubble { background: #ffffff; }
+.phone-bubble[data-direction="outgoing"] { background: #dcf8c6; }
+
+.dark .phone-screen { background: #0b141a; color: #e9edef; color-scheme: dark; }
+/* No wallpaper dots in dark mode — a flat surface reads cleaner. */
+.dark .phone-chat {
+  background-color: #0b141a;
+  background-image: none;
+}
+.dark .phone-bubble { background: #202c33; color: #e9edef; }
+.dark .phone-bubble[data-direction="outgoing"] { background: #005c4b; color: #e9edef; }
+.dark .phone-screen .text-\[\#65756d\] { color: #aebac1; }
+.dark .phone-chat > span { background: #202c33; }
+.dark .phone-screen .border-\[\#dce3de\] { border-color: #3a494f; }
+.dark .phone-composer, .dark .phone-screen button { background: #202c33; color: #aebac1; }
+.dark .phone-composer > div { background: #2a3942; border-color: #3a494f; }
+.dark .phone-composer > .h-1 { background: #aebac1; }
+.outcome-sequence {
+  position: relative;
+  height: 320svh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.outcome-sequence-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* Ambient pool of light so the phones sit in a space, not on flat black. */
+.outcome-sequence-glow {
+  position: absolute;
+  inset: 12% 8% 18%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    color-mix(in srgb, var(--primary) 22%, transparent),
+    transparent 68%
+  );
+  filter: blur(60px);
+}
+
+/* Its own band above the stage, so the devices never reach it. */
+.outcome-sequence-eyebrow {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+}
+
+.outcome-sequence-stage {
+  position: absolute;
+  /* Insets reserve the eyebrow above and the heading band below. */
+  inset: 84px 16px 232px;
+  z-index: 1;
+  max-width: 1200px;
+  margin-inline: auto;
+  perspective: 1700px;
+  perspective-origin: 50% 42%;
+  transform-style: preserve-3d;
+}
+
+.outcome-sequence-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 344px;
+  transform-style: preserve-3d;
+  /* Scroll drives the transform; the transition only smooths sub-frame jitter. */
+  transition:
+    opacity 400ms ease-out,
+    filter 400ms ease-out;
+  will-change: transform;
+}
+
+/* Soft contact shadow on the ground plane beneath each device. */
+.outcome-sequence-card::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7%;
+  width: 72%;
+  height: 26px;
+  transform: translateX(-50%) translateZ(-60px) rotateX(74deg);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(6 20 16 / 0.34), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+/* Layered like real light: a tight contact edge, a mid shadow, then wide ambient. */
+.outcome-sequence-card [data-phone-frame] {
+  box-shadow:
+    0 2px 4px -1px rgb(6 20 16 / 0.28),
+    0 12px 22px -10px rgb(6 20 16 / 0.3),
+    0 38px 62px -28px rgb(6 20 16 / 0.38),
+    inset 1px 2px 1px rgb(255 255 255 / 0.65),
+    inset -2px -2px 2px rgb(0 0 0 / 0.8);
+}
+
+.outcome-sequence-card[data-position="center"] [data-phone-frame] {
+  box-shadow:
+    0 3px 6px -1px rgb(6 20 16 / 0.32),
+    0 18px 32px -12px rgb(6 20 16 / 0.34),
+    0 54px 88px -30px rgb(6 20 16 / 0.45),
+    0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent),
+    inset 1px 2px 1px rgb(255 255 255 / 0.68),
+    inset -2px -2px 2px rgb(0 0 0 / 0.82);
+}
+
+/* Side devices sit further from the light, so they read slightly cooler. */
+.outcome-sequence-card[data-position="side"] [data-phone-frame] {
+  filter: saturate(0.92) brightness(0.95);
+}
+
+/* Directional sheen across the glass, mirrored on the right-hand device. */
+.outcome-sequence-card .phone-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 21;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    rgb(255 255 255 / 0.16) 0%,
+    rgb(255 255 255 / 0.05) 18%,
+    transparent 42%
+  );
+}
+
+.outcome-sequence-card:last-child .phone-screen::before {
+  background: linear-gradient(
+    242deg,
+    rgb(255 255 255 / 0.16) 0%,
+    rgb(255 255 255 / 0.05) 18%,
+    transparent 42%
+  );
+}
+
+.dark .outcome-sequence-card [data-phone-frame] {
+  box-shadow:
+    0 48px 80px -22px rgb(0 0 0 / 0.86),
+    0 0 44px -18px color-mix(in srgb, var(--primary) 45%, transparent),
+    inset 1px 2px 1px rgb(255 255 255 / 0.6),
+    inset -2px -2px 2px #000;
+}
+
+.dark .outcome-sequence-card[data-position="center"] [data-phone-frame] {
+  box-shadow:
+    0 58px 96px -24px rgb(0 0 0 / 0.92),
+    0 0 54px -16px color-mix(in srgb, var(--primary) 52%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--primary) 24%, transparent),
+    inset 1px 2px 1px rgb(255 255 255 / 0.62),
+    inset -2px -2px 2px #000;
+}
+
+/* Smooth disclosure: animating grid rows from 0fr to 1fr expands to the
+   content's natural height without measuring it in JS. */
+.outcome-transcripts {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  /* See .calculator-assumptions-panel: visibility, not `inert`. */
+  visibility: hidden;
+  transition:
+    grid-template-rows 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease-out,
+    visibility 0s linear 480ms;
+}
+
+.outcome-transcripts[data-expanded="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease-out,
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outcome-transcripts {
+    transition: none;
+  }
+}
+
+/* Inside the 3D stage the label floats under the device without adding height;
+   in the expanded <details> list it falls back to normal flow. */
+.outcome-sequence-card .outcome-card-body {
+  position: relative;
+}
+
+.outcome-sequence-card .outcome-card-label {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  text-align: center;
+  /* Set per-card from the fan progress; prevents the three labels from
+     piling on top of each other while the phones are still stacked. */
+  opacity: var(--label-opacity, 1);
+  transition: opacity 200ms ease-out;
+}
+
+.outcome-card-label {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.outcome-sequence-heading {
+  position: absolute;
+  bottom: 74px;
+  z-index: 6;
+  width: min(680px, calc(100% - 24px));
+  padding-inline: 20px;
+  text-align: center;
+  transition:
+    opacity 300ms ease-out,
+    transform 300ms ease-out;
+}
+
+.outcome-sequence-hint {
+  position: absolute;
+  bottom: 18px;
+  z-index: 2;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 767px) {
+  .outcome-sequence-stage { inset: 76px 0 220px; }
+  .outcome-sequence-card { width: 344px; }
+  .outcome-sequence-heading { bottom: 66px; }
+}
+
+.outcome-sequence[data-static="true"] { height: auto; }
+.outcome-sequence[data-static="true"] .outcome-sequence-pin {
+  position: relative;
+  min-height: 720px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outcome-sequence { height: auto; }
+  .outcome-sequence-pin { position: relative; min-height: 720px; }
+  .outcome-sequence-card { transition: none; }
+}
+
+@media (max-height: 700px), (prefers-reduced-motion: reduce) {
+  .footer-surface {
+    position: relative;
   }
 }

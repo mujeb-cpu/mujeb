@@ -16,9 +16,16 @@ import {
 } from "@/lib/domain";
 import { ArrowRight, ArrowLeft, Package, Minus, Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
 export function ReturnDetailsPage() {
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
+  const reasonLabels: Record<ReturnReason, string> = {
+    defective: t(REASON_LABELS.defective, "المنتج معيب"), wrong_item: t(REASON_LABELS.wrong_item, "تم استلام منتج غير صحيح"),
+    not_as_described: t(REASON_LABELS.not_as_described, "المنتج غير مطابق للوصف"), changed_mind: t(REASON_LABELS.changed_mind, "تغيير الرأي"), damaged_in_transit: t(REASON_LABELS.damaged_in_transit, "تضرر أثناء الشحن"),
+  };
+  const conditionLabels: Record<ItemCondition, string> = { new_unopened: t(CONDITION_LABELS.new_unopened, "جديد وغير مفتوح"), opened_unused: t(CONDITION_LABELS.opened_unused, "مفتوح وغير مستخدم"), used: t(CONDITION_LABELS.used, "مستخدم") };
   const [order, setOrder] = useState<DeliveryFacts | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
@@ -71,13 +78,13 @@ export function ReturnDetailsPage() {
       <ProgressIndicator currentStep={2} />
 
       <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Return details</h1>
-        <p className="text-sm text-muted-foreground">Order {order.orderId} · {order.customerName}</p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("Return details", "تفاصيل الإرجاع")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Order", "الطلب")} {order.orderId} · {order.customerName}</p>
       </div>
 
       <div className="flex flex-col gap-4">
         <div>
-          <Label className="mb-2">Select item to return</Label>
+          <Label className="mb-2">{t("Select item to return", "اختر المنتج المراد إرجاعه")}</Label>
           <div className="flex flex-col gap-2">
             {order.items.map((item) => (
               <button
@@ -96,10 +103,10 @@ export function ReturnDetailsPage() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-foreground">{item.name}</div>
-                    <div className="text-xs text-muted-foreground">SKU: {item.sku} · {formatSAR(item.price)}</div>
+                    <div className="text-xs text-muted-foreground">{t("SKU", "رمز المنتج")}: {item.sku} · {formatSAR(item.price)}</div>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
+                <div className="text-xs text-muted-foreground">{t("Qty", "الكمية")}: {item.quantity}</div>
               </button>
             ))}
           </div>
@@ -109,7 +116,7 @@ export function ReturnDetailsPage() {
           <Card>
             <CardContent className="flex flex-col gap-5 pt-6">
               <div>
-                <Label className="mb-2">Quantity</Label>
+                <Label className="mb-2">{t("Quantity", "الكمية")}</Label>
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
@@ -128,18 +135,18 @@ export function ReturnDetailsPage() {
                   >
                     <Plus className="size-4" />
                   </Button>
-                  <span className="ml-2 text-xs text-muted-foreground">Max: {maxQty}</span>
+                  <span className="ms-2 text-xs text-muted-foreground">{t("Max", "الحد الأقصى")}: {maxQty}</span>
                 </div>
               </div>
 
               <div>
-                <Label className="mb-2">Reason for return</Label>
+                <Label className="mb-2">{t("Reason for return", "سبب الإرجاع")}</Label>
                 <RadioGroup value={reason} onValueChange={(v) => setReason(v as ReturnReason)}>
                   <div className="flex flex-col gap-2">
                     {(Object.keys(REASON_LABELS) as ReturnReason[]).map((r) => (
                       <label key={r} className="flex items-center gap-2 cursor-pointer rounded-lg border border-border p-2.5 transition-colors hover:bg-muted/20 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                         <RadioGroupItem value={r} id={`reason-${r}`} />
-                        <span className="text-sm text-foreground">{REASON_LABELS[r]}</span>
+                        <span className="text-sm text-foreground">{reasonLabels[r]}</span>
                       </label>
                     ))}
                   </div>
@@ -147,14 +154,14 @@ export function ReturnDetailsPage() {
               </div>
 
               <div>
-                <Label className="mb-2">Item condition</Label>
+                <Label className="mb-2">{t("Item condition", "حالة المنتج")}</Label>
                 <Select value={condition} onValueChange={(v) => setCondition(v as ItemCondition)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {(Object.keys(CONDITION_LABELS) as ItemCondition[]).map((c) => (
-                      <SelectItem key={c} value={c}>{CONDITION_LABELS[c]}</SelectItem>
+                      <SelectItem key={c} value={c}>{conditionLabels[c]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -166,12 +173,12 @@ export function ReturnDetailsPage() {
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => navigate("/return")}>
-          <ArrowLeft className="size-4" />
-          Back
+          <ArrowLeft className={cn("size-4", isArabic && "rotate-180")} />
+          {t("Back", "رجوع")}
         </Button>
         <Button onClick={handleCheck} disabled={!selectedItemId} className="flex-1 group">
-          Check eligibility
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+          {t("Check eligibility", "التحقق من الأهلية")}
+          <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
         </Button>
       </div>
     </div>
@@ -179,7 +186,8 @@ export function ReturnDetailsPage() {
 }
 
 function ProgressIndicator({ currentStep }: { currentStep: number }) {
-  const steps = ["Verify", "Details", "Answer"];
+  const { t } = useLanguage();
+  const steps = [t("Verify", "التحقق"), t("Details", "التفاصيل"), t("Answer", "النتيجة")];
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       {steps.map((label, i) => {
