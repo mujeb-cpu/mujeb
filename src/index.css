@@ -999,6 +999,65 @@ html[dir="rtl"] .font-mono {
   color: transparent;
 }
 
+.hero-type-line {
+  display: inline-grid;
+  position: relative;
+  max-width: 100%;
+  grid-template-areas: "typed";
+}
+
+.hero-type-ghost,
+.hero-type-value {
+  grid-area: typed;
+  white-space: nowrap;
+}
+
+.hero-type-ghost {
+  visibility: hidden;
+}
+
+.hero-type-value {
+  justify-self: start;
+}
+
+.hero-type-caret {
+  display: inline-block;
+  width: 0.055em;
+  height: 0.82em;
+  margin-inline-start: 0.08em;
+  border-radius: 999px;
+  background: var(--primary);
+  vertical-align: -0.04em;
+  animation: hero-caret-blink 0.8s steps(1, end) infinite;
+}
+
+.hero-type-caret[data-complete="true"] {
+  animation-iteration-count: 3;
+}
+
+.hero-trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 999px;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--card) 58%, transparent);
+  backdrop-filter: blur(10px);
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.hero-trust-chip:hover {
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  transform: translateY(-1px);
+}
+
+@keyframes hero-caret-blink {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
 .principles-marquee {
   overflow: hidden;
   mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
