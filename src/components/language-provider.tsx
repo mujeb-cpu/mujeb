@@ -9,8 +9,8 @@ const STORAGE_KEY = "mujeeb-language";
  * is staged: fade the page out, change locale while it is invisible, then fade
  * back in. These must match the durations in `.locale-fade` (index.css).
  */
-const FADE_OUT_MS = 180;
-const FADE_IN_MS = 260;
+/** Must match `--locale-fade-out` in index.css (fade-in length is CSS-only). */
+const FADE_OUT_MS = 220;
 
 interface LanguageContextValue {
   locale: Locale;
@@ -47,13 +47,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       if (reduceMotion) return next;
 
-      // Fade out first, swap at the trough, then let the fade-in class drop.
       timers.current.forEach(window.clearTimeout);
       timers.current = [];
+
       setIsSwitching(true);
       timers.current.push(
-        window.setTimeout(() => setLocaleState(next), FADE_OUT_MS),
-        window.setTimeout(() => setIsSwitching(false), FADE_OUT_MS + 20),
+        window.setTimeout(() => {
+          setLocaleState(next);
+          // Swap dir/strings while still at opacity 0, then fade in for full duration.
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => setIsSwitching(false));
+          });
+        }, FADE_OUT_MS),
       );
       return current;
     });
@@ -64,6 +69,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
     document.documentElement.dataset.locale = locale;
   }, [locale]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isSwitching) {
+      root.dataset.localeSwitching = "true";
+      return;
+    }
+    delete root.dataset.localeSwitching;
+  }, [isSwitching]);
 
   const value = useMemo<LanguageContextValue>(() => ({
     locale,
@@ -76,16 +90,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   return (
     <LanguageContext.Provider value={value}>
-      <div
-        className="locale-fade"
-        data-switching={isSwitching}
-        style={{
-          ["--locale-fade-out" as string]: `${FADE_OUT_MS}ms`,
-          ["--locale-fade-in" as string]: `${FADE_IN_MS}ms`,
-        }}
-      >
-        {children}
-      </div>
+      <div className="locale-fade">{children}</div>
     </LanguageContext.Provider>
   );
 }

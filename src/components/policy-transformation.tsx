@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, FileText, Sparkles } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { SAMPLE_POLICY_RULES } from "@/lib/fixtures";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
+import { StoreMark } from "@/components/store-identity";
 
 const DEMO_RULES = SAMPLE_POLICY_RULES.slice(0, 3);
 
@@ -64,9 +65,7 @@ export function PolicyTransformation() {
           {/* Workspace bar: progress lives here, not in a separate panel. */}
           <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <FileText className="size-4" />
-              </div>
+              <StoreMark size="lg" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">
                   {t("Nova Store return policy", "سياسة الإرجاع لمتجر نوفا")}

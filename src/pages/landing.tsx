@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { HeroTagline } from "@/components/hero-tagline";
+import { StoreIdentity } from "@/components/store-identity";
 import { Button } from "@/components/ui/button";
 import {
   AnimatedDecisionTrace,
@@ -110,16 +112,27 @@ export function LandingPage() {
   const { t, isArabic } = useLanguage();
   const reduceMotion = useReducedMotion();
   const heroItem = reduceMotion ? heroCopyItemStatic : heroCopyItem;
+  const [heroIntroDone, setHeroIntroDone] = useState(!!reduceMotion);
+  const onHeroIntroComplete = useCallback(() => setHeroIntroDone(true), []);
+  useEffect(() => {
+    setHeroIntroDone(!!reduceMotion);
+  }, [isArabic, reduceMotion]);
+  const heroLine1 = t("Your policy.", "سياستك.");
+  const heroLine2 = t("Their answer.", "إجابتهم.");
+  const heroBody = t(
+    "Clear return answers, in a channel your customers already use. Mujeeb applies merchant-approved rules and keeps the evidence behind every decision.",
+    "إجابات واضحة لطلبات الإرجاع عبر قناة يستخدمها عملاؤك بالفعل. يطبق مجيب القواعد التي يعتمدها التاجر ويحفظ الأدلة المرتبطة بكل قرار.",
+  );
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];
   const examples = EXAMPLES.map((example) => isArabic ? ({ ...example, messages: [{ ...example.messages[0], text: `هل يمكنني إرجاع هذا المنتج؟ رقم طلبي ${example.facts.orderId}.` }, { ...example.messages[1], text: example.decision.outcome === "ELIGIBLE" ? "هذا المنتج مؤهل للإرجاع. تم استيفاء جميع شروط السياسة." : example.decision.outcome === "MANUAL_REVIEW" ? "لا يتوفر تاريخ التسليم، لذلك يحتاج المتجر إلى مراجعة الطلب." : "هذا المنتج خارج مدة الإرجاع المحددة في السياسة.", rule: example.decision.outcome === "MANUAL_REVIEW" ? "تاريخ التسليم غير متوفر · يلزم مراجعة التاجر" : "مدة الإرجاع 14 يومًا من تاريخ التسليم" }] }) : example);
 
   return (
-    <div className="overflow-x-clip">
+    <div className="overflow-x-clip bg-background">
       {/* Hero — a moment of use */}
       <section id="whatsapp" className="hero-scene relative scroll-mt-24">
         <div className="hero-aurora" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 py-12 md:grid-cols-[1.05fr_1fr] md:gap-16 md:py-14 lg:py-16">
+        <div className="hero-scene-content relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 pb-16 pt-12 md:grid-cols-[1.05fr_1fr] md:gap-16 md:pb-20 md:pt-14 lg:pb-24 lg:pt-16">
           {/* Keep the existing reduced-motion end state and stagger the copy once. */}
           <motion.div
             initial="hidden"
@@ -127,19 +140,24 @@ export function LandingPage() {
             variants={{ hidden: {}, visible: { transition: { delayChildren: reduceMotion ? 0 : 0.08, staggerChildren: reduceMotion ? 0 : 0.11 } } }}
             className="flex flex-col items-start gap-7"
           >
-            <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+            <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
               <span className="size-1.5 rounded-full bg-primary" />
               {t("Return decisions for Saudi ecommerce", "قرارات إرجاع واضحة للتجارة الإلكترونية السعودية")}
             </motion.span>
-            <motion.h1 variants={heroItem} className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[74px] text-balance">
-              {t("Your policy.", "سياستك.")}
-              <br />
-              <TypedHeroAnswer text={t("Their answer.", "إجابتهم.")} />
-            </motion.h1>
-            <motion.p variants={heroItem} className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty">
-              {t("Clear return answers, in a channel your customers already use. Mujeeb applies merchant-approved rules and keeps the evidence behind every decision.", "إجابات واضحة لطلبات الإرجاع عبر قناة يستخدمها عملاؤك بالفعل. يطبق مجيب القواعد التي يعتمدها التاجر ويحفظ الأدلة المرتبطة بكل قرار.")}
-            </motion.p>
-            <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3">
+            <HeroTagline
+              key={`${isArabic ? "ar" : "en"}-${heroLine1}`}
+              line1={heroLine1}
+              line2={heroLine2}
+              body={heroBody}
+              isArabic={isArabic}
+              onComplete={onHeroIntroComplete}
+            />
+            <motion.div
+              variants={heroItem}
+              initial="hidden"
+              animate={heroIntroDone ? "visible" : "hidden"}
+              className="flex flex-wrap items-center gap-3"
+            >
               <Button
                 size="lg"
                 onClick={() => navigate("/app")}
@@ -157,7 +175,12 @@ export function LandingPage() {
                 {t("Try a customer return", "تجربة طلب إرجاع")}
               </Button>
             </motion.div>
-            <motion.div variants={heroItem} className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <motion.div
+              variants={heroItem}
+              initial="hidden"
+              animate={heroIntroDone ? "visible" : "hidden"}
+              className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground"
+            >
               <span className="hero-trust-chip">
                 <ShieldCheck className="size-4 text-primary/70" />
                 {t("Human-approved rules", "قواعد يعتمدها التاجر")}
@@ -172,13 +195,16 @@ export function LandingPage() {
             </motion.div>
           </motion.div>
           <figure className="hero-stage relative isolate m-0 flex flex-col items-center py-4">
-            <div aria-hidden="true" className="hero-phone-glow" />
-            <PhoneFrame className="hero-phone">
-              <WhatsAppThread messages={examples[0].messages} animated />
-            </PhoneFrame>
+            <div className="hero-phone-3d">
+              <div aria-hidden="true" className="hero-phone-glow" />
+              <PhoneFrame className="hero-phone">
+                <WhatsAppThread messages={examples[0].messages} animated />
+              </PhoneFrame>
+            </div>
             <figcaption className="mt-7 flex max-w-[320px] flex-col items-center gap-1.5 text-center">
-              <span className="text-[11px] font-medium text-foreground/70">
-                Order SA-10492 · Nova Store
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70">
+                <span>Order SA-10492 ·</span>
+                <StoreIdentity name="Nova Store" markSize="sm" />
               </span>
               <span className="text-[11px] leading-relaxed text-muted-foreground">
                 {WHATSAPP_STATUS === "coming-soon"
@@ -592,13 +618,9 @@ function CaseEntrance({ index, children }: { index: number; children: React.Reac
   const target = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target, offset: ["start 92%", "start 62%"] });
-  const progress = useSpring(scrollYProgress, { stiffness: 180, damping: 32, mass: 0.3 });
+  const progress = scrollYProgress;
   const x = useTransform(progress, [0, 1], [24 + index * 6, 0]);
   const opacity = useTransform(progress, [0, 1], [0.25, 1]);
   return <div ref={target} className="overflow-hidden rounded-lg"><motion.div data-case-entrance={index} style={reduceMotion ? undefined : { x, opacity }} className="flex items-center justify-between gap-3 rounded-lg p-3 hover:bg-muted/40">{children}</motion.div></div>;
 }
 
-function TypedHeroAnswer({ text }: { text: string }) {
-  // Reveal the whole shaped line: Arabic stays joined and layout never changes.
-  return <span className="hero-answer-reveal hero-gradient-text" key={text}>{text}</span>;
-}

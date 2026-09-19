@@ -4,6 +4,7 @@ import { PageTransition } from "@/components/page-transition";
 import { services } from "@/lib/services";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { StoreIdentity } from "@/components/store-identity";
 
 export function CustomerLayout() {
   const storeName = services.getStoreName();
@@ -14,7 +15,9 @@ export function CustomerLayout() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-[520px] items-center justify-between px-5 py-4">
           <div>
-            <div className="text-sm font-semibold text-foreground">{storeName}</div>
+            <div className="text-sm font-semibold text-foreground">
+              <StoreIdentity name={storeName} markSize="sm" />
+            </div>
             <div className="text-xs text-muted-foreground">{t("Returns", "المرتجعات")}</div>
           </div>
           <div className="flex items-center gap-2">

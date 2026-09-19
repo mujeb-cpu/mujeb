@@ -33,6 +33,7 @@ import { services } from "@/lib/services";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { StoreIdentity } from "@/components/store-identity";
 
 export function MerchantLayout() {
   const location = useLocation();
@@ -82,7 +83,9 @@ export function MerchantLayout() {
               <div className="text-xs text-muted-foreground">
                 {t("Merchant workspace", "مساحة عمل التاجر")}
               </div>
-              <div className="text-sm font-medium text-foreground">{storeName}</div>
+              <div className="text-sm font-medium text-foreground">
+                <StoreIdentity name={storeName} markSize="sm" />
+              </div>
             </div>
           </div>
         </SidebarHeader>

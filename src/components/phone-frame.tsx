@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
-  BatteryFull,
-  Signal,
-  Wifi,
   ChevronLeft,
   Video,
   Phone,
@@ -15,6 +12,7 @@ import {
   Play,
 } from "lucide-react";
 import { OutcomeBadge } from "@/components/outcome-badge";
+import { StoreMark } from "@/components/store-identity";
 import type { EligibilityDecision } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +23,89 @@ const BRAND = {
   outgoing: "#DCF8C6",
   ground: "#ECE5DD",
 };
+
+/** iOS-style status glyphs (not Lucide — those read Android/Material). */
+function IosCellularSignal({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 17 11"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="0" y="7" width="3" height="4" rx="0.6" />
+      <rect x="4.5" y="5" width="3" height="6" rx="0.6" />
+      <rect x="9" y="2.5" width="3" height="8.5" rx="0.6" />
+      <rect x="13.5" y="0" width="3" height="11" rx="0.6" />
+    </svg>
+  );
+}
+
+function IosWifi({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M1.5 4.5c4-3.5 9-3.5 13 0" />
+      <path d="M4 7.25c2.5-2 5.5-2 8 0" />
+      <path d="M6.5 10c1.2-.95 2.8-.95 4 0" />
+      <circle cx="8" cy="11.25" r="0.75" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IosBattery({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 27 13" fill="none" className={className} aria-hidden="true">
+      <rect
+        x="0.75"
+        y="1.75"
+        width="22"
+        height="9.5"
+        rx="2.2"
+        stroke="currentColor"
+        strokeWidth="1.1"
+      />
+      <path
+        d="M24.25 4.75v3.5c.75.35 1.25.35 1.25.35v-4.2s-.5 0-1.25.35Z"
+        fill="currentColor"
+      />
+      <rect x="2.5" y="3.5" width="16.5" height="6" rx="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IosStatusBar() {
+  return (
+    <div className="phone-ios-status pointer-events-none absolute inset-x-0 top-0 z-30 px-5 pt-2.5">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <time
+          dateTime="10:00"
+          className="text-[15px] font-semibold leading-none tabular-nums tracking-[-0.02em] text-white"
+        >
+          10:00
+        </time>
+        <div
+          className="phone-dynamic-island relative h-[25px] w-[84px] rounded-full bg-black shadow-[inset_0_0_0_1px_rgb(255_255_255/0.06)]"
+          aria-hidden="true"
+        >
+          <span className="absolute right-[9px] top-1/2 size-[8px] -translate-y-1/2 rounded-full bg-[#0d1824]" />
+        </div>
+        <div className="flex items-center justify-end gap-[5px] text-white">
+          <IosCellularSignal className="h-[11px] w-[17px]" />
+          <IosWifi className="h-[11px] w-[15px]" />
+          <IosBattery className="h-[12px] w-[27px]" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function WhatsAppLogo({ className }: { className?: string }) {
   return (
@@ -89,29 +170,14 @@ export function PhoneFrame({
         className="absolute -right-[3px] top-36 h-16 w-[3px] rounded-r bg-[#525356]"
         aria-hidden="true"
       />
-      <div
-        className="phone-screen relative overflow-hidden rounded-[2.55rem] bg-[#ECE5DD] text-[#172b27]"
-      >
-        <div
-          className="phone-header relative flex h-14 items-center justify-between bg-[#075E54] px-6 text-white"
-          aria-hidden="true"
-        >
-          <span className="text-xs font-semibold">10:00</span>
-          <div className="absolute left-1/2 top-3 h-6 w-[94px] -translate-x-1/2 rounded-full bg-black">
-            <span className="absolute right-3 top-2 size-2 rounded-full bg-[#142335]" />
-          </div>
-          <div className="flex gap-1">
-            <Signal className="size-3" />
-            <Wifi className="size-3" />
-            <BatteryFull className="h-3 w-4" />
-          </div>
-        </div>
+      <div className="phone-screen relative overflow-hidden rounded-[2.55rem] bg-[#ECE5DD] text-[#172b27]">
+        <IosStatusBar />
         {children}
         <div
-          className="phone-composer flex h-7 items-center justify-center bg-[#f7f8fa]"
+          className="phone-home-indicator flex h-[22px] items-end justify-center bg-[#f7f8fa] pb-1.5"
           aria-hidden="true"
         >
-          <div className="h-1 w-28 rounded-full bg-[#172b27]" />
+          <div className="h-[5px] w-[134px] max-w-[36%] rounded-full bg-[#172b27]/88" />
         </div>
       </div>
     </div>
@@ -164,22 +230,25 @@ export function WhatsAppThread({
     if (staticThread || !inView) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const intervals: ReturnType<typeof setInterval>[] = [];
+    const frames: number[] = [];
     const customerText = messages[0]?.text ?? "";
     const cycle = () => {
       setStage(0);
       setTypedChars(0);
       timers.push(setTimeout(() => setStage(1), 500));
       timers.push(setTimeout(() => {
-        const interval = setInterval(() => {
-          setTypedChars((current) => {
-            if (current >= customerText.length) {
-              clearInterval(interval);
-              return current;
-            }
-            return Math.min(customerText.length, current + 2);
-          });
-        }, 34);
-        intervals.push(interval);
+        let chars = 0;
+        let lastFrame = 0;
+        const step = (time: number) => {
+          if (time - lastFrame >= 34) {
+            lastFrame = time;
+            chars = Math.min(customerText.length, chars + 2);
+            setTypedChars(chars);
+            if (chars >= customerText.length) return;
+          }
+          frames.push(requestAnimationFrame(step));
+        };
+        frames.push(requestAnimationFrame(step));
       }, 650));
       timers.push(setTimeout(() => setStage(2), 2850));
       timers.push(setTimeout(() => setStage(3), 3650));
@@ -190,6 +259,7 @@ export function WhatsAppThread({
     return () => {
       timers.forEach(clearTimeout);
       intervals.forEach(clearInterval);
+      frames.forEach(cancelAnimationFrame);
     };
   }, [staticThread, inView]);
   const complete = staticThread || stage === 4;
@@ -209,13 +279,11 @@ export function WhatsAppThread({
       }
     >
       <div
-        className="flex items-center gap-2 px-3 pb-3 pt-1 text-white"
+        className="phone-wa-header flex items-center gap-2 px-3 pb-3 pt-[2.65rem] text-white"
         style={{ background: BRAND.header }}
       >
         <ChevronLeft className="size-4" aria-hidden="true" />
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">
-          N
-        </div>
+        <StoreMark size="lg" className="ring-1 ring-white/25" />
         <div className="flex-1">
           <div className="text-sm font-semibold">Nova Store</div>
           <div className="text-[10px] text-white/75">business account</div>
@@ -284,7 +352,7 @@ export function WhatsAppThread({
         {!complete && stage === 3 && <TypingIndicator />}
       </div>
       <div
-        className="phone-composer flex items-center gap-2 bg-[#f7f8fa] px-3 py-2 text-[#72827a]"
+        className="phone-composer flex items-center gap-2 border-t border-[#dde4df]/80 bg-[#f7f8fa] px-3 py-2 text-[#72827a]"
         aria-hidden="true"
       >
         <Plus className="size-5" />

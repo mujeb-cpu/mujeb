@@ -3,7 +3,6 @@ import {
   motion,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
   type MotionValue,
 } from "framer-motion";
@@ -20,11 +19,9 @@ export function CurtainReveal({ children }: { children: React.ReactNode }) {
     target: contentRef,
     offset: ["end end", "end start"],
   });
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 26,
-    mass: 0.25,
-  });
+  /* Direct scroll progress — springs kept animating after scroll and janked the
+     whole page, especially right after a hard refresh. */
+  const progress = scrollYProgress;
   return (
     <div className="curtain-stage">
       <div ref={contentRef} className="curtain-content">
@@ -39,7 +36,7 @@ function FooterPanel({
   progress,
   reduceMotion,
 }: {
-  progress: ReturnType<typeof useSpring>;
+  progress: MotionValue<number>;
   reduceMotion: boolean | null;
 }) {
   const navigate = useNavigate();

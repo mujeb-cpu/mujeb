@@ -58,6 +58,46 @@ function disableTransitionsTemporarily() {
   }
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
+function applyThemeClasses(resolvedTheme: ResolvedTheme) {
+  const root = document.documentElement
+  root.classList.remove("light", "dark")
+  root.classList.add(resolvedTheme)
+}
+
+/** Cross-fade via View Transitions when supported; CSS `--theme-fade` is the fallback. */
+function transitionTheme(resolvedTheme: ResolvedTheme, disableSnap: boolean) {
+  const root = document.documentElement
+  const run = () => applyThemeClasses(resolvedTheme)
+
+  if (disableSnap) {
+    const restore = disableTransitionsTemporarily()
+    run()
+    restore()
+    return
+  }
+
+  if (prefersReducedMotion()) {
+    run()
+    return
+  }
+
+  const startVT = document.startViewTransition?.bind(document)
+  if (startVT) {
+    root.dataset.themeTransition = "view"
+    const transition = startVT(run)
+    transition.finished.finally(() => {
+      delete root.dataset.themeTransition
+    })
+    return
+  }
+
+  run()
+}
+
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) {
     return false
@@ -106,19 +146,9 @@ export function ThemeProvider({
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
-      const root = document.documentElement
       const resolvedTheme =
         nextTheme === "system" ? getSystemTheme() : nextTheme
-      const restoreTransitions = disableTransitionOnChange
-        ? disableTransitionsTemporarily()
-        : null
-
-      root.classList.remove("light", "dark")
-      root.classList.add(resolvedTheme)
-
-      if (restoreTransitions) {
-        restoreTransitions()
-      }
+      transitionTheme(resolvedTheme, disableTransitionOnChange)
     },
     [disableTransitionOnChange]
   )

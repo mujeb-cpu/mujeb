@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
+import { StoreIdentity } from "@/components/store-identity";
 
 export function OverviewPage() {
   const navigate = useNavigate();
@@ -49,7 +50,9 @@ export function OverviewPage() {
             <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
               {t("Your returns, in focus.", "مرتجعاتك في لمحة واحدة.")}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{storeName}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              <StoreIdentity name={storeName} markSize="sm" />
+            </p>
           </div>
           <div className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 md:flex">
             <span className="relative flex size-2">

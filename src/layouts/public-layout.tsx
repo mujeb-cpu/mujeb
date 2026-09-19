@@ -12,6 +12,8 @@ import { AuthDialog } from "@/components/auth-dialog";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { ScrollToTop } from "@/components/scroll-to-top";
+import { useSectionSpy } from "@/hooks/use-section-spy";
 
 export function PublicLayout() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,10 +23,20 @@ export function PublicLayout() {
   const navigate = useNavigate();
   const auth = useAuth();
   const { t } = useLanguage();
+  const isHome = location.pathname === "/";
+  const activeSection = useSectionSpy(
+    isHome ? ["product", "how-it-works"] : [],
+  );
   const navLinks = [
-    { label: t("Product", "المنتج"), href: "/#product" },
-    { label: t("How it works", "كيف يعمل"), href: "/#how-it-works" },
+    { id: "product", label: t("Product", "المنتج"), href: "/#product" },
+    {
+      id: "how-it-works",
+      label: t("How it works", "كيف يعمل"),
+      href: "/#how-it-works",
+    },
   ];
+  const isNavActive = (sectionId: string) =>
+    isHome && activeSection === sectionId;
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get("auth") === "1") setAuthOpen(true);
@@ -103,7 +115,10 @@ export function PublicLayout() {
                 <button
                   key={link.href}
                   onClick={() => navigate(link.href)}
-                  aria-current={location.hash === link.href.slice(1) ? "page" : undefined}
+                  aria-current={
+                    isNavActive(link.id) ? "page" : undefined
+                  }
+                  data-active={isNavActive(link.id) || undefined}
                   className="public-nav-link rounded-full px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground aria-[current=page]:text-foreground"
                 >
                   {link.label}
@@ -186,8 +201,12 @@ export function PublicLayout() {
                 setMenuOpen(false);
                 navigate(link.href);
               }}
+              aria-current={isNavActive(link.id) ? "page" : undefined}
               style={{ ["--i" as string]: String(i) }}
-              className="mobile-menu-item border-b border-border/70 py-4 text-start text-[17px] font-medium text-foreground"
+              className={cn(
+                "mobile-menu-item border-b border-border/70 py-4 text-start text-[17px] font-medium text-foreground",
+                isNavActive(link.id) && "text-primary",
+              )}
             >
               {link.label}
             </button>
@@ -242,10 +261,11 @@ export function PublicLayout() {
       </div>
 
       <CurtainReveal>
-        <main className="min-h-svh pt-16">
+        <main className="min-h-svh bg-background pt-16">
           <Outlet />
         </main>
       </CurtainReveal>
+      <ScrollToTop />
       <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} />
     </div>
   );

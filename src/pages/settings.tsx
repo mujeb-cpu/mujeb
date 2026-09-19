@@ -8,10 +8,11 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { services } from "@/lib/services";
 import { toast } from "sonner";
-import { Store, Users, Globe, Shield, User, Bell, FileText } from "lucide-react";
+import { Users, Globe, Shield, User, Bell, FileText } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/language-provider";
+import { StoreMark } from "@/components/store-identity";
 
 export function SettingsPage() {
   const auth = useAuth();
@@ -64,7 +65,7 @@ export function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Store className="size-4 text-muted-foreground" />
+                <StoreMark size="md" />
                 <CardTitle className="text-base">{t("Store profile", "ملف المتجر")}</CardTitle>
               </div>
               <CardDescription>{t("Your store identity and contact details.", "هوية المتجر وبيانات التواصل.")}</CardDescription>
