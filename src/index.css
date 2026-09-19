@@ -605,15 +605,14 @@ html[dir="rtl"] .font-mono {
   position: relative;
   z-index: 1;
   background: var(--background);
-  /* Percentage radius: a fixed rem value flattens out across a 1440px panel,
-     because the curve is the same arc spread over far more width. A horizontal
-     percentage scales the arc with the viewport, so it stays a deep sweep on
-     any screen. The vertical half keeps the curve from eating page content. */
-  border-bottom-left-radius: 50% 20rem;
-  border-bottom-right-radius: 50% 20rem;
-  /* The sweep is 20rem deep at the edges, so the last section needs clearance
-     or its content sits inside the curve. */
-  padding-bottom: 9rem;
+  /* A distinct rounded corner on each side, not one arc across the whole
+     panel. At 50% the two curves meet at the centre and form a single bowl;
+     capping the horizontal radius keeps the middle edge straight and leaves a
+     generous corner at each end. */
+  border-bottom-left-radius: 15rem 7rem;
+  border-bottom-right-radius: 15rem 7rem;
+  /* Clearance so the last section's content clears the corner sweep. */
+  padding-bottom: 4rem;
   overflow-x: clip;
   overflow-y: visible;
   /* A deep drop shadow sells the panel as a physical sheet lifting away from
@@ -636,11 +635,10 @@ html[dir="rtl"] .font-mono {
 
 @media (max-width: 640px) {
   .curtain-content {
-    /* Shallower vertical sweep on a narrow screen so the curve does not clip
-       the last section's content. */
-    border-bottom-left-radius: 50% 8rem;
-    border-bottom-right-radius: 50% 8rem;
-    padding-bottom: 4rem;
+    /* Narrow screens have little width for a wide corner, so it tightens. */
+    border-bottom-left-radius: 5rem 3.5rem;
+    border-bottom-right-radius: 5rem 3.5rem;
+    padding-bottom: 2rem;
   }
 }
 
@@ -650,9 +648,8 @@ html[dir="rtl"] .font-mono {
   bottom: 0;
   left: 0;
   right: 0;
-  /* Matches the 12rem vertical sweep of the radius so the shading follows the
-     curve all the way down instead of stopping short of it. */
-  height: 20rem;
+  /* Matches the 7rem vertical sweep so the shading follows the corner down. */
+  height: 7rem;
   background: linear-gradient(
     to bottom,
     transparent,
@@ -675,8 +672,8 @@ html[dir="rtl"] .font-mono {
 
 @media (max-width: 640px) {
   .curtain-content::after {
-    /* Matches the 8rem mobile sweep. */
-    height: 8rem;
+    /* Matches the 3.5rem mobile sweep. */
+    height: 3.5rem;
   }
 }
 
@@ -852,8 +849,10 @@ html[dir="rtl"] .font-mono {
   }
 }
 
-/* Floating scroll-to-top with circular progress ring. */
+/* Floating scroll-to-top — brand teal arrow + ring, light/dark aware. */
 .scroll-to-top {
+  --scroll-arrow-from: color-mix(in srgb, var(--primary) 72%, white);
+  --scroll-arrow-to: var(--primary);
   position: fixed;
   bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
   z-index: 45;
@@ -862,16 +861,39 @@ html[dir="rtl"] .font-mono {
   width: 48px;
   height: 48px;
   padding: 0;
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   border-radius: 999px;
   cursor: pointer;
-  background: color-mix(in srgb, var(--background) 88%, transparent);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   box-shadow:
-    0 10px 28px -12px rgb(8 35 29 / 0.28),
-    0 2px 8px -4px rgb(0 0 0 / 0.12);
-  color: var(--foreground);
+    0 8px 20px -12px rgb(8 35 29 / 0.18),
+    0 2px 6px -3px rgb(0 0 0 / 0.08);
+  color: var(--primary);
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.scroll-to-top:hover {
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  background: color-mix(in srgb, var(--background) 86%, var(--primary) 6%);
+  box-shadow:
+    0 10px 22px -12px rgb(8 35 29 / 0.22),
+    0 2px 6px -3px rgb(0 0 0 / 0.1);
+}
+
+.scroll-to-top:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 3px;
+}
+
+.scroll-to-top:active {
+  box-shadow:
+    0 4px 12px -8px rgb(8 35 29 / 0.16),
+    0 1px 3px rgb(0 0 0 / 0.06);
 }
 
 .scroll-to-top--end {
@@ -883,10 +905,21 @@ html[dir="rtl"] .font-mono {
 }
 
 .dark .scroll-to-top {
-  background: color-mix(in srgb, var(--background) 82%, transparent);
+  --scroll-arrow-from: color-mix(in srgb, var(--primary) 85%, white);
+  --scroll-arrow-to: var(--primary);
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--background) 86%, transparent);
   box-shadow:
-    0 12px 32px -12px rgb(0 0 0 / 0.55),
-    0 2px 8px -4px rgb(0 0 0 / 0.35);
+    0 10px 24px -12px rgb(0 0 0 / 0.45),
+    0 2px 6px -3px rgb(0 0 0 / 0.28);
+}
+
+.dark .scroll-to-top:hover {
+  border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
+  background: color-mix(in srgb, var(--background) 80%, var(--primary) 8%);
+  box-shadow:
+    0 12px 26px -12px rgb(0 0 0 / 0.5),
+    0 2px 6px -3px rgb(0 0 0 / 0.32);
 }
 
 .scroll-to-top-ring {
@@ -896,11 +929,21 @@ html[dir="rtl"] .font-mono {
 }
 
 .scroll-to-top-track {
-  stroke: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
+  stroke: color-mix(in srgb, var(--primary) 18%, transparent);
+  transition: stroke 200ms ease;
+}
+
+.scroll-to-top:hover .scroll-to-top-track {
+  stroke: color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .scroll-to-top-progress {
-  stroke: color-mix(in srgb, var(--foreground) 88%, transparent);
+  stroke: var(--primary);
+  transition: stroke 200ms ease;
+}
+
+.dark .scroll-to-top-progress {
+  stroke: color-mix(in srgb, var(--primary) 92%, white);
 }
 
 .scroll-to-top-icon {
@@ -909,11 +952,20 @@ html[dir="rtl"] .font-mono {
   display: grid;
   place-items: center;
   line-height: 0;
+  color: var(--primary);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .scroll-to-top {
     background: var(--background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-to-top,
+  .scroll-to-top-track,
+  .scroll-to-top-progress {
+    transition: none;
   }
 }
 

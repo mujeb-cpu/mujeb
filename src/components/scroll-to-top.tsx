@@ -21,9 +21,9 @@ export function ScrollToTop() {
   const { t, isArabic } = useLanguage();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 28,
-    mass: 0.4,
+    stiffness: 140,
+    damping: 32,
+    mass: 0.35,
   });
   const [visible, setVisible] = useState(false);
   const [dashOffset, setDashOffset] = useState(CIRCUMFERENCE);
@@ -54,21 +54,36 @@ export function ScrollToTop() {
             "scroll-to-top",
             isArabic ? "scroll-to-top--start" : "scroll-to-top--end",
           )}
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.72, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
+          whileHover={reduceMotion ? undefined : "hover"}
+          whileTap={reduceMotion ? undefined : "tap"}
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.78, y: 14 }}
+          animate="rest"
           exit={
             reduceMotion
               ? { opacity: 0 }
-              : { opacity: 0, scale: 0.8, y: 8 }
+              : { opacity: 0, scale: 0.82, y: 10 }
           }
-          transition={{
-            type: "spring",
-            stiffness: 420,
-            damping: 28,
-            mass: 0.7,
+          variants={{
+            rest: {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              transition: {
+                type: "spring",
+                stiffness: 380,
+                damping: 26,
+                mass: 0.65,
+              },
+            },
+            hover: {
+              scale: 1.04,
+              transition: { type: "spring", stiffness: 420, damping: 24 },
+            },
+            tap: {
+              scale: 0.94,
+              transition: { type: "spring", stiffness: 500, damping: 28 },
+            },
           }}
-          whileHover={reduceMotion ? undefined : { scale: 1.06 }}
-          whileTap={reduceMotion ? undefined : { scale: 0.94 }}
         >
           <svg
             className="scroll-to-top-ring"
@@ -98,13 +113,39 @@ export function ScrollToTop() {
               transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             />
           </svg>
-          <span className="scroll-to-top-icon" aria-hidden="true">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
+
+          <motion.span
+            className="scroll-to-top-icon"
+            aria-hidden="true"
+            variants={{
+              rest: {
+                y: 0,
+                scale: 1,
+                transition: { type: "spring", stiffness: 400, damping: 28 },
+              },
+              hover: {
+                y: [0, -3, -1.5],
+                scale: 1.08,
+                transition: {
+                  y: {
+                    duration: 0.55,
+                    times: [0, 0.45, 1],
+                    ease: [0.22, 1, 0.36, 1],
+                    repeat: Infinity,
+                    repeatType: "mirror",
+                    repeatDelay: 0.15,
+                  },
+                  scale: { type: "spring", stiffness: 420, damping: 22 },
+                },
+              },
+              tap: {
+                y: 2,
+                scale: 0.9,
+                transition: { type: "spring", stiffness: 500, damping: 28 },
+              },
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <defs>
                 <linearGradient
                   id="scroll-top-arrow"
@@ -114,11 +155,12 @@ export function ScrollToTop() {
                   y2="20"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop offset="0%" stopColor="var(--saffron)" />
-                  <stop offset="100%" stopColor="#e85d04" />
+                  <stop offset="0%" stopColor="var(--scroll-arrow-from)" />
+                  <stop offset="100%" stopColor="var(--scroll-arrow-to)" />
                 </linearGradient>
               </defs>
               <path
+                className="scroll-to-top-arrow"
                 d="M12 5v14M5.5 11.5 12 5l6.5 6.5"
                 stroke="url(#scroll-top-arrow)"
                 strokeWidth="2.4"
@@ -126,7 +168,7 @@ export function ScrollToTop() {
                 strokeLinejoin="round"
               />
             </svg>
-          </span>
+          </motion.span>
         </motion.button>
       )}
     </AnimatePresence>
