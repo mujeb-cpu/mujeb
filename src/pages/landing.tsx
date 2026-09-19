@@ -119,7 +119,7 @@ export function LandingPage() {
       {/* Hero — a moment of use */}
       <section id="whatsapp" className="hero-scene relative scroll-mt-24">
         <div className="hero-aurora" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 py-16 md:grid-cols-[1.05fr_1fr] md:gap-16 md:py-24 lg:py-28">
+        <div className="relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 py-12 md:grid-cols-[1.05fr_1fr] md:gap-16 md:py-14 lg:py-16">
           {/* Keep the existing reduced-motion end state and stagger the copy once. */}
           <motion.div
             initial="hidden"

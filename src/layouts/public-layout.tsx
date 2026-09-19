@@ -243,9 +243,7 @@ export function PublicLayout() {
 
       <CurtainReveal>
         <main className="min-h-svh pt-16">
-          <>
-            <Outlet />
-          </>
+          <Outlet />
         </main>
       </CurtainReveal>
       <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} />

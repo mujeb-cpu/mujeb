@@ -104,10 +104,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
                   key={i}
                   className="outcome-sequence-card"
                   data-position={slot === 0 ? "center" : "side"}
-                  style={{
-                    zIndex: slot === 0 ? 4 : 2,
-
-                  }}
+                  style={{ zIndex: slot === 0 ? 4 : 2 }}
                 >
                   {child}
                 </div>
@@ -115,10 +112,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
             })}
           </div>
 
-          <div
-            className="outcome-sequence-heading"
-
-          >
+          <div className="outcome-sequence-heading">
             <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
               {t("Every answer has its evidence.", "لكل إجابة أدلتها.")}
             </h2>

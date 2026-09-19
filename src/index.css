@@ -1090,7 +1090,8 @@ html[dir="rtl"] .font-mono {
    All glow is bounded inside the section; nothing bleeds past .curtain-content's clip. */
 .hero-scene {
   position: relative;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 48px;
   isolation: isolate;
 }
 
@@ -1440,23 +1441,17 @@ html[dir="rtl"] .font-mono {
     color-mix(in srgb, var(--primary) 30%, transparent),
     transparent 66%
   );
-  filter: blur(46px);
+  /* The gradient is already soft; a large blur adds repaint cost on scroll. */
 }
 
-/* Subtle tilt gives the device presence; it straightens on hover. */
+/* Depth comes from the bezel and shadows, without rasterizing live chat text. */
 .hero-stage {
-  /* Shorter distance = stronger foreshortening, so the tilt reads deeper. */
-  perspective: 1150px;
-  perspective-origin: 50% 42%;
+  /* Keep live text on a flat plane so browser scrolling stays sharp. */
+  min-width: 0;
 }
 .hero-phone {
-  width: min(338px, 86vw);
-  transform: rotateY(-22deg) rotateX(5deg) rotateZ(-1.5deg) translateZ(22px);
-  transform-style: preserve-3d;
-  transition:
-    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 700ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+  width: min(310px, 82vw);
+  transform: none;
   /* Offset right/down, away from the turned face, so the tilt looks lit. */
   box-shadow:
     3px 4px 8px -2px rgb(6 20 16 / 0.3),
@@ -1476,13 +1471,13 @@ html[dir="rtl"] .font-mono {
 }
 
 .hero-stage:hover .hero-phone {
-  transform: rotateY(-22deg) rotateX(5deg) rotateZ(-1.5deg) translateZ(22px);
+  transform: none;
 }
 
 @media (max-width: 767px) {
   .hero-phone,
   .hero-stage:hover .hero-phone {
-    transform: rotateY(-4deg) rotateX(1deg) translateZ(12px);
+    transform: none;
     /* Near-flat on small screens, so the shadow recentres too. */
     box-shadow:
       0 4px 8px -2px rgb(6 20 16 / 0.28),
