@@ -34,3 +34,8 @@ next-env.d.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Using bun
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
