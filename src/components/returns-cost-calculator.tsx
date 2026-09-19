@@ -96,6 +96,7 @@ function CalculatorInput({ label, value, min, max, step, prefix, suffix, onChang
   label: string; value: number; min: number; max: number; step: number; prefix?: string; suffix?: string;
   onChange: (value: number) => void; compact?: boolean; className?: string;
 }) {
+  const { isArabic } = useLanguage();
   const update = (next: number) => onChange(clamp(next, min, max));
   // Hold the raw string while editing so clearing the field doesn't snap to
   // `min` mid-keystroke; commit the clamped number on blur.
@@ -104,7 +105,7 @@ function CalculatorInput({ label, value, min, max, step, prefix, suffix, onChang
     <div className={`group block ${className}`}>
       <span className="text-sm font-medium text-foreground">{label}</span>
       <div className="mt-2 flex h-12 items-center rounded-xl border border-input bg-background px-3 shadow-sm transition-[border-color,box-shadow] duration-200 group-focus-within:border-primary group-focus-within:ring-4 group-focus-within:ring-primary/10 group-hover:border-primary/35">
-        {prefix && <span className="mr-2 text-xs font-semibold text-muted-foreground">{prefix}</span>}
+        {prefix && <span className="me-2 text-xs font-semibold text-muted-foreground">{prefix}</span>}
         <Input
           type="number"
           aria-label={label}
@@ -121,9 +122,11 @@ function CalculatorInput({ label, value, min, max, step, prefix, suffix, onChang
           onBlur={() => setDraft(null)}
           className="h-auto border-0 bg-transparent p-0 text-base font-semibold shadow-none focus-visible:ring-0 dark:bg-transparent tabular-nums latin-nums"
         />
-        {suffix && <span className="ml-2 whitespace-nowrap text-xs text-muted-foreground">{suffix}</span>}
+        {suffix && <span className="ms-2 whitespace-nowrap text-xs text-muted-foreground">{suffix}</span>}
       </div>
-      {!compact && <><input aria-label={`${label} slider`} type="range" value={value} min={min} max={max} step={step} style={{ background: `linear-gradient(to right, var(--primary) ${(value-min)/(max-min)*100}%, var(--border) ${(value-min)/(max-min)*100}%)` }} onChange={(event) => { setDraft(null); update(Number(event.target.value)); }} className="calculator-range mt-4 w-full" /><div aria-hidden="true" className="mt-2 flex justify-between text-[10px] tabular-nums latin-nums text-muted-foreground"><span>{min}</span><span>{formatNumber(max)}</span></div></>}
+      {!compact && <><input aria-label={`${label} slider`} type="range" value={value} min={min} max={max} step={step} style={{ background: `linear-gradient(to ${isArabic ? "left" : "right"}, var(--primary) ${(value-min)/(max-min)*100}%, var(--border) ${(value-min)/(max-min)*100}%)` }} onChange={(event) => { setDraft(null); update(Number(event.target.value)); }} className="calculator-range mt-4 w-full" />{/* The row mirrors with the page, which is correct: a native range input in
+    RTL puts its minimum on the right, so min/max stay under their own ends. */}
+<div aria-hidden="true" className="mt-2 flex justify-between text-[10px] tabular-nums latin-nums text-muted-foreground"><span>{min}</span><span>{formatNumber(max)}</span></div></>}
     </div>
   );
 }
