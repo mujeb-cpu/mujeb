@@ -130,7 +130,7 @@ export function PolicyNewPage() {
                       Use sample policy
                     </Button>
                     <Button onClick={handleExtract} disabled={extracting || !sourceText.trim()}>
-                      {extracting ? <Spinner className="mr-1" /> : <Sparkles className="size-4" />}
+                      {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
                       Extract rules
                     </Button>
                   </div>
@@ -149,7 +149,7 @@ export function PolicyNewPage() {
                     This is a simulated preview. No real URL is fetched.
                   </p>
                   <Button onClick={handleExtract} disabled={extracting} className="self-start">
-                    {extracting ? <Spinner className="mr-1" /> : <Sparkles className="size-4" />}
+                    {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
                     Preview extraction
                   </Button>
                 </div>

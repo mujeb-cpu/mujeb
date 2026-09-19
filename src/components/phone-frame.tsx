@@ -155,7 +155,7 @@ export function WhatsAppThread({
 }) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { amount: 0.25 });
+  const inView = useInView(ref, { amount: 0.25, once: true });
   const [stage, setStage] = useState(0);
   const [typedChars, setTypedChars] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -184,7 +184,7 @@ export function WhatsAppThread({
       timers.push(setTimeout(() => setStage(2), 2850));
       timers.push(setTimeout(() => setStage(3), 3650));
       timers.push(setTimeout(() => setStage(4), 5050));
-      timers.push(setTimeout(cycle, 11200));
+      // Hold the completed conversation; scrolling back must not reset it.
     };
     cycle();
     return () => {

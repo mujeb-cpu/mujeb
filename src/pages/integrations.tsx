@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/components/language-provider";
 
 interface SallaConnection {
   external_store_name: string | null;
@@ -19,6 +20,7 @@ interface SallaConnection {
 
 export function IntegrationsPage() {
   const { user, workspace } = useAuth();
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [connection, setConnection] = useState<SallaConnection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export function IntegrationsPage() {
     const { data, error } = await supabase.from("commerce_connections")
       .select("external_store_name, status, connected_at, last_synced_at")
       .eq("store_id", workspace.storeId).eq("platform", "salla").maybeSingle();
-    if (error) toast.error("Could not load the Salla connection.");
+    if (error) toast.error(t("Could not load the Salla connection.", "تعذّر تحميل ربط سلة."));
     setConnection(data as SallaConnection | null);
     setLoading(false);
   }, [workspace]);
@@ -38,9 +40,9 @@ export function IntegrationsPage() {
   useEffect(() => {
     const result = searchParams.get("salla");
     if (!result) return;
-    if (result === "connected") toast.success("Salla store connected successfully.");
-    else if (result === "cancelled") toast.info("Salla connection was cancelled.");
-    else toast.error("Salla could not be connected. Please try again.");
+    if (result === "connected") toast.success(t("Salla store connected successfully.", "تم ربط متجر سلة بنجاح."));
+    else if (result === "cancelled") toast.info(t("Salla connection was cancelled.", "تم إلغاء ربط سلة."));
+    else toast.error(t("Salla could not be connected. Please try again.", "تعذّر ربط سلة. يرجى المحاولة مرة أخرى."));
     setSearchParams({}, { replace: true });
     void loadConnection();
   }, [loadConnection, searchParams, setSearchParams]);
@@ -52,7 +54,7 @@ export function IntegrationsPage() {
       body: { storeId: workspace.storeId, redirectPath: "/app/integrations" },
     });
     if (error || !data?.authorizationUrl) {
-      toast.error("Could not start Salla authorization.");
+      toast.error(t("Could not start Salla authorization.", "تعذّر بدء عملية التفويض مع سلة."));
       setAction(null);
       return;
     }
@@ -65,8 +67,8 @@ export function IntegrationsPage() {
     const { error } = await supabase.functions.invoke("salla-connection", {
       body: { storeId: workspace.storeId, action: nextAction },
     });
-    if (error) toast.error(nextAction === "test" ? "Salla did not accept the stored connection." : "Could not disconnect Salla.");
-    else toast.success(nextAction === "test" ? "Salla connection is healthy." : "Salla credentials removed from Mujeeb.");
+    if (error) toast.error(nextAction === "test" ? t("Salla did not accept the stored connection.", "لم تقبل سلة بيانات الربط المحفوظة.") : t("Could not disconnect Salla.", "تعذّر فصل الربط مع سلة."));
+    else toast.success(nextAction === "test" ? t("Salla connection is healthy.", "الربط مع سلة يعمل بشكل سليم.") : t("Salla credentials removed from Mujeeb.", "تم حذف بيانات سلة من مجيب."));
     await loadConnection();
     setAction(null);
   };
@@ -76,9 +78,9 @@ export function IntegrationsPage() {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-7">
       <ScrollReveal>
         <div>
-          <Badge variant="outline" className="mb-3">Commerce</Badge>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Store integrations</h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Connect your Salla store so Mujeeb can verify orders against real merchant data.</p>
+          <Badge variant="outline" className="mb-3">{t("Commerce", "التجارة الإلكترونية")}</Badge>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{t("Store integrations", "تكاملات المتجر")}</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{t("Connect your Salla store so Mujeeb can verify orders against real merchant data.", "اربط متجرك في سلة ليتمكن مجيب من التحقق من الطلبات ببيانات متجرك الفعلية.")}</p>
         </div>
       </ScrollReveal>
       <ScrollReveal delay={80}>
@@ -90,30 +92,30 @@ export function IntegrationsPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-display text-lg font-semibold">Salla</h2>
-                    {loading ? <Badge variant="outline">Checking</Badge> : connected ? (
-                      <Badge className="border-eligible/20 bg-eligible-muted text-eligible"><Check className="size-3" /> Connected</Badge>
-                    ) : <Badge variant="outline">Not connected</Badge>}
+                    {loading ? <Badge variant="outline">{t("Checking", "جارٍ التحقق")}</Badge> : connected ? (
+                      <Badge className="border-eligible/20 bg-eligible-muted text-eligible"><Check className="size-3" /> {t("Connected", "متصل")}</Badge>
+                    ) : <Badge variant="outline">{t("Not connected", "غير متصل")}</Badge>}
                   </div>
                   <p className="mt-1 max-w-lg text-sm leading-6 text-muted-foreground">
-                    {connected ? `${connection.external_store_name ?? "Your store"} is ready for order verification.` : "Authorize read-only order access through Salla. Mujeeb never receives your merchant password."}
+                    {connected ? t(`${connection.external_store_name ?? "Your store"} is ready for order verification.`, `${connection.external_store_name ?? "متجرك"} جاهز للتحقق من الطلبات.`) : t("Authorize read-only order access through Salla. Mujeeb never receives your merchant password.", "امنح صلاحية قراءة الطلبات فقط عبر سلة. لن يطّلع مجيب على كلمة مرور متجرك إطلاقًا.")}
                   </p>
                   {connected && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span>Connected {connection.connected_at ? new Date(connection.connected_at).toLocaleDateString() : "today"}</span>
-                    <span>Last checked {connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString() : "not yet"}</span>
+                    <span>{t(`Connected ${connection.connected_at ? new Date(connection.connected_at).toLocaleDateString("en-US") : "today"}`, `تم الربط ${connection.connected_at ? new Date(connection.connected_at).toLocaleDateString("en-US") : "اليوم"}`)}</span>
+                    <span>{t(`Last checked ${connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString("en-US") : "not yet"}`, `آخر تحقق ${connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString("en-US") : "لم يتم بعد"}`)}</span>
                   </div>}
                 </div>
               </div>
               <div className="flex shrink-0 flex-wrap gap-2">
                 {connected ? <>
-                  <Button variant="outline" onClick={() => void runAction("test")} disabled={action !== null}>{action === "test" ? <Spinner /> : <RefreshCw className="size-4" />} Check connection</Button>
-                  <Button variant="ghost" className="text-muted-foreground" onClick={() => void runAction("disconnect")} disabled={action !== null}><Unplug className="size-4" /> Disconnect</Button>
-                </> : <Button onClick={() => void connect()} disabled={loading || action !== null}>{action === "connect" ? <Spinner /> : <Link2 className="size-4" />} Connect Salla</Button>}
+                  <Button variant="outline" onClick={() => void runAction("test")} disabled={action !== null}>{action === "test" ? <Spinner /> : <RefreshCw className="size-4" />} {t("Check connection", "فحص الربط")}</Button>
+                  <Button variant="ghost" className="text-muted-foreground" onClick={() => void runAction("disconnect")} disabled={action !== null}><Unplug className="size-4" /> {t("Disconnect", "فصل الربط")}</Button>
+                </> : <Button onClick={() => void connect()} disabled={loading || action !== null}>{action === "connect" ? <Spinner /> : <Link2 className="size-4" />} {t("Connect Salla", "ربط سلة")}</Button>}
               </div>
             </div>
             <div className="grid border-t border-border/60 bg-muted/20 sm:grid-cols-3">
-              <div className="flex items-center gap-3 p-4 text-sm"><ShieldCheck className="size-4 text-primary" /><span>Encrypted credentials</span></div>
-              <div className="flex items-center gap-3 border-y border-border/60 p-4 text-sm sm:border-x sm:border-y-0"><Link2 className="size-4 text-primary" /><span>Orders read only</span></div>
-              <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>Secure token renewal</span></div>
+              <div className="flex items-center gap-3 p-4 text-sm"><ShieldCheck className="size-4 text-primary" /><span>{t("Encrypted credentials", "بيانات اعتماد مشفّرة")}</span></div>
+              <div className="flex items-center gap-3 border-y border-border/60 p-4 text-sm sm:border-x sm:border-y-0"><Link2 className="size-4 text-primary" /><span>{t("Orders read only", "قراءة الطلبات فقط")}</span></div>
+              <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>{t("Secure token renewal", "تجديد آمن للرموز")}</span></div>
             </div>
           </CardContent>
         </Card>

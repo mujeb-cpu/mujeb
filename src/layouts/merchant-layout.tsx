@@ -26,6 +26,7 @@ import {
   Settings,
   ExternalLink,
   LogOut,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { services } from "@/lib/services";
@@ -37,7 +38,7 @@ export function MerchantLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const auth = useAuth();
-  const { t } = useLanguage();
+  const { t, isArabic } = useLanguage();
   const primaryNav = [
     { label: t("Overview", "نظرة عامة"), href: "/app", icon: LayoutDashboard, end: true },
     { label: t("Policies", "السياسات"), href: "/app/policies", icon: FileText },
@@ -59,7 +60,13 @@ export function MerchantLayout() {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r">
+      {/* The sidebar mirrors to the right in Arabic; `border-e` is the logical
+          edge so the divider follows it. */}
+      <Sidebar
+        collapsible="icon"
+        side={isArabic ? "right" : "left"}
+        className="border-e"
+      >
         <SidebarHeader>
           <button
             onClick={() => navigate("/app")}
@@ -159,7 +166,7 @@ export function MerchantLayout() {
 }
 
 function Breadcrumb({ pathname }: { pathname: string }) {
-  const { t } = useLanguage();
+  const { t, isArabic } = useLanguage();
   const segments = pathname.split("/").filter(Boolean);
   const labels: Record<string, string> = {
     app: t("Overview", "نظرة عامة"),
@@ -178,7 +185,14 @@ function Breadcrumb({ pathname }: { pathname: string }) {
         const label = labels[seg] ?? seg;
         return (
           <span key={i} className="flex items-center gap-1.5">
-            {i > 0 && <span className="text-border">/</span>}
+            {/* A chevron mirrors with the flex row; a literal "/" between Arabic
+                segments is re-ordered by bidi and reads ambiguously. */}
+            {i > 0 && (
+              <ChevronRight
+                aria-hidden
+                className={cn("size-3.5 text-border", isArabic && "rotate-180")}
+              />
+            )}
             <span className={cn(isLast ? "font-medium text-foreground" : "")}>
               {label}
             </span>

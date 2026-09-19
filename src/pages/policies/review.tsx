@@ -153,7 +153,7 @@ function RuleSummaryRow({ rule, stateBadge }: { rule: PolicyRule; stateBadge: Re
           <p className="mt-1 text-xs text-muted-foreground">{rule.description}</p>
           <code className="mt-1.5 inline-block rounded bg-muted px-1.5 py-0.5 text-xs text-foreground">{rule.value}</code>
         </div>
-        <div className="max-w-[200px] text-right">
+        <div className="max-w-[200px] text-end">
           <div className="text-[10px] text-muted-foreground">Source</div>
           <p className="text-xs text-muted-foreground italic line-clamp-2">"{rule.sourceExcerpt}"</p>
         </div>

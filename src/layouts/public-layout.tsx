@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { MujeebLogo } from "@/components/mujeeb-logo";
-import { PageTransition } from "@/components/page-transition";
+
 import { CurtainReveal } from "@/components/curtain-reveal";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export function PublicLayout() {
       // which would otherwise animate the whole page on every route change.
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
-  }, [location]);
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -243,9 +243,9 @@ export function PublicLayout() {
 
       <CurtainReveal>
         <main className="min-h-svh pt-16">
-          <PageTransition>
+          <>
             <Outlet />
-          </PageTransition>
+          </>
         </main>
       </CurtainReveal>
       <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} />

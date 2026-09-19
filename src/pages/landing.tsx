@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,10 +98,18 @@ const heroCopyItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.52, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
+// Reduced motion: same end state, no travel and no duration.
+const heroCopyItemStatic = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0 } },
+};
+
+
 export function LandingPage() {
   const navigate = useNavigate();
   const { t, isArabic } = useLanguage();
   const reduceMotion = useReducedMotion();
+  const heroItem = reduceMotion ? heroCopyItemStatic : heroCopyItem;
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];
   const examples = EXAMPLES.map((example) => isArabic ? ({ ...example, messages: [{ ...example.messages[0], text: `هل يمكنني إرجاع هذا المنتج؟ رقم طلبي ${example.facts.orderId}.` }, { ...example.messages[1], text: example.decision.outcome === "ELIGIBLE" ? "هذا المنتج مؤهل للإرجاع. تم استيفاء جميع شروط السياسة." : example.decision.outcome === "MANUAL_REVIEW" ? "لا يتوفر تاريخ التسليم، لذلك يحتاج المتجر إلى مراجعة الطلب." : "هذا المنتج خارج مدة الإرجاع المحددة في السياسة.", rule: example.decision.outcome === "MANUAL_REVIEW" ? "تاريخ التسليم غير متوفر · يلزم مراجعة التاجر" : "مدة الإرجاع 14 يومًا من تاريخ التسليم" }] }) : example);
@@ -112,25 +120,26 @@ export function LandingPage() {
       <section id="whatsapp" className="hero-scene relative scroll-mt-24">
         <div className="hero-aurora" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 py-16 md:grid-cols-[1.05fr_1fr] md:gap-16 md:py-24 lg:py-28">
+          {/* Keep the existing reduced-motion end state and stagger the copy once. */}
           <motion.div
-            initial={reduceMotion ? false : "hidden"}
+            initial="hidden"
             animate="visible"
-            variants={{ hidden: {}, visible: { transition: { delayChildren: 0.08, staggerChildren: 0.11 } } }}
+            variants={{ hidden: {}, visible: { transition: { delayChildren: reduceMotion ? 0 : 0.08, staggerChildren: reduceMotion ? 0 : 0.11 } } }}
             className="flex flex-col items-start gap-7"
           >
-            <motion.span variants={heroCopyItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+            <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
               <span className="size-1.5 rounded-full bg-primary" />
               {t("Return decisions for Saudi ecommerce", "قرارات إرجاع واضحة للتجارة الإلكترونية السعودية")}
             </motion.span>
-            <motion.h1 variants={heroCopyItem} className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[74px] text-balance">
+            <motion.h1 variants={heroItem} className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[74px] text-balance">
               {t("Your policy.", "سياستك.")}
               <br />
               <TypedHeroAnswer text={t("Their answer.", "إجابتهم.")} />
             </motion.h1>
-            <motion.p variants={heroCopyItem} className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty">
+            <motion.p variants={heroItem} className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty">
               {t("Clear return answers, in a channel your customers already use. Mujeeb applies merchant-approved rules and keeps the evidence behind every decision.", "إجابات واضحة لطلبات الإرجاع عبر قناة يستخدمها عملاؤك بالفعل. يطبق مجيب القواعد التي يعتمدها التاجر ويحفظ الأدلة المرتبطة بكل قرار.")}
             </motion.p>
-            <motion.div variants={heroCopyItem} className="flex flex-wrap items-center gap-3">
+            <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3">
               <Button
                 size="lg"
                 onClick={() => navigate("/app")}
@@ -148,7 +157,7 @@ export function LandingPage() {
                 {t("Try a customer return", "تجربة طلب إرجاع")}
               </Button>
             </motion.div>
-            <motion.div variants={heroCopyItem} className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <motion.div variants={heroItem} className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground">
               <span className="hero-trust-chip">
                 <ShieldCheck className="size-4 text-primary/70" />
                 {t("Human-approved rules", "قواعد يعتمدها التاجر")}
@@ -590,40 +599,6 @@ function CaseEntrance({ index, children }: { index: number; children: React.Reac
 }
 
 function TypedHeroAnswer({ text }: { text: string }) {
-  const reduceMotion = useReducedMotion();
-  const [length, setLength] = useState(reduceMotion ? text.length : 0);
-
-  useEffect(() => {
-    if (reduceMotion) {
-      setLength(text.length);
-      return;
-    }
-    setLength(0);
-    let interval = 0;
-    const start = window.setTimeout(() => {
-      interval = window.setInterval(() => {
-        setLength((current) => {
-          if (current >= text.length) {
-            window.clearInterval(interval);
-            return current;
-          }
-          return current + 1;
-        });
-      }, 52);
-    }, 430);
-    return () => {
-      window.clearTimeout(start);
-      window.clearInterval(interval);
-    };
-  }, [reduceMotion, text]);
-
-  return (
-    <span className="hero-type-line" aria-label={text}>
-      <span aria-hidden className="hero-type-ghost">{text}</span>
-      <span aria-hidden className="hero-gradient-text hero-type-value">
-        {text.slice(0, length)}
-        {!reduceMotion && <span className="hero-type-caret" data-complete={length >= text.length} />}
-      </span>
-    </span>
-  );
+  // Reveal the whole shaped line: Arabic stays joined and layout never changes.
+  return <span className="hero-answer-reveal hero-gradient-text" key={text}>{text}</span>;
 }

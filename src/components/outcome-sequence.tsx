@@ -18,7 +18,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
   const stage = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(0.35);
   const reducedMotion = useReducedMotion();
-  const [progress, setProgress] = useState(0);
+
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     const element = stage.current;
@@ -41,18 +41,34 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const element = section.current;
-    if (!element || reducedMotion) return;
+    const viewport = stage.current;
+    if (!element || !viewport) return;
+    const cards = [...viewport.querySelectorAll<HTMLElement>(".outcome-sequence-card")];
+    const heading = element.querySelector<HTMLElement>(".outcome-sequence-heading");
     let frame = 0;
     const update = () => {
       frame = 0;
-      const rect = element.getBoundingClientRect();
-      const distance = Math.max(1, element.offsetHeight - window.innerHeight);
-      const raw = -rect.top / distance;
-      setProgress(Math.max(0, Math.min(1, raw)));
+      const pin = element.querySelector<HTMLElement>(".outcome-sequence-pin");
+      const distance = Math.max(1, element.offsetHeight - (pin?.clientHeight ?? window.innerHeight));
+      const progress = reducedMotion ? 1 : Math.max(0, Math.min(1, -element.getBoundingClientRect().top / distance));
+      const p = progress * progress * (3 - 2 * progress);
+      const fan = 1 - Math.pow(1 - p, 4);
+      cards.forEach((card, i) => {
+        const slot = [0, -1, 1][i] ?? 0;
+        const lift = slot === 0 ? -18 - 10 * p : -18 + 4 * p;
+        const depth = slot === 0 ? 54 * p : -30 * p;
+        const scale = 0.96 + ((slot === 0 ? 1.07 : 0.9) - 0.96) * p;
+        card.style.transform = `translate(-50%, -50%) translateX(${slot * 360 * fan * fit}px) translateY(${lift * fit}px) translateZ(${depth * fit}px) rotateY(${slot * -7 * p + (1 - p) * -14}deg) rotateZ(${slot * 1.25 * p}deg) scale(${scale * fit})`;
+        card.style.opacity = String(slot === 0 ? 1 : 0.78 + 0.22 * p);
+        card.style.setProperty("--label-opacity", String(Math.max(0, Math.min(1, (fan - 0.45) / 0.35))));
+      });
+      const reveal = reducedMotion ? 1 : Math.max(0, Math.min(1, (progress - 0.6) / 0.28));
+      if (heading) {
+        heading.style.opacity = String(reveal);
+        heading.style.transform = `translateY(${(1 - reveal) * 14}px)`;
+      }
     };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     update();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
@@ -61,14 +77,9 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, fit]);
 
-  // Smoothstep so the fan eases rather than tracking scroll linearly.
-  const p = reducedMotion ? 1 : progress * progress * (3 - 2 * progress);
   const items = Children.toArray(children);
-  const reveal = reducedMotion
-    ? 1
-    : Math.max(0, Math.min(1, (progress - 0.6) / 0.28));
 
   return (
     <>
@@ -87,19 +98,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
 
           <div ref={stage} className="outcome-sequence-stage">
             {items.map((child, i) => {
-              // Center phone stays put; the outer two fan left and right.
               const slot = [0, -1, 1][i] ?? 0;
-              // Separate early in the scrub so the side phones do not remain
-              // awkwardly overlapped while the group is opening.
-              const fan = 1 - Math.pow(1 - p, 4);
-              const spread = 360 * fan;
-              // Slight negative lift keeps the floating labels clear of the heading.
-              const lift = slot === 0 ? -18 - 10 * p : -18 + 4 * p;
-              const rotateY = slot * -7 * p + (1 - p) * -14;
-              const rotateZ = slot * 1.25 * p;
-              const depth = slot === 0 ? 54 * p : -30 * p;
-              const finalScale = slot === 0 ? 1.07 : 0.9;
-              const scale = 0.96 + (finalScale - 0.96) * p;
               return (
                 <div
                   key={i}
@@ -107,13 +106,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
                   data-position={slot === 0 ? "center" : "side"}
                   style={{
                     zIndex: slot === 0 ? 4 : 2,
-                    transform: `translate(-50%, -50%) translateX(${slot * spread * fit}px) translateY(${lift * fit}px) translateZ(${depth * fit}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale * fit})`,
-                    opacity: slot === 0 ? 1 : 0.78 + 0.22 * p,
-                    // Labels stack while the phones are collapsed, so hold them
-                    // hidden until the fan has actually separated them.
-                    ["--label-opacity" as string]: String(
-                      Math.max(0, Math.min(1, (fan - 0.45) / 0.35)),
-                    ),
+
                   }}
                 >
                   {child}
@@ -124,10 +117,7 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
 
           <div
             className="outcome-sequence-heading"
-            style={{
-              opacity: reveal,
-              transform: `translateY(${(1 - reveal) * 14}px)`,
-            }}
+
           >
             <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
               {t("Every answer has its evidence.", "لكل إجابة أدلتها.")}

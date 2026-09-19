@@ -10,9 +10,11 @@ import { services } from "@/lib/services";
 import { formatDate } from "@/lib/domain";
 import { Plus, FileText, CheckCircle2, Clock, ChevronDown, ArrowRight, ShieldCheck, History, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
 export function PolicyListPage() {
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
   const policy = useMemo(() => services.getPublishedPolicy(), []);
   const versions = useMemo(() => services.getPublishedVersions(), []);
   const drafts = useMemo(() => services.getDrafts(), []);
@@ -33,12 +35,12 @@ export function PolicyListPage() {
       <ScrollReveal>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Policies</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Manage your return policy versions and drafts.</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("Policies", "السياسات")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("Manage your return policy versions and drafts.", "إدارة إصدارات سياسة الإرجاع والمسودات.")}</p>
           </div>
           <Button onClick={() => navigate("/app/policies/new")} className="group">
             <Plus className="size-4 transition-transform group-hover:rotate-90" />
-            New policy
+            {t("New policy", "سياسة جديدة")}
           </Button>
         </div>
       </ScrollReveal>
@@ -51,8 +53,8 @@ export function PolicyListPage() {
               <FileText className="size-4" />
             </div>
             <div>
-              <div className="text-xs font-medium text-foreground">Draft</div>
-              <div className="text-[11px] text-muted-foreground">{drafts.length} pending</div>
+              <div className="text-xs font-medium text-foreground">{t("Draft", "مسودة")}</div>
+              <div className="text-[11px] text-muted-foreground">{t(`${drafts.length} pending`, `${drafts.length} بانتظار المراجعة`)}</div>
             </div>
           </div>
           <div className="flex-1">
@@ -67,14 +69,14 @@ export function PolicyListPage() {
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <div className="text-xs font-medium text-foreground">Review</div>
-              <div className="text-[11px] text-muted-foreground">Approve rules</div>
+              <div className="text-xs font-medium text-foreground">{t("Review", "المراجعة")}</div>
+              <div className="text-[11px] text-muted-foreground">{t("Approve rules", "اعتماد القواعد")}</div>
             </div>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-1">
               <div className="h-px flex-1 bg-border" />
-              <ArrowRight className="size-3 text-muted-foreground" />
+              <ArrowRight className={cn("size-3 text-muted-foreground", isArabic && "rotate-180")} />
               <div className="h-px flex-1 bg-border" />
             </div>
           </div>
@@ -83,8 +85,8 @@ export function PolicyListPage() {
               <CheckCircle2 className="size-4" />
             </div>
             <div>
-              <div className="text-xs font-medium text-foreground">Published</div>
-              <div className="text-[11px] text-muted-foreground">{versions.length} version{versions.length !== 1 ? "s" : ""}</div>
+              <div className="text-xs font-medium text-foreground">{t("Published", "منشورة")}</div>
+              <div className="text-[11px] text-muted-foreground">{t(`${versions.length} version${versions.length !== 1 ? "s" : ""}`, `${versions.length} إصدار`)}</div>
             </div>
           </div>
         </div>
@@ -99,7 +101,7 @@ export function PolicyListPage() {
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-eligible" />
-                  <h2 className="text-sm font-semibold text-foreground">Current version</h2>
+                  <h2 className="text-sm font-semibold text-foreground">{t("Current version", "الإصدار الحالي")}</h2>
                 </div>
                 <Card className="group transition-all hover:shadow-md">
                   <CardContent className="flex items-center justify-between p-5">
@@ -110,16 +112,16 @@ export function PolicyListPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-base font-semibold text-foreground">{policy.versionLabel}</span>
-                          <Badge variant="secondary" className="text-[11px]">Active</Badge>
+                          <Badge variant="secondary" className="text-[11px]">{t("Active", "نشط")}</Badge>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Published {formatDate(policy.publishedAt)} · {totalRules} rules · by {policy.publishedBy}
+                          {t(`Published ${formatDate(policy.publishedAt)} · ${totalRules} rules · by ${policy.publishedBy}`, `نُشرت في ${formatDate(policy.publishedAt)} · ${totalRules} قاعدة · بواسطة ${policy.publishedBy}`)}
                         </div>
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => navigate("/app/policies/new")} className="group/btn">
-                      New version
-                      <ArrowRight className="size-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                      {t("New version", "إصدار جديد")}
+                      <ArrowRight className={cn("size-3.5 transition-transform group-hover/btn:translate-x-0.5", isArabic && "rotate-180")} />
                     </Button>
                   </CardContent>
                 </Card>
@@ -135,7 +137,7 @@ export function PolicyListPage() {
                   <CardContent className="flex items-center justify-between py-4 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <History className="size-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground">Version history</span>
+                      <span className="text-sm font-medium text-foreground">{t("Version history", "سجل الإصدارات")}</span>
                       <Badge variant="outline" className="text-[10px]">{versions.length}</Badge>
                     </div>
                     <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", showHistory && "rotate-180")} />
@@ -155,10 +157,10 @@ export function PolicyListPage() {
                           <div className="flex-1">
                             <div className="text-sm font-medium text-foreground">{v.versionLabel}</div>
                             <div className="text-xs text-muted-foreground">
-                              {formatDate(v.publishedAt)} · {v.rules.length} rules · by {v.publishedBy}
+                              {t(`${formatDate(v.publishedAt)} · ${v.rules.length} rules · by ${v.publishedBy}`, `${formatDate(v.publishedAt)} · ${v.rules.length} قاعدة · بواسطة ${v.publishedBy}`)}
                             </div>
                           </div>
-                          {i === 0 && <Badge variant="secondary" className="text-[10px]">Active</Badge>}
+                          {i === 0 && <Badge variant="secondary" className="text-[10px]">{t("Active", "نشط")}</Badge>}
                         </div>
                       ))}
                     </div>
@@ -176,7 +178,7 @@ export function PolicyListPage() {
                   className="group mb-3 flex items-center gap-2"
                 >
                   <Clock className="size-4 text-review" />
-                  <h2 className="text-sm font-semibold text-foreground">Drafts</h2>
+                  <h2 className="text-sm font-semibold text-foreground">{t("Drafts", "المسودات")}</h2>
                   <Badge variant="outline" className="text-[11px]">{drafts.length}</Badge>
                   <ChevronDown className={cn("size-3.5 text-muted-foreground transition-transform", !showDrafts && "-rotate-90")} />
                 </button>
@@ -201,10 +203,10 @@ export function PolicyListPage() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-base font-medium text-foreground">{draft.name}</span>
-                                <Badge variant="outline" className="text-[11px]">Draft</Badge>
+                                <Badge variant="outline" className="text-[11px]">{t("Draft", "مسودة")}</Badge>
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {draft.rules.length} rules · Updated {formatDate(draft.updatedAt)}
+                                {t(`${draft.rules.length} rules · Updated ${formatDate(draft.updatedAt)}`, `${draft.rules.length} قاعدة · آخر تحديث ${formatDate(draft.updatedAt)}`)}
                               </div>
                             </div>
                           </div>
@@ -214,8 +216,8 @@ export function PolicyListPage() {
                             onClick={() => navigate(`/app/policies/review/${draft.id}`)}
                             className="group/btn"
                           >
-                            Review
-                            <ArrowRight className="size-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                            {t("Review", "مراجعة")}
+                            <ArrowRight className={cn("size-3.5 transition-transform group-hover/btn:translate-x-0.5", isArabic && "rotate-180")} />
                           </Button>
                         </CardContent>
                       </Card>
@@ -233,12 +235,12 @@ export function PolicyListPage() {
                   <FileText className="size-7" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">No policies yet</p>
-                  <p className="text-xs text-muted-foreground">Create your first return policy to get started.</p>
+                  <p className="text-sm font-medium text-foreground">{t("No policies yet", "لا توجد سياسات بعد")}</p>
+                  <p className="text-xs text-muted-foreground">{t("Create your first return policy to get started.", "أنشئ أول سياسة إرجاع للبدء.")}</p>
                 </div>
                 <Button onClick={() => navigate("/app/policies/new")} className="group">
                   <Plus className="size-4 transition-transform group-hover:rotate-90" />
-                  Create policy
+                  {t("Create policy", "إنشاء سياسة")}
                 </Button>
               </CardContent>
             </Card>

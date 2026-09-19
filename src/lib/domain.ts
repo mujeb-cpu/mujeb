@@ -157,6 +157,7 @@ export const CASE_STATUS_LABELS: Record<CaseStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
+
 export const DEMO_CLOCK = {
   now: new Date("2026-09-16T10:00:00+03:00"),
   timezone: "Asia/Riyadh",
@@ -166,21 +167,31 @@ export function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * Arabic month names with Western digits on a Gregorian calendar.
+ *
+ * Plain "ar-SA" would render "١٦ سبتمبر ٢٠٢٦" and "١٨٥ ر.س." — Arabic-Indic
+ * numerals on the Islamic calendar. Saudi ecommerce (Salla, Zid) uses Western
+ * digits, and order IDs/SKUs are Latin, so mixing numeral systems in one table
+ * reads as a rendering bug. `-u-nu-latn` forces Latin digits; `-u-ca-gregory`
+ * pins the Gregorian calendar.
+ */
+const arabicLocale = "ar-SA-u-nu-latn-ca-gregory";
+const activeLocale = () =>
+  document.documentElement.lang === "ar" ? arabicLocale : "en-US";
+
 export function formatSAR(amount: number): string {
-  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
-  return new Intl.NumberFormat(locale, { style: "currency", currency: "SAR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat(activeLocale(), { style: "currency", currency: "SAR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 }
 
 export function formatDate(iso: string): string {
   const d = new Date(iso);
-  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
-  return d.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
+  return d.toLocaleDateString(activeLocale(), { year: "numeric", month: "short", day: "numeric" });
 }
 
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
-  const locale = document.documentElement.lang === "ar" ? "ar-SA" : "en-US";
-  return d.toLocaleString(locale, {
+  return d.toLocaleString(activeLocale(), {
     year: "numeric",
     month: "short",
     day: "numeric",

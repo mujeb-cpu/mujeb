@@ -12,6 +12,8 @@ import { services } from "@/lib/services";
 import {
   type CaseStatus,
   type CaseEvent,
+  type ReturnReason,
+  type ItemCondition,
   REASON_LABELS,
   CONDITION_LABELS,
   formatDateTime,
@@ -25,10 +27,36 @@ import {
   ShieldCheck, Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
 export function CaseDetailPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
+  // Domain enums are English-only in domain.ts; these pick the display label
+  // for the active locale, keeping the same enum keys.
+  const statusLabel = (status: CaseStatus) =>
+    t(CASE_STATUS_LABELS[status], ({
+      OPEN: "مفتوحة",
+      AWAITING_ITEM: "بانتظار استلام المنتج",
+      RECEIVED: "تم الاستلام",
+      RESOLVED: "مغلقة",
+      CANCELLED: "ملغاة",
+    } as Record<CaseStatus, string>)[status]);
+  const reasonLabel = (reason: ReturnReason) =>
+    t(REASON_LABELS[reason], ({
+      defective: "المنتج به عيب",
+      wrong_item: "وصل منتج خاطئ",
+      not_as_described: "لا يطابق الوصف",
+      changed_mind: "غيّرت رأيي",
+      damaged_in_transit: "تضرر أثناء الشحن",
+    } as Record<ReturnReason, string>)[reason]);
+  const conditionLabel = (condition: ItemCondition) =>
+    t(CONDITION_LABELS[condition], ({
+      new_unopened: "جديد، لم يُفتح",
+      opened_unused: "مفتوح، غير مستخدم",
+      used: "مستخدم",
+    } as Record<ItemCondition, string>)[condition]);
   const [caseData, setCaseData] = useState(() => caseId ? services.getCase(caseId) : undefined);
   const [noteText, setNoteText] = useState("");
   const [evidenceOpen, setEvidenceOpen] = useState(false);
@@ -38,8 +66,8 @@ export function CaseDetailPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-20 text-center">
         <AlertCircle className="size-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Case not found.</p>
-        <Button variant="outline" onClick={() => navigate("/app/cases")}>Back to cases</Button>
+        <p className="text-sm text-muted-foreground">{t("Case not found.", "لم يتم العثور على الحالة.")}</p>
+        <Button variant="outline" onClick={() => navigate("/app/cases")}>{t("Back to cases", "العودة إلى طلبات الإرجاع")}</Button>
       </div>
     );
   }
@@ -56,9 +84,9 @@ export function CaseDetailPage() {
     const updated = services.updateCaseStatus(caseData.id, newStatus, "merchant");
     if (updated) {
       setCaseData({ ...updated });
-      toast.success(`Case status changed to ${CASE_STATUS_LABELS[newStatus]}`);
+      toast.success(t(`Case status changed to ${CASE_STATUS_LABELS[newStatus]}`, `تم تغيير حالة الطلب إلى ${statusLabel(newStatus)}`));
     } else {
-      toast.error("Invalid status transition");
+      toast.error(t("Invalid status transition", "لا يمكن الانتقال إلى هذه الحالة"));
     }
   };
 
@@ -67,7 +95,7 @@ export function CaseDetailPage() {
     services.addNote(caseData.id, "Operations", noteText);
     setCaseData({ ...services.getCase(caseData.id)! });
     setNoteText("");
-    toast.success("Note added");
+    toast.success(t("Note added", "تمت إضافة الملاحظة"));
   };
 
   const outcomeIcon = caseData.outcome === "ELIGIBLE" ? CheckCircle2 : caseData.outcome === "NOT_ELIGIBLE" ? XCircle : AlertCircle;
@@ -79,7 +107,7 @@ export function CaseDetailPage() {
       <ScrollReveal>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/app/cases")} className="transition-transform active:scale-90">
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className={cn("size-4", isArabic && "rotate-180")} />
           </Button>
           <div>
             <div className="flex items-center gap-2">
@@ -87,7 +115,7 @@ export function CaseDetailPage() {
               <OutcomeBadge outcome={caseData.outcome} size="sm" />
               <CaseStatusBadge status={caseData.caseStatus} size="sm" />
             </div>
-            <p className="text-xs text-muted-foreground">{caseData.id} · Created {formatDateTime(caseData.createdAt)}</p>
+            <p className="text-xs text-muted-foreground">{caseData.id} · {t(`Created ${formatDateTime(caseData.createdAt)}`, `أُنشئت في ${formatDateTime(caseData.createdAt)}`)}</p>
           </div>
         </div>
       </ScrollReveal>
@@ -109,7 +137,7 @@ export function CaseDetailPage() {
                   caseData.outcome === "NOT_ELIGIBLE" && "text-not-eligible",
                   caseData.outcome === "MANUAL_REVIEW" && "text-review",
                 )} />
-                Why this decision happened
+                {t("Why this decision happened", "سبب هذا القرار")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -138,7 +166,7 @@ export function CaseDetailPage() {
               <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <FileText className="size-3" />
-                  Policy {caseData.decision.policyVersionLabel}
+                  {t(`Policy ${caseData.decision.policyVersionLabel}`, `السياسة ${caseData.decision.policyVersionLabel}`)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="size-3" />
@@ -153,17 +181,17 @@ export function CaseDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Package className="size-4 text-muted-foreground" />
-                Requested item
+                {t("Requested item", "المنتج المطلوب إرجاعه")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <Detail label="Item" value={caseData.itemName} />
-                <Detail label="Quantity" value={String(caseData.quantity)} />
-                <Detail label="Reason" value={REASON_LABELS[caseData.reason]} />
-                <Detail label="Condition" value={CONDITION_LABELS[caseData.condition]} />
-                <Detail label="Customer" value={caseData.customerName} />
-                <Detail label="Email" value={caseData.customerEmail} />
+                <Detail label={t("Item", "المنتج")} value={caseData.itemName} />
+                <Detail label={t("Quantity", "الكمية")} value={String(caseData.quantity)} />
+                <Detail label={t("Reason", "السبب")} value={reasonLabel(caseData.reason)} />
+                <Detail label={t("Condition", "حالة المنتج")} value={conditionLabel(caseData.condition)} />
+                <Detail label={t("Customer", "العميل")} value={caseData.customerName} />
+                <Detail label={t("Email", "البريد الإلكتروني")} value={caseData.customerEmail} />
               </div>
             </CardContent>
           </Card>
@@ -175,7 +203,7 @@ export function CaseDetailPage() {
                 <CardContent className="flex items-center justify-between py-4 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <Lock className="size-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Decision evidence</span>
+                    <span className="text-sm font-medium text-foreground">{t("Decision evidence", "أدلة القرار")}</span>
                     <Badge variant="outline" className="text-[10px]">{caseData.decision.relevantFacts.length}</Badge>
                   </div>
                   <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", evidenceOpen && "rotate-180")} />
@@ -193,7 +221,7 @@ export function CaseDetailPage() {
                   </div>
                   {caseData.decision.deadline && (
                     <div className="mt-3 rounded-lg bg-eligible-muted px-3 py-2 text-xs text-eligible">
-                      Return deadline: {formatDate(caseData.decision.deadline)}
+                      {t(`Return deadline: ${formatDate(caseData.decision.deadline)}`, `آخر موعد للإرجاع: ${formatDate(caseData.decision.deadline)}`)}
                     </div>
                   )}
                 </div>
@@ -208,7 +236,7 @@ export function CaseDetailPage() {
                 <CardContent className="flex items-center justify-between py-4 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <History className="size-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Timeline</span>
+                    <span className="text-sm font-medium text-foreground">{t("Timeline", "سجل الأحداث")}</span>
                     <Badge variant="outline" className="text-[10px]">{caseData.events.length}</Badge>
                   </div>
                   <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", timelineOpen && "rotate-180")} />
@@ -241,28 +269,28 @@ export function CaseDetailPage() {
         <ScrollReveal delay={200} className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Operational actions</CardTitle>
+              <CardTitle className="text-sm">{t("Operational actions", "الإجراءات التشغيلية")}</CardTitle>
             </CardHeader>
             <CardContent>
               {validTransitions[caseData.caseStatus].length > 0 ? (
                 <div className="flex flex-col gap-2">
                   <Select onValueChange={(v) => handleStatusChange(v as CaseStatus)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Change status..." />
+                      <SelectValue placeholder={t("Change status...", "تغيير الحالة...")} />
                     </SelectTrigger>
                     <SelectContent>
                       {validTransitions[caseData.caseStatus].map((status) => (
-                        <SelectItem key={status} value={status}>{CASE_STATUS_LABELS[status]}</SelectItem>
+                        <SelectItem key={status} value={status}>{statusLabel(status)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No further status changes available.</p>
+                <p className="text-sm text-muted-foreground">{t("No further status changes available.", "لا توجد تغييرات أخرى متاحة على الحالة.")}</p>
               )}
               <div className="mt-3 flex items-start gap-2 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                 <ShieldCheck className="size-3.5 mt-0.5 shrink-0" />
-                <span>Eligibility outcome is immutable. Changing status does not affect the decision.</span>
+                <span>{t("Eligibility outcome is immutable. Changing status does not affect the decision.", "نتيجة الأهلية غير قابلة للتعديل، وتغيير الحالة لا يؤثر على القرار.")}</span>
               </div>
             </CardContent>
           </Card>
@@ -271,7 +299,7 @@ export function CaseDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <MessageSquare className="size-4 text-muted-foreground" />
-                Internal notes
+                {t("Internal notes", "ملاحظات داخلية")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -289,12 +317,12 @@ export function CaseDetailPage() {
                 <Textarea
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="Add a note..."
+                  placeholder={t("Add a note...", "أضف ملاحظة...")}
                   className="min-h-[60px]"
                 />
                 <Button size="sm" onClick={handleAddNote} disabled={!noteText.trim()} className="self-start">
-                  <Send className="size-3.5" />
-                  Add note
+                  <Send className={cn("size-3.5", isArabic && "rotate-180")} />
+                  {t("Add note", "إضافة ملاحظة")}
                 </Button>
               </div>
             </CardContent>

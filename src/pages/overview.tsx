@@ -12,9 +12,11 @@ import {
   TrendingUp, Zap, Plus, ShieldCheck, Clock, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
 export function OverviewPage() {
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
   const cases = useMemo(() => services.getCases(), []);
   const policy = useMemo(() => services.getPublishedPolicy(), []);
   const connections = useMemo(() => services.getConnections(), []);
@@ -45,7 +47,7 @@ export function OverviewPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              Your returns, in focus.
+              {t("Your returns, in focus.", "مرتجعاتك في لمحة واحدة.")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">{storeName}</p>
           </div>
@@ -54,7 +56,7 @@ export function OverviewPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-eligible opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-eligible" />
             </span>
-            <span className="text-xs font-medium text-muted-foreground">Workspace active</span>
+            <span className="text-xs font-medium text-muted-foreground">{t("Workspace active", "مساحة العمل نشطة")}</span>
           </div>
         </div>
       </ScrollReveal>
@@ -62,10 +64,10 @@ export function OverviewPage() {
       {/* Quick actions */}
       <ScrollReveal delay={50}>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <QuickAction icon={FileText} label="Create policy" onClick={() => navigate("/app/policies/new")} />
-          <QuickAction icon={ShieldCheck} label="Review drafts" badge={drafts.length || undefined} onClick={() => navigate("/app/policies")} />
-          <QuickAction icon={Plug} label="Connect store" onClick={() => navigate("/app/integrations")} />
-          <QuickAction icon={ExternalLink} label="Customer return" onClick={() => navigate("/return")} />
+          <QuickAction icon={FileText} label={t("Create policy", "إنشاء سياسة")} onClick={() => navigate("/app/policies/new")} />
+          <QuickAction icon={ShieldCheck} label={t("Review drafts", "مراجعة المسودات")} badge={drafts.length || undefined} onClick={() => navigate("/app/policies")} />
+          <QuickAction icon={Plug} label={t("Connect store", "ربط المتجر")} onClick={() => navigate("/app/integrations")} />
+          <QuickAction icon={ExternalLink} label={t("Customer return", "إرجاع العميل")} onClick={() => navigate("/return")} />
         </div>
       </ScrollReveal>
 
@@ -74,23 +76,23 @@ export function OverviewPage() {
         <ScrollReveal delay={100}>
           <button
             onClick={() => navigate("/app/cases")}
-            className="group flex w-full items-center justify-between rounded-xl border border-review/30 bg-review-muted p-5 text-left transition-all hover:border-review/50 hover:shadow-md"
+            className="group flex w-full items-center justify-between rounded-xl border border-review/30 bg-review-muted p-5 text-start transition-all hover:border-review/50 hover:shadow-md"
           >
             <div className="flex items-center gap-4">
               <div className="relative flex size-10 items-center justify-center rounded-xl bg-review text-review-foreground">
                 <AlertCircle className="size-5" />
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-review text-[10px] font-bold text-review-foreground">
+                <span className="absolute -end-1 -top-1 flex size-4 items-center justify-center rounded-full bg-review text-[10px] font-bold text-review-foreground">
                   {manualReviewCases.length}
                 </span>
               </div>
               <div>
                 <div className="text-sm font-semibold text-foreground">
-                  {manualReviewCases.length} {manualReviewCases.length === 1 ? "case" : "cases"} need{manualReviewCases.length === 1 ? "s" : ""} a closer look
+                  {t(`${manualReviewCases.length} ${manualReviewCases.length === 1 ? "case" : "cases"} need${manualReviewCases.length === 1 ? "s" : ""} a closer look`, `${manualReviewCases.length} حالة تحتاج إلى مراجعة أدق`)}
                 </div>
-                <div className="text-xs text-muted-foreground">Review missing information before deciding</div>
+                <div className="text-xs text-muted-foreground">{t("Review missing information before deciding", "راجع المعلومات الناقصة قبل اتخاذ القرار")}</div>
               </div>
             </div>
-            <ArrowRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+            <ArrowRight className={cn("size-5 text-muted-foreground transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
           </button>
         </ScrollReveal>
       )}
@@ -98,10 +100,10 @@ export function OverviewPage() {
       {/* KPI strip */}
       <ScrollReveal delay={150}>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <AnimatedStat label="Open cases" value={openCases.length} icon={PackageOpen} color="text-primary" bg="bg-primary/10" loaded={loaded} />
-          <AnimatedStat label="Needs review" value={manualReviewCases.length} icon={AlertCircle} color="text-review" bg="bg-review-muted" loaded={loaded} />
-          <AnimatedStat label="Resolved" value={resolvedCases.length} icon={CheckCircle2} color="text-eligible" bg="bg-eligible-muted" loaded={loaded} />
-          <AnimatedStat label="Eligibility rate" value={`${eligiblePct}%`} icon={TrendingUp} color="text-saffron" bg="bg-saffron-muted" loaded={loaded} />
+          <AnimatedStat label={t("Open cases", "حالات مفتوحة")} value={openCases.length} icon={PackageOpen} color="text-primary" bg="bg-primary/10" loaded={loaded} />
+          <AnimatedStat label={t("Needs review", "تحتاج مراجعة")} value={manualReviewCases.length} icon={AlertCircle} color="text-review" bg="bg-review-muted" loaded={loaded} />
+          <AnimatedStat label={t("Resolved", "مغلقة")} value={resolvedCases.length} icon={CheckCircle2} color="text-eligible" bg="bg-eligible-muted" loaded={loaded} />
+          <AnimatedStat label={t("Eligibility rate", "نسبة الأهلية")} value={`${eligiblePct}%`} icon={TrendingUp} color="text-saffron" bg="bg-saffron-muted" loaded={loaded} />
         </div>
       </ScrollReveal>
 
@@ -109,10 +111,10 @@ export function OverviewPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <ScrollReveal delay={200} className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold text-foreground">Recent activity</h2>
+            <h2 className="font-display text-lg font-semibold text-foreground">{t("Recent activity", "النشاط الأخير")}</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate("/app/cases")} className="group">
-              View all
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+              {t("View all", "عرض الكل")}
+              <ArrowRight className={cn("size-3.5 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
             </Button>
           </div>
 
@@ -120,7 +122,7 @@ export function OverviewPage() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <CheckCircle2 className="size-8 text-eligible" />
-                <p className="text-sm text-muted-foreground">Nothing needs your attention right now.</p>
+                <p className="text-sm text-muted-foreground">{t("Nothing needs your attention right now.", "لا يوجد ما يتطلب انتباهك حاليًا.")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -130,7 +132,7 @@ export function OverviewPage() {
                   key={c.id}
                   onClick={() => navigate(`/app/cases/${c.id}`)}
                   className={cn(
-                    "group flex items-center justify-between rounded-xl border bg-card p-4 text-left transition-all hover:shadow-md",
+                    "group flex items-center justify-between rounded-xl border bg-card p-4 text-start transition-all hover:shadow-md",
                     c.outcome === "ELIGIBLE" && "border-eligible/15 hover:border-eligible/30",
                     c.outcome === "NOT_ELIGIBLE" && "border-not-eligible/15 hover:border-not-eligible/30",
                     c.outcome === "MANUAL_REVIEW" && "border-review/15 hover:border-review/30",
@@ -155,7 +157,7 @@ export function OverviewPage() {
                   <div className="flex items-center gap-3">
                     <OutcomeBadge outcome={c.outcome} size="sm" />
                     <CaseStatusBadge status={c.caseStatus} size="sm" />
-                    <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ArrowRight className={cn("size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100", isArabic && "rotate-180")} />
                   </div>
                 </button>
               ))}
@@ -169,16 +171,16 @@ export function OverviewPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <TrendingUp className="size-4 text-muted-foreground" />
-                Outcome distribution
+                {t("Outcome distribution", "توزيع النتائج")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
-                <DistributionBar label="Eligible" count={eligibleCount} total={totalCases} color="bg-eligible" loaded={loaded} />
-                <DistributionBar label="Manual review" count={reviewCount} total={totalCases} color="bg-review" loaded={loaded} />
-                <DistributionBar label="Not eligible" count={notEligibleCount} total={totalCases} color="bg-not-eligible" loaded={loaded} />
+                <DistributionBar label={t("Eligible", "مؤهل")} count={eligibleCount} total={totalCases} color="bg-eligible" loaded={loaded} />
+                <DistributionBar label={t("Manual review", "مراجعة بشرية")} count={reviewCount} total={totalCases} color="bg-review" loaded={loaded} />
+                <DistributionBar label={t("Not eligible", "غير مؤهل")} count={notEligibleCount} total={totalCases} color="bg-not-eligible" loaded={loaded} />
                 <div className="mt-2 flex items-center justify-between border-t border-border pt-2 text-xs">
-                  <span className="text-muted-foreground">Total cases</span>
+                  <span className="text-muted-foreground">{t("Total cases", "إجمالي الحالات")}</span>
                   <span className="font-semibold text-foreground tabular-nums">{cases.length}</span>
                 </div>
               </div>
@@ -190,7 +192,7 @@ export function OverviewPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <FileText className="size-4 text-muted-foreground" />
-                Policy health
+                {t("Policy health", "حالة السياسة")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -202,29 +204,29 @@ export function OverviewPage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-foreground">{policy.versionLabel}</div>
-                      <div className="text-xs text-muted-foreground">Published {formatDate(policy.publishedAt)}</div>
+                      <div className="text-xs text-muted-foreground">{t(`Published ${formatDate(policy.publishedAt)}`, `نُشرت في ${formatDate(policy.publishedAt)}`)}</div>
                     </div>
                   </div>
                   <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                     <Zap className="size-3 text-saffron" />
-                    {policy.rules.length} active rules
+                    {t(`${policy.rules.length} active rules`, `${policy.rules.length} قاعدة مفعّلة`)}
                   </div>
                   {drafts.length > 0 && (
                     <div className="mt-2 flex items-center gap-2 text-xs text-review">
                       <Clock className="size-3" />
-                      {drafts.length} draft{drafts.length > 1 ? "s" : ""} pending review
+                      {t(`${drafts.length} draft${drafts.length > 1 ? "s" : ""} pending review`, `${drafts.length} مسودة بانتظار المراجعة`)}
                     </div>
                   )}
                   <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => navigate("/app/policies")}>
-                    View policies
+                    {t("View policies", "عرض السياسات")}
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  <p className="text-sm text-muted-foreground">No policy published yet.</p>
+                  <p className="text-sm text-muted-foreground">{t("No policy published yet.", "لم تُنشر أي سياسة بعد.")}</p>
                   <Button size="sm" onClick={() => navigate("/app/policies/new")} className="w-full">
                     <Plus className="size-4" />
-                    Create policy
+                    {t("Create policy", "إنشاء سياسة")}
                   </Button>
                 </div>
               )}
@@ -236,7 +238,7 @@ export function OverviewPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Plug className="size-4 text-muted-foreground" />
-                Connection
+                {t("Connection", "الربط")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -256,14 +258,14 @@ export function OverviewPage() {
                       "rounded-full px-2 py-0.5 text-[11px] font-medium",
                       sallaConn.state === "connected" ? "bg-eligible-muted text-eligible" : "bg-muted text-muted-foreground",
                     )}>
-                      {sallaConn.state === "connected" ? "Connected" : sallaConn.state}
+                      {sallaConn.state === "connected" ? t("Connected", "متصل") : sallaConn.state}
                     </span>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
-                    {sallaConn.isSimulated ? "Simulated connection" : "Live"}
+                    {sallaConn.isSimulated ? t("Simulated connection", "ربط تجريبي") : t("Live", "مباشر")}
                   </div>
                   <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => navigate("/app/integrations")}>
-                    Manage
+                    {t("Manage", "إدارة")}
                   </Button>
                 </div>
               ) : (
@@ -298,7 +300,7 @@ function QuickAction({
       </div>
       <span className="text-sm font-medium text-foreground">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="absolute right-2 top-2 flex size-4 items-center justify-center rounded-full bg-review text-[10px] font-bold text-review-foreground">
+        <span className="absolute end-2 top-2 flex size-4 items-center justify-center rounded-full bg-review text-[10px] font-bold text-review-foreground">
           {badge}
         </span>
       )}
@@ -323,7 +325,7 @@ function AnimatedStat({
 }) {
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md">
-      <div className={cn("absolute right-0 top-0 h-20 w-20 rounded-full blur-2xl transition-opacity", bg, loaded ? "opacity-100" : "opacity-0")} />
+      <div className={cn("absolute end-0 top-0 h-20 w-20 rounded-full blur-2xl transition-opacity", bg, loaded ? "opacity-100" : "opacity-0")} />
       <div className="relative flex items-center gap-3">
         <div className={cn("flex size-9 items-center justify-center rounded-lg transition-transform group-hover:scale-110", bg, color)}>
           <Icon className="size-4.5" />

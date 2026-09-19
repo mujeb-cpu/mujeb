@@ -11,6 +11,7 @@ import { services } from "@/lib/services";
 import { formatDateTime } from "@/lib/domain";
 import { Search, ArrowRight, PackageOpen, AlertCircle, X, Calendar, Bookmark, Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
 interface SavedView {
   id: string;
@@ -27,6 +28,14 @@ const DEFAULT_VIEWS: SavedView[] = [
 
 export function CaseListPage() {
   const navigate = useNavigate();
+  const { t, isArabic } = useLanguage();
+  // Default view names are declared outside the component; translate them by id at render time.
+  const defaultViewNames: Record<string, string> = {
+    all: t("All cases", "كل الحالات"),
+    review: t("Needs review", "تحتاج مراجعة"),
+    open: t("Open", "مفتوحة"),
+    resolved: t("Resolved", "مغلقة"),
+  };
   const allCases = useMemo(() => services.getCases(), []);
   const [search, setSearch] = useState("");
   const [outcomeFilter, setOutcomeFilter] = useState<string>("all");
@@ -93,10 +102,10 @@ export function CaseListPage() {
     <div className="flex flex-col gap-6">
       <ScrollReveal>
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Return cases</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("Return cases", "طلبات الإرجاع")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length} of {allCases.length} cases
-            {hasFilters && " · filtered"}
+            {t(`${filtered.length} of ${allCases.length} cases`, `${filtered.length} من ${allCases.length} حالة`)}
+            {hasFilters && t(" · filtered", " · مُصفّاة")}
           </p>
         </div>
       </ScrollReveal>
@@ -118,7 +127,7 @@ export function CaseListPage() {
               {view.id === "review" && <AlertCircle className="size-3" />}
               {view.id === "all" && <PackageOpen className="size-3" />}
               {view.id !== "review" && view.id !== "all" && <Bookmark className="size-3" />}
-              {view.name}
+              {defaultViewNames[view.id] ?? view.name}
             </button>
           ))}
           {hasFilters && !showSaveView && (
@@ -127,7 +136,7 @@ export function CaseListPage() {
               className="flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
             >
               <Plus className="size-3" />
-              Save view
+              {t("Save view", "حفظ العرض")}
             </button>
           )}
           {showSaveView && (
@@ -135,7 +144,7 @@ export function CaseListPage() {
               <Input
                 value={newViewName}
                 onChange={(e) => setNewViewName(e.target.value)}
-                placeholder="View name..."
+                placeholder={t("View name...", "اسم العرض...")}
                 className="h-8 w-32 text-xs"
                 autoFocus
               />
@@ -153,48 +162,48 @@ export function CaseListPage() {
       <ScrollReveal delay={100}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors focus-within:text-primary" />
+            <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors focus-within:text-primary" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by order, customer, or item..."
-              className="pl-9"
+              placeholder={t("Search by order, customer, or item...", "ابحث برقم الطلب أو اسم العميل أو المنتج...")}
+              className="ps-9"
             />
           </div>
           <Select value={outcomeFilter} onValueChange={(v) => { setOutcomeFilter(v); setActiveView("custom"); }}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Outcome" />
+              <SelectValue placeholder={t("Outcome", "النتيجة")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All outcomes</SelectItem>
-              <SelectItem value="ELIGIBLE">Eligible</SelectItem>
-              <SelectItem value="NOT_ELIGIBLE">Not eligible</SelectItem>
-              <SelectItem value="MANUAL_REVIEW">Manual review</SelectItem>
+              <SelectItem value="all">{t("All outcomes", "كل النتائج")}</SelectItem>
+              <SelectItem value="ELIGIBLE">{t("Eligible", "مؤهل")}</SelectItem>
+              <SelectItem value="NOT_ELIGIBLE">{t("Not eligible", "غير مؤهل")}</SelectItem>
+              <SelectItem value="MANUAL_REVIEW">{t("Manual review", "مراجعة بشرية")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setActiveView("custom"); }}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t("Status", "الحالة")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="OPEN">Open</SelectItem>
-              <SelectItem value="AWAITING_ITEM">Awaiting item</SelectItem>
-              <SelectItem value="RECEIVED">Received</SelectItem>
-              <SelectItem value="RESOLVED">Resolved</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              <SelectItem value="all">{t("All statuses", "كل الحالات")}</SelectItem>
+              <SelectItem value="OPEN">{t("Open", "مفتوحة")}</SelectItem>
+              <SelectItem value="AWAITING_ITEM">{t("Awaiting item", "بانتظار استلام المنتج")}</SelectItem>
+              <SelectItem value="RECEIVED">{t("Received", "تم الاستلام")}</SelectItem>
+              <SelectItem value="RESOLVED">{t("Resolved", "مغلقة")}</SelectItem>
+              <SelectItem value="CANCELLED">{t("Cancelled", "ملغاة")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={dateFilter} onValueChange={(v) => { setDateFilter(v); setActiveView("custom"); }}>
             <SelectTrigger className="w-[140px]">
-              <Calendar className="size-3.5 mr-1 text-muted-foreground" />
-              <SelectValue placeholder="Date" />
+              <Calendar className="size-3.5 me-1 text-muted-foreground" />
+              <SelectValue placeholder={t("Date", "التاريخ")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All time</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">Past 7 days</SelectItem>
-              <SelectItem value="month">Past 30 days</SelectItem>
+              <SelectItem value="all">{t("All time", "كل الفترات")}</SelectItem>
+              <SelectItem value="today">{t("Today", "اليوم")}</SelectItem>
+              <SelectItem value="week">{t("Past 7 days", "آخر 7 أيام")}</SelectItem>
+              <SelectItem value="month">{t("Past 30 days", "آخر 30 يومًا")}</SelectItem>
             </SelectContent>
           </Select>
           {hasFilters && (
@@ -202,7 +211,7 @@ export function CaseListPage() {
               variant="ghost"
               size="icon"
               onClick={() => { setSearch(""); setOutcomeFilter("all"); setStatusFilter("all"); setDateFilter("all"); setActiveView("all"); }}
-              title="Clear filters"
+              title={t("Clear filters", "مسح عوامل التصفية")}
             >
               <X className="size-4" />
             </Button>
@@ -216,9 +225,9 @@ export function CaseListPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <PackageOpen className="size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No cases match your filters.</p>
+            <p className="text-sm text-muted-foreground">{t("No cases match your filters.", "لا توجد حالات مطابقة لعوامل التصفية.")}</p>
             <Button variant="outline" size="sm" onClick={() => { setSearch(""); setOutcomeFilter("all"); setStatusFilter("all"); setDateFilter("all"); setActiveView("all"); }}>
-              Clear filters
+              {t("Clear filters", "مسح عوامل التصفية")}
             </Button>
           </CardContent>
         </Card>
@@ -228,12 +237,12 @@ export function CaseListPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Case / Order</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Customer</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Item</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Outcome</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Created</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Case / Order", "الحالة / الطلب")}</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Customer", "العميل")}</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Item", "المنتج")}</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Outcome", "النتيجة")}</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Status", "الحالة")}</th>
+                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">{t("Created", "تاريخ الإنشاء")}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -261,12 +270,12 @@ export function CaseListPage() {
                     <td className="px-4 py-3 text-foreground">{c.customerName}</td>
                     <td className="px-4 py-3">
                       <div className="text-foreground">{c.itemName}</div>
-                      <div className="text-xs text-muted-foreground">Qty: {c.quantity}</div>
+                      <div className="text-xs text-muted-foreground">{t(`Qty: ${c.quantity}`, `الكمية: ${c.quantity}`)}</div>
                     </td>
                     <td className="px-4 py-3"><OutcomeBadge outcome={c.outcome} size="sm" /></td>
                     <td className="px-4 py-3"><CaseStatusBadge status={c.caseStatus} size="sm" /></td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{formatDateTime(c.createdAt)}</td>
-                    <td className="px-4 py-3"><ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" /></td>
+                    <td className="px-4 py-3"><ArrowRight className={cn("size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100", isArabic && "rotate-180")} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -279,7 +288,7 @@ export function CaseListPage() {
                 key={c.id}
                 onClick={() => navigate(`/app/cases/${c.id}`)}
                 className={cn(
-                  "group rounded-xl border bg-card p-4 text-left transition-all hover:shadow-md",
+                  "group rounded-xl border bg-card p-4 text-start transition-all hover:shadow-md",
                   c.outcome === "ELIGIBLE" && "border-eligible/15 hover:border-eligible/30",
                   c.outcome === "NOT_ELIGIBLE" && "border-not-eligible/15 hover:border-not-eligible/30",
                   c.outcome === "MANUAL_REVIEW" && "border-review/15 hover:border-review/30",
@@ -298,7 +307,7 @@ export function CaseListPage() {
                     )}
                     <div className="text-sm font-medium text-foreground">{c.orderId}</div>
                   </div>
-                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className={cn("size-4 text-muted-foreground transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">{c.customerName} · {c.itemName}</div>
                 <div className="mt-3 flex items-center gap-2">

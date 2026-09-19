@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/sora";
 @import "@fontsource-variable/manrope";
+/* Arabic face — without this import the RTL font-family rules below silently
+   fall back to a system font. */
+@import "@fontsource-variable/noto-sans-arabic";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -215,7 +218,11 @@
 
 html[dir="rtl"] body {
   font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
+  /* Arabic is cursive — letters join. Any letter-spacing breaks the joins and
+     makes text look broken, so it is forced to zero everywhere below. */
   letter-spacing: 0;
+  /* Arabic glyphs carry taller ascenders and deeper descenders than Latin. */
+  line-height: 1.75;
 }
 
 html[dir="rtl"] h1,
@@ -225,10 +232,32 @@ html[dir="rtl"] h4,
 html[dir="rtl"] h5,
 html[dir="rtl"] .font-display {
   font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
+  line-height: 1.45;
 }
 
-html[dir="rtl"] .rtl-flip {
+/* Tailwind tracking utilities are applied inline all over the app and would
+   otherwise re-break the cursive joins. */
+html[dir="rtl"] [class*="tracking-"] {
+  letter-spacing: 0 !important;
+}
+
+/* Uppercase has no meaning in Arabic and mangles eyebrow labels. */
+html[dir="rtl"] .uppercase {
+  text-transform: none;
+}
+
+/* Latin-only content inside an RTL page keeps its own direction: order IDs,
+   SKUs, emails, code, and numeric/currency cells in tables. */
+html[dir="rtl"] .font-mono,
+html[dir="rtl"] .tabular-nums,
+html[dir="rtl"] [dir="ltr"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+html[dir="rtl"] .rtl-flip,
+html[dir="rtl"] .rtl-mirror {
   transform: scaleX(-1);
 }
 
@@ -1006,6 +1035,21 @@ html[dir="rtl"] .font-mono {
   grid-template-areas: "typed";
 }
 
+/* One entrance, with the final text in layout throughout. Whole-line reveals
+   preserve Arabic shaping and avoid timer-driven headline reflow. */
+.hero-answer-reveal {
+  display: inline-block;
+  padding-block: 0.08em;
+  animation: hero-answer-enter 850ms cubic-bezier(0.22, 1, 0.36, 1) 320ms both;
+}
+@keyframes hero-answer-enter {
+  from { opacity: 0; transform: translateY(0.22em); clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-answer-reveal { animation: none; }
+}
+
 .hero-type-ghost,
 .hero-type-value {
   grid-area: typed;
@@ -1304,7 +1348,7 @@ html[dir="rtl"] .font-mono {
 }
 
 .hero-stage:hover .hero-phone {
-  transform: rotateY(-8deg) rotateX(2deg) rotateZ(0deg) translateZ(40px);
+  transform: rotateY(-22deg) rotateX(5deg) rotateZ(-1.5deg) translateZ(22px);
 }
 
 @media (max-width: 767px) {
