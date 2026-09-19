@@ -172,10 +172,13 @@
   --saffron: #fbbf24;
   --saffron-foreground: #1a1408;
   --saffron-muted: #2a2414;
-  --footer-bg: #090c0b;
+  /* Lighter than the page (#0d1110), not darker: there is no headroom below
+     near-black, so a darker footer gave the curtain edge ~1.03:1 and the reveal
+     was invisible. Raising it instead reads as a lit surface behind the panel. */
+  --footer-bg: #1b2523;
   --footer-fg: #f1f5f3;
   --footer-muted: #9ca9a3;
-  --footer-subtle: #202725;
+  --footer-subtle: #2c3a37;
   --footer-gold: #5eead4;
   --footer-gold-foreground: #061311;
 }
@@ -470,11 +473,14 @@ html[dir="rtl"] .font-mono {
     0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
+/* On a dark ground a black drop shadow is invisible, so the edge is carried by
+   a light rim instead — a bright hairline plus a soft outer halo, which reads
+   as the panel catching light from the surface behind it. */
 .dark .curtain-content {
   box-shadow:
     0 44px 88px -18px rgb(0 0 0 / 0.95),
-    0 18px 36px -12px rgb(0 0 0 / 0.7),
-    0 0 0 1px rgb(255 255 255 / 0.08);
+    0 0 0 1px rgb(255 255 255 / 0.16),
+    0 2px 24px -2px rgb(255 255 255 / 0.07);
 }
 
 @media (max-width: 640px) {
@@ -502,7 +508,12 @@ html[dir="rtl"] .font-mono {
 }
 
 .dark .curtain-content::after {
-  background: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.45));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(0 0 0 / 0.3) 55%,
+    rgb(0 0 0 / 0.6)
+  );
 }
 
 @media (max-width: 640px) {
