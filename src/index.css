@@ -996,8 +996,15 @@ html[dir="rtl"] .font-mono {
       color-mix(in srgb, var(--primary) 9%, transparent),
       transparent 70%
     );
-  /* Fade in below the fixed header so the tint never meets it as a hard seam. */
+  /* Fade in below the fixed header so the tint never meets it as a hard seam.
+     `no-repeat` + `100% 100%` are required: a gradient mask defaults to
+     repeating, which tiles the 132px ramp down the section as hard bands. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 132px);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
   mask-image: linear-gradient(to bottom, transparent 0, #000 132px);
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
 }
 
 /* A soft grid that fades out, giving the dark ground texture instead of flat black. */
@@ -1013,7 +1020,10 @@ html[dir="rtl"] .font-mono {
     transparent 1px
   );
   background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 65% 60% at 50% 40%, #000 20%, transparent 78%);
+  -webkit-mask-repeat: no-repeat;
   mask-image: radial-gradient(ellipse 65% 60% at 50% 40%, #000 20%, transparent 78%);
+  mask-repeat: no-repeat;
   opacity: 0.5;
 }
 
@@ -1104,7 +1114,10 @@ html[dir="rtl"] .font-mono {
 
 .principles-marquee {
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-repeat: no-repeat;
   mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-repeat: no-repeat;
 }
 
 .principles-track {
@@ -1284,6 +1297,7 @@ html[dir="rtl"] .font-mono {
 
 @media (prefers-reduced-motion: reduce) {
   .principles-marquee {
+    -webkit-mask-image: none;
     mask-image: none;
     padding-inline: 20px;
   }
