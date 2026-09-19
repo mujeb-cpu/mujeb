@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState } from "react";
 import { Calculator, Clock3, SlidersHorizontal, TimerReset, WalletCards, ArrowUpRight } from "lucide-react";
 import { Input } from "@/components/ui/input";

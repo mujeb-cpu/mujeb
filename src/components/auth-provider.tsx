@@ -1,7 +1,7 @@
+"use client";
+
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { Spinner } from "@/components/ui/spinner";
+import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 interface Workspace {
@@ -46,13 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabase) return;
     let active = true;
-    void supabase.auth.getSession().then(async ({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }: { data: { session: Session | null } }) => {
       if (!active) return;
       setSession(data.session);
       if (data.session) await loadWorkspace(data.session.user.id);
       if (active) setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, nextSession: Session | null) => {
       if (!active) return;
       setSession(nextSession);
       if (!nextSession) setWorkspace(null);
@@ -83,12 +83,4 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used inside AuthProvider");
   return context;
-}
-
-export function RequireMerchantAccess() {
-  const auth = useAuth();
-  const location = useLocation();
-  if (auth.loading) return <div className="flex min-h-svh items-center justify-center"><Spinner className="size-6 text-primary" /></div>;
-  if (!auth.user) return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
-  return <Outlet />;
 }

@@ -1,7 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+"use client";
 
-export type Locale = "en" | "ar";
-const STORAGE_KEY = "mujeeb-language";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { Locale } from "@/lib/locale-server";
+import { persistLocale, readStoredLocale } from "@/lib/locale-client";
+
+export type { Locale };
 
 /**
  * Switching locale changes every string AND mirrors the whole layout. Applied
@@ -24,16 +27,31 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "ar" || saved === "en") return saved;
-    return navigator.language.toLowerCase().startsWith("ar") ? "ar" : "en";
-  });
+export function LanguageProvider({
+  children,
+  initialLocale = "en",
+}: {
+  children: ReactNode;
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [isSwitching, setIsSwitching] = useState(false);
   const timers = useRef<number[]>([]);
+  const hydrated = useRef(false);
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+
+  // After hydration, align with localStorage (and sync cookie) without a fade.
+  useEffect(() => {
+    if (hydrated.current) return;
+    hydrated.current = true;
+    const stored = readStoredLocale();
+    const next = stored ?? initialLocale;
+    persistLocale(next);
+    if (next !== initialLocale) {
+      setLocaleState(next);
+    }
+  }, [initialLocale]);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState((current) => {
@@ -43,7 +61,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      localStorage.setItem(STORAGE_KEY, next);
+      persistLocale(next);
 
       if (reduceMotion) return next;
 
@@ -68,6 +86,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
     document.documentElement.dataset.locale = locale;
+    document.documentElement.dataset.localeReady = "true";
   }, [locale]);
 
   useEffect(() => {

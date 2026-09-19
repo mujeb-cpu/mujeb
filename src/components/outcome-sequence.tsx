@@ -1,3 +1,5 @@
+"use client";
+
 import { Children, useEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotion } from "framer-motion";
 import { ChevronRight } from "lucide-react";

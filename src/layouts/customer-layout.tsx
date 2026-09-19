@@ -1,4 +1,7 @@
-import { Outlet, Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import type { ReactNode } from "react";
 import { MujeebLogo } from "@/components/mujeeb-logo";
 import { PageTransition } from "@/components/page-transition";
 import { services } from "@/lib/services";
@@ -6,7 +9,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { StoreIdentity } from "@/components/store-identity";
 
-export function CustomerLayout() {
+export function CustomerLayout({ children }: { children: ReactNode }) {
   const storeName = services.getStoreName();
   const { t } = useLanguage();
 
@@ -22,7 +25,7 @@ export function CustomerLayout() {
           </div>
           <div className="flex items-center gap-2">
           <LanguageToggle compact />
-          <Link to="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-80">
+          <Link href="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-80">
             <span className="text-xs text-muted-foreground">{t("Powered by", "بدعم من")}</span>
             <MujeebLogo showText={false} />
             <span className="font-display text-sm font-semibold">{t("Mujeeb", "مجيب")}</span>
@@ -33,7 +36,7 @@ export function CustomerLayout() {
       <main className="flex-1">
         <div className="mx-auto max-w-[520px] px-5 py-8">
           <PageTransition>
-            <Outlet />
+            {children}
           </PageTransition>
         </div>
       </main>

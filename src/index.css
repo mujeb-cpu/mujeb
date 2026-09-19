@@ -1,10 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource-variable/sora";
-@import "@fontsource-variable/manrope";
-/* Arabic face — without this import the RTL font-family rules below silently
-   fall back to a system font. */
-@import "@fontsource-variable/noto-sans-arabic";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,8 +8,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: "Manrope Variable", system-ui, sans-serif;
-  --font-display: "Sora Variable", "Manrope Variable", system-ui, sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-manrope), system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -195,7 +190,9 @@
      A fixed 50/50 body split painted through the viewport on every scroll
      frame and read as a sage/green band mid-page when layers composited. */
   html {
-    scroll-behavior: smooth;
+    /* Smooth only for programmatic hash jumps (see public-layout), not wheel
+       scroll — global smooth makes native scrolling feel stuck and laggy. */
+    scroll-behavior: auto;
     color-scheme: light;
     background: var(--footer-bg);
   }
@@ -207,13 +204,16 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    transition: opacity var(--locale-fade-in) var(--locale-ease-in);
   }
 
   html[data-locale-switching="true"] body {
     opacity: 0;
-    transition: opacity var(--locale-fade-out) var(--locale-ease-out);
     pointer-events: none;
+    transition: opacity var(--locale-fade-out) var(--locale-ease-out);
+  }
+
+  html[data-locale-ready="true"]:not([data-locale-switching="true"]) body {
+    transition: opacity var(--locale-fade-in) var(--locale-ease-in);
   }
   h1,
   h2,
@@ -225,7 +225,7 @@
 }
 
 html[dir="rtl"] body {
-  font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
+  font-family: var(--font-noto-arabic), system-ui, sans-serif;
   /* Arabic is cursive — letters join. Any letter-spacing breaks the joins and
      makes text look broken, so it is forced to zero everywhere below. */
   letter-spacing: 0;
@@ -239,7 +239,7 @@ html[dir="rtl"] h3,
 html[dir="rtl"] h4,
 html[dir="rtl"] h5,
 html[dir="rtl"] .font-display {
-  font-family: "Noto Sans Arabic Variable", system-ui, sans-serif;
+  font-family: var(--font-noto-arabic), system-ui, sans-serif;
   letter-spacing: 0;
   line-height: 1.45;
 }
@@ -1792,10 +1792,9 @@ html[dir="rtl"] .font-mono {
   top: 50%;
   width: 344px;
   transform-style: preserve-3d;
-  /* Scroll drives the transform; the transition only smooths sub-frame jitter. */
-  transition:
-    opacity 400ms ease-out,
-    filter 400ms ease-out;
+  /* Scroll handler sets transform/opacity every frame — CSS transitions lag behind. */
+  transition: none;
+  will-change: transform, opacity;
 }
 
 /* Soft contact shadow on the ground plane beneath each device. */
@@ -1926,7 +1925,7 @@ html[dir="rtl"] .font-mono {
   /* Set per-card from the fan progress; prevents the three labels from
      piling on top of each other while the phones are still stacked. */
   opacity: var(--label-opacity, 1);
-  transition: opacity 200ms ease-out;
+  transition: none;
 }
 
 .outcome-card-label {
@@ -1941,9 +1940,8 @@ html[dir="rtl"] .font-mono {
   width: min(680px, calc(100% - 24px));
   padding-inline: 20px;
   text-align: center;
-  transition:
-    opacity 300ms ease-out,
-    transform 300ms ease-out;
+  transition: none;
+  will-change: transform, opacity;
 }
 
 .outcome-sequence-hint {

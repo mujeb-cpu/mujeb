@@ -32,7 +32,8 @@ export function useSectionSpy(sectionIds: string[]) {
           bestId = id;
         }
       }
-      setActive(best >= 0.12 ? bestId : null);
+      const next = best >= 0.12 ? bestId : null;
+      setActive((current) => (current === next ? current : next));
     };
 
     const observer = new IntersectionObserver(

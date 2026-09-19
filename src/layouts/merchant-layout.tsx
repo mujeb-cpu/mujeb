@@ -1,4 +1,7 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { MujeebMark } from "@/components/mujeeb-logo";
 import { PageTransition } from "@/components/page-transition";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -35,9 +38,9 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { StoreIdentity } from "@/components/store-identity";
 
-export function MerchantLayout() {
-  const location = useLocation();
-  const navigate = useNavigate();
+export function MerchantLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
   const auth = useAuth();
   const { t, isArabic } = useLanguage();
   const primaryNav = [
@@ -53,11 +56,11 @@ export function MerchantLayout() {
 
   const handleSignOut = async () => {
     await auth.signOut();
-    navigate("/auth", { replace: true });
+    router.replace("/auth");
   };
 
   const isActive = (href: string, end?: boolean) =>
-    end ? location.pathname === href : location.pathname.startsWith(href);
+    end ? pathname === href : pathname.startsWith(href);
 
   return (
     <SidebarProvider>
@@ -70,7 +73,7 @@ export function MerchantLayout() {
       >
         <SidebarHeader>
           <button
-            onClick={() => navigate("/app")}
+            onClick={() => router.push("/app")}
             className="flex items-center gap-2 px-2 py-1 transition-opacity hover:opacity-80"
           >
             <MujeebMark className="size-7 text-primary" />
@@ -99,7 +102,7 @@ export function MerchantLayout() {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isActive(item.href, item.end)}
-                      onClick={() => navigate(item.href)}
+                      onClick={() => router.push(item.href)}
                       tooltip={item.label}
                     >
                       <item.icon className="size-4" />
@@ -118,7 +121,7 @@ export function MerchantLayout() {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isActive(item.href)}
-                      onClick={() => navigate(item.href)}
+                      onClick={() => router.push(item.href)}
                       tooltip={item.label}
                     >
                       <item.icon className="size-4" />
@@ -133,7 +136,7 @@ export function MerchantLayout() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => navigate("/")} tooltip={t("View public site", "عرض الموقع العام")}>
+              <SidebarMenuButton onClick={() => router.push("/")} tooltip={t("View public site", "عرض الموقع العام")}>
                 <ExternalLink className="size-4" />
                 <span>{t("View public site", "عرض الموقع العام")}</span>
               </SidebarMenuButton>
@@ -151,7 +154,7 @@ export function MerchantLayout() {
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <SidebarTrigger />
-            <Breadcrumb pathname={location.pathname} />
+            <Breadcrumb pathname={pathname} />
           </div>
           <div className="flex items-center gap-2">
             <LanguageToggle />
@@ -160,7 +163,7 @@ export function MerchantLayout() {
         </header>
         <div className="mx-auto w-full max-w-[1280px] p-6">
           <PageTransition>
-            <Outlet />
+            {children}
           </PageTransition>
         </div>
       </SidebarInset>

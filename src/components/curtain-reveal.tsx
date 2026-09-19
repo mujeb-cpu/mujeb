@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useRef } from "react";
 import {
   motion,
@@ -6,7 +10,6 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/language-provider";
@@ -39,7 +42,7 @@ function FooterPanel({
   progress: MotionValue<number>;
   reduceMotion: boolean | null;
 }) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { t, isArabic } = useLanguage();
   const wordmark = t("Mujeeb", "مجيب");
   const footerLinks = [
@@ -121,7 +124,7 @@ function FooterPanel({
           >
             <Button
               size="lg"
-              onClick={() => navigate("/app")}
+              onClick={() => router.push("/app")}
               className="group bg-footer-gold text-footer-gold-foreground hover:bg-footer-gold/90"
             >
               {t("Open the workspace", "فتح مساحة العمل")}
@@ -188,7 +191,7 @@ function FooterLink({ label, href }: { label: string; href: string }) {
   }
 
   return (
-    <Link to={href} className="footer-link">
+    <Link href={href} className="footer-link">
       {label}
     </Link>
   );

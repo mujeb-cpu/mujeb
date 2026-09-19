@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";

@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
 
@@ -68,9 +70,8 @@ function applyThemeClasses(resolvedTheme: ResolvedTheme) {
   root.classList.add(resolvedTheme)
 }
 
-/** Cross-fade via View Transitions when supported; CSS `--theme-fade` is the fallback. */
+/** Apply theme classes; colour cross-fade uses CSS `--theme-fade` on elements. */
 function transitionTheme(resolvedTheme: ResolvedTheme, disableSnap: boolean) {
-  const root = document.documentElement
   const run = () => applyThemeClasses(resolvedTheme)
 
   if (disableSnap) {
@@ -85,16 +86,9 @@ function transitionTheme(resolvedTheme: ResolvedTheme, disableSnap: boolean) {
     return
   }
 
-  const startVT = document.startViewTransition?.bind(document)
-  if (startVT) {
-    root.dataset.themeTransition = "view"
-    const transition = startVT(run)
-    transition.finished.finally(() => {
-      delete root.dataset.themeTransition
-    })
-    return
-  }
-
+  // Do not use document.startViewTransition here. Next.js 16 / React 19 use view
+  // transitions for navigations; a second root transition is skipped and rejects
+  // with AbortError ("Transition was skipped"), which surfaces as a runtime error.
   run()
 }
 
@@ -127,14 +121,8 @@ export function ThemeProvider({
   disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = React.useState<Theme>(() => {
-    const storedTheme = localStorage.getItem(storageKey)
-    if (isTheme(storedTheme)) {
-      return storedTheme
-    }
-
-    return defaultTheme
-  })
+  const [theme, setThemeState] = React.useState<Theme>(defaultTheme)
+  const hasHydratedTheme = React.useRef(false)
 
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
@@ -154,6 +142,23 @@ export function ThemeProvider({
   )
 
   React.useEffect(() => {
+    if (!hasHydratedTheme.current) {
+      hasHydratedTheme.current = true
+      const storedTheme = localStorage.getItem(storageKey)
+      if (isTheme(storedTheme) && storedTheme !== theme) {
+        setThemeState(storedTheme)
+      }
+      if (theme !== "system" && (!isTheme(storedTheme) || storedTheme !== "system")) {
+        return undefined
+      }
+      const mediaQuery = window.matchMedia(COLOR_SCHEME_QUERY)
+      const handleChange = () => {
+        applyTheme("system")
+      }
+      mediaQuery.addEventListener("change", handleChange)
+      return () => mediaQuery.removeEventListener("change", handleChange)
+    }
+
     applyTheme(theme)
 
     if (theme !== "system") {
@@ -170,7 +175,7 @@ export function ThemeProvider({
     return () => {
       mediaQuery.removeEventListener("change", handleChange)
     }
-  }, [theme, applyTheme])
+  }, [theme, applyTheme, storageKey])
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

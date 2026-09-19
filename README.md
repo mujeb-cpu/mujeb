@@ -42,12 +42,12 @@ npm run dev
 Add the Supabase project URL and browser-safe publishable key to `.env.local`:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-VITE_GOOGLE_AUTH_ENABLED=true
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true
 ```
 
-Never place service-role keys, OAuth client secrets, Meta tokens, or Salla secrets in variables prefixed with `VITE_`.
+Never place service-role keys, OAuth client secrets, Meta tokens, or Salla secrets in variables prefixed with `NEXT_PUBLIC_`.
 
 ## Database setup
 

@@ -1,5 +1,8 @@
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import { MujeebLogo } from "@/components/mujeeb-logo";
 
 import { CurtainReveal } from "@/components/curtain-reveal";
@@ -15,15 +18,16 @@ import { useLanguage } from "@/components/language-provider";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { useSectionSpy } from "@/hooks/use-section-spy";
 
-export function PublicLayout() {
+export function PublicLayout({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const auth = useAuth();
   const { t } = useLanguage();
-  const isHome = location.pathname === "/";
+  const isHome = pathname === "/";
   const activeSection = useSectionSpy(
     isHome ? ["product", "how-it-works"] : [],
   );
@@ -39,13 +43,20 @@ export function PublicLayout() {
     isHome && activeSection === sectionId;
 
   useEffect(() => {
-    if (new URLSearchParams(location.search).get("auth") === "1") setAuthOpen(true);
-  }, [location.search]);
+    if (searchParams.get("auth") === "1") setAuthOpen(true);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const returnUrl = searchParams.get("returnUrl");
+    if (!auth.user || !returnUrl) return;
+    if (!returnUrl.startsWith("/") || returnUrl.startsWith("//")) return;
+    router.replace(returnUrl);
+  }, [auth.user, router, searchParams]);
 
   const handleAuthOpenChange = (open: boolean) => {
     setAuthOpen(open);
-    if (!open && new URLSearchParams(location.search).has("auth")) {
-      navigate(`${location.pathname}${location.hash}`, { replace: true });
+    if (!open && searchParams.has("auth")) {
+      router.replace(pathname);
     }
   };
 
@@ -65,34 +76,40 @@ export function PublicLayout() {
   }, [menuOpen]);
 
   useEffect(() => {
+    let scrolledPast = window.scrollY > 40;
+    setScrolled(scrolledPast);
     const onScroll = () => {
-      setScrolled(window.scrollY > 40);
+      const next = window.scrollY > 40;
+      if (next === scrolledPast) return;
+      scrolledPast = next;
+      setScrolled(next);
     };
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    if (location.hash) {
-      const el = document.getElementById(
-        decodeURIComponent(location.hash.slice(1)),
-      );
-      if (el) {
-        el.scrollIntoView({
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
-            .matches
-            ? "instant"
-            : "smooth",
-          block: "start",
-        });
+    const scrollToHash = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const el = document.getElementById(decodeURIComponent(hash.slice(1)));
+        if (el) {
+          el.scrollIntoView({
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "instant"
+              : "smooth",
+            block: "start",
+          });
+          return;
+        }
       }
-    } else {
-      // Explicit "instant": html has scroll-behavior:smooth for anchor jumps,
-      // which would otherwise animate the whole page on every route change.
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    }
-  }, [location.pathname, location.hash]);
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -101,7 +118,7 @@ export function PublicLayout() {
       >
         <div className="public-header-surface">
           <div className="public-header-inner">
-            <Link to="/" className="rounded-lg p-1 shrink-0 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+            <Link href="/" className="rounded-lg p-1 shrink-0 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
               <MujeebLogo
                 className={cn(
                   "transition-all duration-300",
@@ -114,7 +131,7 @@ export function PublicLayout() {
               {navLinks.map((link) => (
                 <button
                   key={link.href}
-                  onClick={() => navigate(link.href)}
+                  onClick={() => router.push(link.href)}
                   aria-current={
                     isNavActive(link.id) ? "page" : undefined
                   }
@@ -129,7 +146,7 @@ export function PublicLayout() {
             <div className="flex items-center gap-1.5">
               <div className="hidden items-center gap-1 md:flex">
                 <Link
-                  to="/#whatsapp"
+                  href="/#whatsapp"
                   className="nav-ghost hidden rounded-full px-3 py-2 lg:inline-flex"
                 >
                   <WhatsAppChannel showStatus={false} />
@@ -137,7 +154,7 @@ export function PublicLayout() {
                 {auth.user ? (
                   <Button
                     size="sm"
-                    onClick={() => navigate("/app")}
+                    onClick={() => router.push("/app")}
                     className="nav-cta rounded-full px-4"
                   >
                     {t("Workspace", "مساحة العمل")}
@@ -199,7 +216,7 @@ export function PublicLayout() {
               key={link.href}
               onClick={() => {
                 setMenuOpen(false);
-                navigate(link.href);
+                router.push(link.href);
               }}
               aria-current={isNavActive(link.id) ? "page" : undefined}
               style={{ ["--i" as string]: String(i) }}
@@ -212,7 +229,7 @@ export function PublicLayout() {
             </button>
           ))}
           <Link
-            to="/#whatsapp"
+            href="/#whatsapp"
             onClick={() => setMenuOpen(false)}
             style={{ ["--i" as string]: String(navLinks.length) }}
             className="mobile-menu-item flex items-center border-b border-border/70 py-4 text-[17px] font-medium text-foreground"
@@ -228,7 +245,7 @@ export function PublicLayout() {
               className="mobile-menu-item nav-cta h-11 w-full rounded-full"
               onClick={() => {
                 setMenuOpen(false);
-                navigate("/app");
+                router.push("/app");
               }}
             >
               {t("Workspace", "مساحة العمل")}
@@ -262,7 +279,7 @@ export function PublicLayout() {
 
       <CurtainReveal>
         <main className="min-h-svh bg-background pt-16">
-          <Outlet />
+          {children}
         </main>
       </CurtainReveal>
       <ScrollToTop />

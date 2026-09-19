@@ -1,17 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+export { isSupabaseConfigured } from "@/lib/supabase/env";
+export { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
-
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabasePublishableKey!, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-  : null;
-
+/** Browser Supabase client; null when env is unset or during SSR. */
+export const supabase = getSupabaseBrowserClient();

@@ -1,6 +1,8 @@
+"use client";
+
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import { Link } from "react-router-dom";
 import { MujeebMark } from "@/components/mujeeb-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -24,7 +26,8 @@ interface AuthDialogProps {
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { t } = useLanguage();
-  const googleAuthEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED === "true";
+  const googleAuthEnabled =
+    process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<"google" | "email" | null>(null);
   const [sent, setSent] = useState(false);
@@ -57,7 +60,9 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     setLoading("google");
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/app` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/app")}`,
+      },
     });
     if (oauthError) {
       setError(oauthError.message);
@@ -76,7 +81,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     const { error: magicLinkError } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/app`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/app")}`,
         shouldCreateUser: true,
         data: { store_name: "My Store" },
       },
@@ -207,7 +212,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 <br />
                 {t("By continuing you agree to our", "بمتابعتك، فإنك توافق على")}{" "}
                 <Link
-                  to="/terms"
+                  href="/terms"
                   onClick={() => onOpenChange(false)}
                   className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
                 >
@@ -215,7 +220,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 </Link>{" "}
                 {t("and", "و")}{" "}
                 <Link
-                  to="/privacy"
+                  href="/privacy"
                   onClick={() => onOpenChange(false)}
                   className="underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
                 >
