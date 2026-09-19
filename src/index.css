@@ -605,17 +605,15 @@ html[dir="rtl"] .font-mono {
   position: relative;
   z-index: 1;
   background: var(--background);
-  /* A distinct rounded corner on each side, not one arc across the whole
-     panel. At 50% the two curves meet at the centre and form a single bowl;
-     capping the horizontal radius keeps the middle edge straight and leaves a
-     generous corner at each end. */
-  border-bottom-left-radius: 15rem 7rem;
-  border-bottom-right-radius: 15rem 7rem;
+  /* Soft corner cups — matched radii so the arc meets the side edge cleanly.
+     A very flat ellipse (e.g. 15rem × 7rem) plus overflow-x/y mismatch left a
+     short horizontal “step” at the corner in WebKit. */
+  border-bottom-left-radius: clamp(4.5rem, 18vw, 9rem);
+  border-bottom-right-radius: clamp(4.5rem, 18vw, 9rem);
   /* Clearance so the last section's content clears the corner sweep. */
   padding-bottom: 4rem;
-  overflow-x: clip;
-  overflow-y: visible;
-  /* No cast shadow — soft drops pooled into dark arcs under the rounded corners. */
+  /* Same overflow on both axes — mixed clip/visible makes corner radii notch. */
+  overflow: clip;
   box-shadow: none;
 }
 
@@ -625,9 +623,8 @@ html[dir="rtl"] .font-mono {
 
 @media (max-width: 640px) {
   .curtain-content {
-    /* Narrow screens have little width for a wide corner, so it tightens. */
-    border-bottom-left-radius: 5rem 3.5rem;
-    border-bottom-right-radius: 5rem 3.5rem;
+    border-bottom-left-radius: clamp(2.75rem, 22vw, 4.5rem);
+    border-bottom-right-radius: clamp(2.75rem, 22vw, 4.5rem);
     padding-bottom: 2rem;
   }
 }
