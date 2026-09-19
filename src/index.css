@@ -615,23 +615,12 @@ html[dir="rtl"] .font-mono {
   padding-bottom: 4rem;
   overflow-x: clip;
   overflow-y: visible;
-  /* One soft, wide shadow. Stacked heavy layers pooled into a dark smear under
-     the edge; the separation comes from the footer being a different tone, so
-     the shadow only needs to hint at lift. */
-  box-shadow:
-    0 18px 40px -24px rgb(10 30 26 / 0.22),
-    0 0 0 1px color-mix(in srgb, var(--foreground) 6%, transparent);
+  /* No cast shadow — soft drops pooled into dark arcs under the rounded corners. */
+  box-shadow: none;
 }
 
-/* On a dark ground a black drop shadow is invisible, so the edge is carried by
-   a light rim instead — a bright hairline plus a soft outer halo, which reads
-   as the panel catching light from the surface behind it. */
 .dark .curtain-content {
-  /* A black shadow does nothing on a dark ground, so the edge is carried by a
-     light rim alone — kept thin, with no heavy cast underneath. */
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.13),
-    0 1px 16px -4px rgb(255 255 255 / 0.05);
+  box-shadow: none;
 }
 
 @media (max-width: 640px) {
@@ -644,37 +633,16 @@ html[dir="rtl"] .font-mono {
 }
 
 .curtain-content::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  /* A faint settling of tone into the curve. Anything stronger reads as a grey
-     wash across the bottom of the page rather than as shading on an edge. */
-  height: 7rem;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    color-mix(in srgb, var(--foreground) 3%, transparent) 60%,
-    color-mix(in srgb, var(--foreground) 7%, transparent)
-  );
-  pointer-events: none;
-  z-index: 2;
+  content: none;
 }
 
 .dark .curtain-content::after {
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgb(0 0 0 / 0.12) 60%,
-    rgb(0 0 0 / 0.26)
-  );
+  content: none;
 }
 
 @media (max-width: 640px) {
   .curtain-content::after {
-    /* Matches the 3.5rem mobile sweep. */
-    height: 3.5rem;
+    content: none;
   }
 }
 
@@ -847,6 +815,17 @@ html[dir="rtl"] .font-mono {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"] {
+    transition-property: background-color, border-color, color, opacity !important;
+  }
+
+  [data-slot="button"]:hover,
+  [data-slot="button"]:active {
+    transform: none !important;
   }
 }
 
@@ -1186,24 +1165,31 @@ html[dir="rtl"] .font-mono {
   transform: scale(1);
 }
 
-/* Primary CTA: lift plus a soft brand glow, settling on press. */
+/* Primary CTA: shared lift + press — no colored glow. */
 .nav-cta {
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   transition:
-    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease;
 }
 
 .nav-cta:hover {
   transform: translateY(-1px);
-  box-shadow:
-    0 6px 16px -4px color-mix(in srgb, var(--primary) 42%, transparent),
-    0 2px 4px color-mix(in srgb, var(--primary) 24%, transparent);
+  box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.14);
 }
 
 .nav-cta:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 22%, transparent);
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.dark .nav-cta {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+}
+
+.dark .nav-cta:hover {
+  box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1212,7 +1198,8 @@ html[dir="rtl"] .font-mono {
   .nav-cta {
     transition: none;
   }
-  .nav-cta:hover {
+  .nav-cta:hover,
+  .nav-cta:active {
     transform: none;
   }
 }
@@ -1481,22 +1468,58 @@ html[dir="rtl"] .font-mono {
   }
 }
 
+/* Inactive clauses recede but stay readable — at .55 they looked disabled, and
+   the contrast now comes from the highlight rather than from dimming. */
 .policy-source-block {
   border-radius: 12px;
   transition: opacity 300ms ease, transform 300ms cubic-bezier(.22,1,.36,1);
-  opacity: .55;
+  opacity: .72;
 }
 .policy-source-block[data-active="true"] { opacity: 1; transform: translateX(3px); }
+/* The highlight marks which sentence produced the active rule, so it has to be
+   unmistakable. An even fill (not a fade) at a strength that reads as a marker
+   pen, with a left rule tying it to the rule card alongside. */
 .policy-source-highlight {
   color: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 19%, transparent), color-mix(in srgb, var(--primary) 10%, transparent)) no-repeat;
+  background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 34%, transparent),
+      color-mix(in srgb, var(--primary) 28%, transparent)
+    )
+    no-repeat;
   background-size: 0 100%;
   border-radius: 4px;
+  padding-block: 0.12em;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  transition: background-size 500ms cubic-bezier(.22,1,.36,1), color 300ms ease;
+  transition:
+    background-size 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 300ms ease;
 }
-.policy-source-highlight[data-active="true"] { background-size: 100% 100%; color: var(--foreground); }
+
+.policy-source-highlight[data-active="true"] {
+  background-size: 100% 100%;
+  color: var(--foreground);
+  font-weight: 500;
+  /* Soft bleed so the mark reads as ink rather than a flat rectangle. */
+  box-shadow: 0 0 0 0.18em color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Dark mode needs more strength: the same alpha over a dark card is nearly
+   invisible, and the text must stay bright against it. */
+.dark .policy-source-highlight {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 42%, transparent),
+    color-mix(in srgb, var(--primary) 34%, transparent)
+  );
+}
+
+.dark .policy-source-highlight[data-active="true"] {
+  box-shadow: 0 0 0 0.18em color-mix(in srgb, var(--primary) 26%, transparent);
+}
 .policy-rule-card::before {
   content: "";
   position: absolute;

@@ -122,7 +122,7 @@ function FooterPanel({
             <Button
               size="lg"
               onClick={() => navigate("/app")}
-              className="group bg-footer-gold text-footer-gold-foreground shadow-lg shadow-footer-gold/10 transition-all hover:-translate-y-0.5 hover:bg-footer-gold/90 hover:shadow-footer-gold/20"
+              className="group bg-footer-gold text-footer-gold-foreground hover:bg-footer-gold/90"
             >
               {t("Open the workspace", "فتح مساحة العمل")}
               <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />

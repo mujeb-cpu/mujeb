@@ -161,7 +161,7 @@ export function LandingPage() {
               <Button
                 size="lg"
                 onClick={() => navigate("/app")}
-                className="group shadow-lg shadow-primary/20 transition-all duration-200 hover:-translate-y-px hover:shadow-primary/30"
+                className="group"
               >
                 {t("Open the workspace", "فتح مساحة العمل")}
                 <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
@@ -593,7 +593,7 @@ export function LandingPage() {
                 <Button
                   size="lg"
                   onClick={() => navigate("/app")}
-                  className="group transition-all duration-200 hover:-translate-y-px hover:shadow-md active:translate-y-0"
+                  className="group"
                 >
                   {t("Open the workspace", "فتح مساحة العمل")}
                   <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />

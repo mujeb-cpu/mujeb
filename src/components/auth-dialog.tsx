@@ -115,7 +115,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           {sent ? (
             <div className="mt-6 animate-in fade-in zoom-in-95 duration-300">
               <div className="rounded-2xl border border-primary/20 bg-primary/[0.06] p-6 text-center">
-                <div className="mx-auto grid size-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20">
+                <div className="mx-auto grid size-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_1px_2px_rgb(0_0_0_/0.08)]">
                   <Check className="size-5" strokeWidth={2.5} />
                 </div>
                 <h3 className="mt-4 font-display text-base font-semibold">
