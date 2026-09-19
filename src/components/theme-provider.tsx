@@ -81,7 +81,10 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "theme",
-  disableTransitionOnChange = true,
+  // Default off: suppressing transitions makes the theme snap between two very
+  // different palettes. The colour properties below are transitioned instead,
+  // which reads as a cross-fade. (`prefers-reduced-motion` still skips it.)
+  disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(() => {

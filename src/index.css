@@ -264,6 +264,98 @@ html[dir="rtl"] .rtl-mirror {
   transform: scaleX(-1);
 }
 
+/* Theme switch: cross-fade the palette instead of snapping between two very
+   different colour sets. Scoped to colour properties only — a blanket
+   `transition: all` would also animate layout and destroy scroll performance.
+   Deliberately excludes transform/opacity so scroll-driven animation (the
+   curtain, the outcome fan, the hero) is never caught mid-transition. */
+:root {
+  --theme-fade: 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body,
+header,
+footer,
+main,
+section,
+aside,
+nav,
+article,
+div,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+a,
+button,
+input,
+textarea,
+select,
+svg,
+li,
+td,
+th {
+  transition:
+    background-color var(--theme-fade),
+    border-color var(--theme-fade),
+    color var(--theme-fade),
+    fill var(--theme-fade),
+    stroke var(--theme-fade);
+}
+
+/* Elements with their own transitions re-declare them after this rule, so the
+   cascade keeps their behaviour; these are the ones that must never inherit a
+   colour fade because they animate position or size on scroll/hover. */
+.outcome-sequence-card,
+.hero-phone,
+.mobile-menu,
+.mobile-menu-item,
+.public-header,
+.public-header-surface,
+.public-header-inner {
+  transition-property: none;
+}
+
+/* Carries --background, so it needs the palette fade — but only the colour, or
+   its box-shadow would animate too. */
+.curtain-content {
+  transition: background-color var(--theme-fade);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-fade: 0s;
+  }
+}
+
+/* Locale switch: fade out, swap strings and direction while invisible, fade
+   back in. `display: contents` keeps this wrapper out of the layout entirely,
+   so it cannot disturb the sticky footer or the pinned sections.
+   Opacity is therefore applied to its children rather than the wrapper. */
+.locale-fade {
+  display: contents;
+}
+
+.locale-fade > * {
+  transition: opacity var(--locale-fade-in, 260ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.locale-fade[data-switching="true"] > * {
+  opacity: 0;
+  transition-duration: var(--locale-fade-out, 180ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locale-fade > *,
+  .locale-fade[data-switching="true"] > * {
+    opacity: 1;
+    transition: none;
+  }
+}
+
 html[dir="rtl"] input[type="email"],
 html[dir="rtl"] input[autocomplete="email"],
 html[dir="rtl"] .font-mono {
