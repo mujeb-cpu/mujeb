@@ -1,181 +1,119 @@
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
-import { ScrollReveal } from "@/components/scroll-reveal";
-import { services } from "@/lib/services";
-import { formatDate, formatDateTime } from "@/lib/domain";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Check, Clock, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
 import { toast } from "sonner";
-import { AlertCircle, Wifi, WifiOff, Clock, Zap, Check, Activity } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
+import { ScrollReveal } from "@/components/scroll-reveal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { supabase } from "@/lib/supabase";
+
+interface SallaConnection {
+  external_store_name: string | null;
+  status: "CONNECTING" | "CONNECTED" | "EXPIRED" | "REVOKED" | "ERROR";
+  connected_at: string | null;
+  last_synced_at: string | null;
+}
 
 export function IntegrationsPage() {
-  const connections = useMemo(() => services.getConnections(), []);
-  const [connecting, setConnecting] = useState<string | null>(null);
-  const [localConns, setLocalConns] = useState(connections);
-  const [testing, setTesting] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<Record<string, { ok: boolean; latencyMs: number; message: string } | null>>({});
+  const { user, workspace } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [connection, setConnection] = useState<SallaConnection | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [action, setAction] = useState<"connect" | "test" | "disconnect" | null>(null);
 
-  const handleConnect = async (platformId: string) => {
-    setConnecting(platformId);
-    try {
-      await services.connectPlatform(platformId);
-      setLocalConns(services.getConnections());
-      toast.success("Connected (simulated)");
-    } catch {
-      toast.error("Could not connect");
+  const loadConnection = useCallback(async () => {
+    if (!supabase || !workspace) return setLoading(false);
+    const { data, error } = await supabase.from("commerce_connections")
+      .select("external_store_name, status, connected_at, last_synced_at")
+      .eq("store_id", workspace.storeId).eq("platform", "salla").maybeSingle();
+    if (error) toast.error("Could not load the Salla connection.");
+    setConnection(data as SallaConnection | null);
+    setLoading(false);
+  }, [workspace]);
+
+  useEffect(() => { void loadConnection(); }, [loadConnection]);
+  useEffect(() => {
+    const result = searchParams.get("salla");
+    if (!result) return;
+    if (result === "connected") toast.success("Salla store connected successfully.");
+    else if (result === "cancelled") toast.info("Salla connection was cancelled.");
+    else toast.error("Salla could not be connected. Please try again.");
+    setSearchParams({}, { replace: true });
+    void loadConnection();
+  }, [loadConnection, searchParams, setSearchParams]);
+
+  const connect = async () => {
+    if (!supabase || !workspace || !user) return;
+    setAction("connect");
+    const { data, error } = await supabase.functions.invoke("salla-oauth-start", {
+      body: { storeId: workspace.storeId, redirectPath: "/app/integrations" },
+    });
+    if (error || !data?.authorizationUrl) {
+      toast.error("Could not start Salla authorization.");
+      setAction(null);
+      return;
     }
-    setConnecting(null);
+    window.location.assign(data.authorizationUrl);
   };
 
-  const handleDisconnect = (platformId: string) => {
-    services.disconnectPlatform(platformId);
-    setLocalConns(services.getConnections());
-    toast.success("Disconnected");
+  const runAction = async (nextAction: "test" | "disconnect") => {
+    if (!supabase || !workspace) return;
+    setAction(nextAction);
+    const { error } = await supabase.functions.invoke("salla-connection", {
+      body: { storeId: workspace.storeId, action: nextAction },
+    });
+    if (error) toast.error(nextAction === "test" ? "Salla did not accept the stored connection." : "Could not disconnect Salla.");
+    else toast.success(nextAction === "test" ? "Salla connection is healthy." : "Salla credentials removed from Mujeeb.");
+    await loadConnection();
+    setAction(null);
   };
 
-  const handleTest = (platformId: string) => {
-    setTesting(platformId);
-    setTimeout(() => {
-      const result = services.testConnection(platformId);
-      setTestResult({ ...testResult, [platformId]: result });
-      setTesting(null);
-      if (result.ok) toast.success(result.message);
-      else toast.error(result.message);
-    }, 800);
-  };
-
+  const connected = connection?.status === "CONNECTED";
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-7">
       <ScrollReveal>
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Integrations</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Connect your commerce platform to sync orders.</p>
+          <Badge variant="outline" className="mb-3">Commerce</Badge>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Store integrations</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Connect your Salla store so Mujeeb can verify orders against real merchant data.</p>
         </div>
       </ScrollReveal>
-
-      <ScrollReveal delay={100}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="text-xs text-muted-foreground">Platforms</div>
-            <div className="mt-1 text-xl font-semibold text-foreground">{localConns.length}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="text-xs text-muted-foreground">Connected</div>
-            <div className="mt-1 text-xl font-semibold text-eligible">{localConns.filter((conn) => conn.state === "connected").length}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="text-xs text-muted-foreground">Order sync</div>
-            <div className="mt-1 text-xl font-semibold text-foreground">Simulated</div>
-          </div>
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {localConns.map((conn) => {
-            const isConnected = conn.state === "connected";
-            const isConnecting = connecting === conn.platformId;
-            const isTesting = testing === conn.platformId;
-            const result = testResult[conn.platformId];
-
-            return (
-              <Card key={conn.platformId} className={cn(!conn.available && "opacity-70")}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "flex size-10 items-center justify-center rounded-lg",
-                        isConnected ? "bg-eligible-muted text-eligible" : "bg-muted text-muted-foreground",
-                      )}>
-                        {isConnected ? <Wifi className="size-5" /> : <WifiOff className="size-5" />}
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">{conn.platformName}</CardTitle>
-                        <CardDescription className="text-xs">
-                          {conn.available ? "Commerce platform" : "Coming later"}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    {isConnected ? (
-                      <Badge className="bg-eligible-muted text-eligible border-eligible/20">Connected</Badge>
-                    ) : conn.available ? (
-                      <Badge variant="outline">Disconnected</Badge>
-                    ) : (
-                      <Badge variant="outline"><Clock className="size-3" /> Soon</Badge>
-                    )}
+      <ScrollReveal delay={80}>
+        <Card className="overflow-hidden border-border/70 shadow-[0_22px_70px_-42px_hsl(var(--foreground)/0.28)]">
+          <CardContent className="p-0">
+            <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm"><span className="font-display text-lg font-bold">S</span></div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-display text-lg font-semibold">Salla</h2>
+                    {loading ? <Badge variant="outline">Checking</Badge> : connected ? (
+                      <Badge className="border-eligible/20 bg-eligible-muted text-eligible"><Check className="size-3" /> Connected</Badge>
+                    ) : <Badge variant="outline">Not connected</Badge>}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-3">
-                    {isConnected && (
-                      <>
-                        <div className="flex flex-col gap-1.5 text-xs">
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Connected</span>
-                            <span className="font-medium text-foreground">{conn.connectedAt ? formatDate(conn.connectedAt) : "—"}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Last sync</span>
-                            <span className="font-medium text-foreground">{conn.lastSyncAt ? formatDateTime(conn.lastSyncAt) : "—"}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Store</span>
-                            <span className="font-medium text-foreground">{conn.storeName ?? "—"}</span>
-                          </div>
-                          {conn.isSimulated && (
-                            <div className="mt-1 flex items-center gap-1 text-muted-foreground/70">
-                              <Activity className="size-3" />
-                              Simulated connection
-                            </div>
-                          )}
-                        </div>
-                        {result && (
-                          <div className={cn(
-                            "flex items-center gap-2 rounded-lg border px-3 py-2 text-xs",
-                            result.ok ? "border-eligible/20 bg-eligible-muted text-eligible" : "border-not-eligible/20 bg-not-eligible-muted text-not-eligible",
-                          )}>
-                            {result.ok ? <Check className="size-3.5" /> : <AlertCircle className="size-3.5" />}
-                            {result.message}
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => handleTest(conn.platformId)} disabled={isTesting}>
-                            {isTesting ? <Spinner className="mr-1" /> : <Zap className="size-3.5" />}
-                            {isTesting ? "Testing..." : "Test connection"}
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDisconnect(conn.platformId)} className="text-muted-foreground">
-                            Disconnect
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                    {!conn.available && (
-                      <div className="rounded-lg bg-muted/20 p-3 text-xs text-muted-foreground">
-                        This platform is not yet available. The adapter is ready — integration will be enabled once selected.
-                      </div>
-                    )}
-                    {conn.available && !isConnected && (
-                      <Button size="sm" onClick={() => handleConnect(conn.platformId)} disabled={isConnecting}>
-                        {isConnecting && <Spinner className="mr-1" />}
-                        {isConnecting ? "Connecting..." : "Connect"}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </ScrollReveal>
-
-      <ScrollReveal delay={200}>
-        <Card className="border-dashed">
-          <CardContent className="flex items-start gap-3 py-4">
-            <AlertCircle className="size-4 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-foreground">About simulated connections</p>
-              <p className="text-xs text-muted-foreground">
-                The Salla connection is simulated for this demo. No real API calls are made. The adapter interface supports live OAuth integration when ready for production.
-              </p>
+                  <p className="mt-1 max-w-lg text-sm leading-6 text-muted-foreground">
+                    {connected ? `${connection.external_store_name ?? "Your store"} is ready for order verification.` : "Authorize read-only order access through Salla. Mujeeb never receives your merchant password."}
+                  </p>
+                  {connected && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>Connected {connection.connected_at ? new Date(connection.connected_at).toLocaleDateString() : "today"}</span>
+                    <span>Last checked {connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString() : "not yet"}</span>
+                  </div>}
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {connected ? <>
+                  <Button variant="outline" onClick={() => void runAction("test")} disabled={action !== null}>{action === "test" ? <Spinner /> : <RefreshCw className="size-4" />} Check connection</Button>
+                  <Button variant="ghost" className="text-muted-foreground" onClick={() => void runAction("disconnect")} disabled={action !== null}><Unplug className="size-4" /> Disconnect</Button>
+                </> : <Button onClick={() => void connect()} disabled={loading || action !== null}>{action === "connect" ? <Spinner /> : <Link2 className="size-4" />} Connect Salla</Button>}
+              </div>
+            </div>
+            <div className="grid border-t border-border/60 bg-muted/20 sm:grid-cols-3">
+              <div className="flex items-center gap-3 p-4 text-sm"><ShieldCheck className="size-4 text-primary" /><span>Encrypted credentials</span></div>
+              <div className="flex items-center gap-3 border-y border-border/60 p-4 text-sm sm:border-x sm:border-y-0"><Link2 className="size-4 text-primary" /><span>Orders read only</span></div>
+              <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>Secure token renewal</span></div>
             </div>
           </CardContent>
         </Card>

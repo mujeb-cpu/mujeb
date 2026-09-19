@@ -15,16 +15,11 @@ import {
 import { evaluateEligibility } from "./engine";
 import {
   ALL_ORDERS,
-  PUBLISHED_POLICY_V1,
-  SEED_CASES,
-  SALLA_CONNECTION,
-  ZID_CONNECTION,
   SAMPLE_POLICY_TEXT,
   SAMPLE_POLICY_RULES,
-  DRAFT_POLICY,
 } from "./fixtures";
 
-const STORAGE_KEY = "mujeeb-demo-state-v1";
+const STORAGE_KEY = "mujeeb-workspace-state-v1";
 
 interface DemoState {
   cases: ReturnCase[];
@@ -53,13 +48,13 @@ function loadState(): DemoState {
 
 function defaultState(): DemoState {
   return {
-    cases: SEED_CASES,
-    publishedPolicy: PUBLISHED_POLICY_V1,
-    publishedVersions: [PUBLISHED_POLICY_V1],
-    drafts: [DRAFT_POLICY],
-    connections: [SALLA_CONNECTION, ZID_CONNECTION],
-    storeName: "Nova Store",
-    isOnboarded: true,
+    cases: [],
+    publishedPolicy: null,
+    publishedVersions: [],
+    drafts: [],
+    connections: [],
+    storeName: "My Store",
+    isOnboarded: false,
   };
 }
 

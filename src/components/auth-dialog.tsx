@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { useAuth } from "@/components/auth-provider";
+import { Link } from "react-router-dom";
 import { MujeebMark } from "@/components/mujeeb-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -25,8 +23,6 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
-  const navigate = useNavigate();
-  const auth = useAuth();
   const { t } = useLanguage();
   const googleAuthEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED === "true";
   const [email, setEmail] = useState("");
@@ -94,13 +90,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const sendMagicLink = (event: React.FormEvent) => {
     event.preventDefault();
     void requestMagicLink();
-  };
-
-  const enterDemo = () => {
-    auth.enterDemo();
-    onOpenChange(false);
-    toast.success(t("Entered demo workspace", "تم فتح مساحة العمل التجريبية"));
-    navigate("/app");
   };
 
   return (
@@ -235,16 +224,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 .
               </p>
 
-              <div className="mt-5 border-t border-border pt-4 text-center">
-                <button
-                  type="button"
-                  onClick={enterDemo}
-                  disabled={loading !== null}
-                  className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-                >
-                  {t("Just looking? Explore with sample data", "تريد الاستكشاف؟ جرّب باستخدام بيانات تجريبية")}
-                </button>
-              </div>
             </div>
           )}
         </div>

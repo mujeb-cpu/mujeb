@@ -1,0 +1,13 @@
+project_id = "clwczcvxosudfevjznmk"
+
+[functions.salla-oauth-start]
+verify_jwt = true
+
+[functions.salla-oauth-callback]
+verify_jwt = false
+
+[functions.salla-webhook]
+verify_jwt = false
+
+[functions.salla-connection]
+verify_jwt = true

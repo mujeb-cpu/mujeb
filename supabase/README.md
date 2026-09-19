@@ -28,6 +28,24 @@ Restart `npm run dev` after adding `.env.local`. Create the first account from `
 
 Supabase now owns real merchant identity, sessions, store membership, store settings, and row-level tenant isolation. The existing policy, decision, case, and customer screens still use demo fixtures/local storage until their service layer is moved to trusted server functions. Published policy versions, decisions, cases, and audit events are intentionally read-only to browser clients; trusted server code must create that evidence.
 
+## Salla connection
+
+Apply migrations `202609180002_channels_and_integrations.sql` and `202609180003_salla_server_functions.sql` in order. Then configure these Edge Function secrets in **Project Settings → Edge Functions → Secrets**:
+
+- `SALLA_CLIENT_ID`
+- `SALLA_CLIENT_SECRET`
+- `SALLA_WEBHOOK_SECRET`
+- `SALLA_REDIRECT_URI=https://clwczcvxosudfevjznmk.supabase.co/functions/v1/salla-oauth-callback`
+- `APP_URL=https://mujeb.vercel.app`
+- `INTEGRATION_ENCRYPTION_KEY` with 32 random bytes encoded as base64
+
+Deploy `salla-oauth-start`, `salla-oauth-callback`, `salla-connection`, and `salla-webhook`. In Salla Partners choose **Custom Mode** while testing, request only `orders.read`, and enter:
+
+- Callback URL: `https://clwczcvxosudfevjznmk.supabase.co/functions/v1/salla-oauth-callback`
+- Webhook URL: `https://clwczcvxosudfevjznmk.supabase.co/functions/v1/salla-webhook`
+
+The webhook uses Salla's Signature strategy. Its secret must match `SALLA_WEBHOOK_SECRET`. Move to Easy Mode only when the app is ready for Salla App Store publishing.
+
 ## Magic-link email
 
 In **Authentication → Email Templates → Magic Link**, use subject `Your secure sign-in link to Mujeeb` and paste the contents of `supabase/templates/magic-link.html`. The template intentionally uses `{{ .ConfirmationURL }}` so Supabase sends a magic link rather than an OTP code. Disable click tracking in the SMTP provider because rewritten authentication links can fail. The app sends users back to `/app`, so every local and production origin used by the app must be present in the Supabase redirect allow list.

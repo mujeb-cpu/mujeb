@@ -73,7 +73,7 @@ export function MerchantLayout() {
           <div className="px-2 group-data-[collapsible=icon]:hidden">
             <div className="rounded-lg bg-muted px-3 py-2">
               <div className="text-xs text-muted-foreground">
-                {auth.user ? t("Merchant workspace", "مساحة عمل التاجر") : t("Demo workspace", "مساحة عمل تجريبية")}
+                {t("Merchant workspace", "مساحة عمل التاجر")}
               </div>
               <div className="text-sm font-medium text-foreground">{storeName}</div>
             </div>
@@ -129,9 +129,9 @@ export function MerchantLayout() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => void handleSignOut()} tooltip={auth.user ? t("Sign out", "تسجيل الخروج") : t("Exit demo", "الخروج من النسخة التجريبية")}>
+              <SidebarMenuButton onClick={() => void handleSignOut()} tooltip={t("Sign out", "تسجيل الخروج")}>
                 <LogOut className="size-4" />
-                <span>{auth.user ? t("Sign out", "تسجيل الخروج") : t("Exit demo", "الخروج من النسخة التجريبية")}</span>
+                <span>{t("Sign out", "تسجيل الخروج")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

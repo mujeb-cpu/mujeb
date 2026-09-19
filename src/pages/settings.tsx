@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { services } from "@/lib/services";
 import { toast } from "sonner";
-import { Store, Users, Globe, Shield, User, RotateCcw, Bell, FileText } from "lucide-react";
+import { Store, Users, Globe, Shield, User, Bell, FileText } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/language-provider";
@@ -17,7 +17,7 @@ export function SettingsPage() {
   const auth = useAuth();
   const { t, locale, setLocale } = useLanguage();
   const [storeName, setStoreName] = useState(auth.workspace?.storeName ?? services.getStoreName());
-  const [storeEmail, setStoreEmail] = useState(auth.user?.email ?? "demo@novastore.sa");
+  const [storeEmail, setStoreEmail] = useState(auth.user?.email ?? "");
   const [defaultWindow, setDefaultWindow] = useState("14");
   const [autoApproveEligible, setAutoApproveEligible] = useState(false);
   const [requirePhoto, setRequirePhoto] = useState(false);
@@ -45,12 +45,6 @@ export function SettingsPage() {
     toast.success(t("Notification preferences saved", "تم حفظ تفضيلات الإشعارات"));
   };
 
-  const handleReset = () => {
-    services.resetDemo();
-    toast.success(t("Demo data reset", "تمت إعادة ضبط البيانات التجريبية"));
-    setTimeout(() => window.location.reload(), 500);
-  };
-
   return (
     <div className="flex flex-col gap-6">
       <ScrollReveal>
@@ -63,7 +57,7 @@ export function SettingsPage() {
       <ScrollReveal delay={100}>
         <div className="mb-1 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
           <Shield className="size-3.5 text-primary" />
-          <span>{auth.user ? t(`Signed in as ${auth.user.email}. Store access is scoped by membership.`, `تم تسجيل الدخول باسم ${auth.user.email}. الوصول مقيد بعضوية المتجر.`) : t("You're editing a simulated demo workspace. Changes stay in this browser.", "أنت تعدّل مساحة عمل تجريبية. تُحفظ التغييرات في هذا المتصفح فقط.")}</span>
+          <span>{t(`Signed in as ${auth.user?.email}. Store access is scoped by membership.`, `تم تسجيل الدخول باسم ${auth.user?.email}. الوصول مقيد بعضوية المتجر.`)}</span>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Store profile */}
@@ -137,7 +131,7 @@ export function SettingsPage() {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
                   <div>
-                    <div className="text-sm font-medium text-foreground">{auth.user?.email ?? "demo@novastore.sa"}</div>
+                    <div className="text-sm font-medium text-foreground">{auth.user?.email}</div>
                     <div className="text-xs text-muted-foreground">{auth.workspace?.role ?? "Owner"}</div>
                   </div>
                   <span className="rounded-full bg-eligible-muted px-2 py-0.5 text-[11px] font-medium text-eligible">{t("Active", "نشط")}</span>
@@ -252,19 +246,13 @@ export function SettingsPage() {
                 <User className="size-4 text-muted-foreground" />
                 <CardTitle className="text-base">{t("Account", "الحساب")}</CardTitle>
               </div>
-              <CardDescription>{auth.user ? t("Your authenticated workspace account.", "حساب مساحة العمل المسجل.") : t("Your account and demo data.", "حسابك وبيانات التجربة.")}</CardDescription>
+              <CardDescription>{t("Your authenticated workspace account.", "حساب مساحة العمل المسجل.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div className="text-sm text-muted-foreground">
-                  {auth.user ? t(`Signed in as ${auth.user.email}.`, `تم تسجيل الدخول باسم ${auth.user.email}.`) : t("You're using a demo workspace. All data is stored locally in your browser.", "أنت تستخدم مساحة عمل تجريبية. تُحفظ البيانات في متصفحك فقط.")}
+                  {t(`Signed in as ${auth.user?.email}.`, `تم تسجيل الدخول باسم ${auth.user?.email}.`)}
                 </div>
-                {auth.demoMode && !auth.user && (
-                  <Button variant="outline" size="sm" onClick={handleReset} className="self-start text-destructive hover:text-destructive">
-                    <RotateCcw className="size-3.5" />
-                    {t("Reset demo data", "إعادة ضبط بيانات التجربة")}
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>

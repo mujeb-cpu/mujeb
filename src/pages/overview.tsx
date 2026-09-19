@@ -47,14 +47,14 @@ export function OverviewPage() {
             <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
               Your returns, in focus.
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{storeName} · Demo workspace</p>
+            <p className="mt-1 text-sm text-muted-foreground">{storeName}</p>
           </div>
           <div className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 md:flex">
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-eligible opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-eligible" />
             </span>
-            <span className="text-xs font-medium text-muted-foreground">Live demo</span>
+            <span className="text-xs font-medium text-muted-foreground">Workspace active</span>
           </div>
         </div>
       </ScrollReveal>
