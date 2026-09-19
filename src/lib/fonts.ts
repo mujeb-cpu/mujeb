@@ -17,11 +17,6 @@ export const sora = Sora({
 export const thmanyahSans = localFont({
   src: [
     {
-      path: "../../public/fonts/thmanyah/sans/woff2/thmanyah-sans-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
       path: "../../public/fonts/thmanyah/sans/woff2/thmanyah-sans-Regular.woff2",
       weight: "400",
       style: "normal",
@@ -33,28 +28,19 @@ export const thmanyahSans = localFont({
     },
     {
       path: "../../public/fonts/thmanyah/sans/woff2/thmanyah-sans-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/thmanyah/sans/woff2/thmanyah-sans-Black.woff2",
-      weight: "900",
+      weight: "600 700",
       style: "normal",
     },
   ],
   variable: "--font-thmanyah-sans",
   display: "swap",
+  preload: false,
   fallback: ["system-ui", "sans-serif"],
 });
 
 /** Arabic display headings — Thmanyah Serif Display (self-hosted). */
 export const thmanyahSerifDisplay = localFont({
   src: [
-    {
-      path: "../../public/fonts/thmanyah/serif-display/woff2/thmanyah-serif-display-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
     {
       path: "../../public/fonts/thmanyah/serif-display/woff2/thmanyah-serif-display-Regular.woff2",
       weight: "400",
@@ -67,17 +53,13 @@ export const thmanyahSerifDisplay = localFont({
     },
     {
       path: "../../public/fonts/thmanyah/serif-display/woff2/thmanyah-serif-display-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/thmanyah/serif-display/woff2/thmanyah-serif-display-Black.woff2",
-      weight: "900",
+      weight: "600 700",
       style: "normal",
     },
   ],
   variable: "--font-thmanyah-display",
   display: "swap",
+  preload: false,
   fallback: ["system-ui", "serif"],
 });
 
