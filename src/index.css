@@ -615,22 +615,23 @@ html[dir="rtl"] .font-mono {
   padding-bottom: 4rem;
   overflow-x: clip;
   overflow-y: visible;
-  /* A deep drop shadow sells the panel as a physical sheet lifting away from
-     the surface beneath it — the reveal is only legible if the edge casts. */
+  /* One soft, wide shadow. Stacked heavy layers pooled into a dark smear under
+     the edge; the separation comes from the footer being a different tone, so
+     the shadow only needs to hint at lift. */
   box-shadow:
-    0 48px 96px -20px rgb(10 30 26 / 0.5),
-    0 20px 40px -12px rgb(10 30 26 / 0.34),
-    0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+    0 18px 40px -24px rgb(10 30 26 / 0.22),
+    0 0 0 1px color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 
 /* On a dark ground a black drop shadow is invisible, so the edge is carried by
    a light rim instead — a bright hairline plus a soft outer halo, which reads
    as the panel catching light from the surface behind it. */
 .dark .curtain-content {
+  /* A black shadow does nothing on a dark ground, so the edge is carried by a
+     light rim alone — kept thin, with no heavy cast underneath. */
   box-shadow:
-    0 44px 88px -18px rgb(0 0 0 / 0.95),
-    0 0 0 1px rgb(255 255 255 / 0.16),
-    0 2px 24px -2px rgb(255 255 255 / 0.07);
+    0 0 0 1px rgb(255 255 255 / 0.13),
+    0 1px 16px -4px rgb(255 255 255 / 0.05);
 }
 
 @media (max-width: 640px) {
@@ -648,14 +649,14 @@ html[dir="rtl"] .font-mono {
   bottom: 0;
   left: 0;
   right: 0;
-  /* Matches the 7rem vertical sweep so the shading follows the corner down. */
+  /* A faint settling of tone into the curve. Anything stronger reads as a grey
+     wash across the bottom of the page rather than as shading on an edge. */
   height: 7rem;
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in srgb, var(--foreground) 5%, transparent) 45%,
-    color-mix(in srgb, var(--foreground) 12%, transparent) 72%,
-    color-mix(in srgb, var(--foreground) 20%, transparent)
+    color-mix(in srgb, var(--foreground) 3%, transparent) 60%,
+    color-mix(in srgb, var(--foreground) 7%, transparent)
   );
   pointer-events: none;
   z-index: 2;
@@ -665,8 +666,8 @@ html[dir="rtl"] .font-mono {
   background: linear-gradient(
     to bottom,
     transparent,
-    rgb(0 0 0 / 0.3) 55%,
-    rgb(0 0 0 / 0.6)
+    rgb(0 0 0 / 0.12) 60%,
+    rgb(0 0 0 / 0.26)
   );
 }
 
