@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { IntegrationsPageSkeleton } from "@/components/merchant-skeletons";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/language-provider";
+import { formatDateString, formatDateTimeString } from "@/lib/numerals";
 
 interface SallaConnection {
   external_store_name: string | null;
@@ -22,7 +24,7 @@ interface SallaConnection {
 
 export function IntegrationsPage() {
   const { user, workspace } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [connection, setConnection] = useState<SallaConnection | null>(null);
@@ -77,8 +79,13 @@ export function IntegrationsPage() {
   };
 
   const connected = connection?.status === "CONNECTED";
+
+  if (loading) {
+    return <IntegrationsPageSkeleton />;
+  }
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-7">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-7 animate-fade-in">
       <ScrollReveal>
         <div>
           <Badge variant="outline" className="mb-3">{t("Commerce", "التجارة الإلكترونية")}</Badge>
@@ -95,7 +102,7 @@ export function IntegrationsPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-display text-lg font-semibold">Salla</h2>
-                    {loading ? <Badge variant="outline">{t("Checking", "جارٍ التحقق")}</Badge> : connected ? (
+                    {connected ? (
                       <Badge className="border-eligible/20 bg-eligible-muted text-eligible"><Check className="size-3" /> {t("Connected", "متصل")}</Badge>
                     ) : <Badge variant="outline">{t("Not connected", "غير متصل")}</Badge>}
                   </div>
@@ -103,8 +110,14 @@ export function IntegrationsPage() {
                     {connected ? t(`${connection.external_store_name ?? "Your store"} is ready for order verification.`, `${connection.external_store_name ?? "متجرك"} جاهز للتحقق من الطلبات.`) : t("Authorize read-only order access through Salla. Mujeeb never receives your merchant password.", "امنح صلاحية قراءة الطلبات فقط عبر سلة. لن يطّلع مجيب على كلمة مرور متجرك إطلاقًا.")}
                   </p>
                   {connected && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span>{t(`Connected ${connection.connected_at ? new Date(connection.connected_at).toLocaleDateString("en-US") : "today"}`, `تم الربط ${connection.connected_at ? new Date(connection.connected_at).toLocaleDateString("en-US") : "اليوم"}`)}</span>
-                    <span>{t(`Last checked ${connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString("en-US") : "not yet"}`, `آخر تحقق ${connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString("en-US") : "لم يتم بعد"}`)}</span>
+                    <span>{t(
+                      `Connected ${connection.connected_at ? formatDateString(connection.connected_at, { year: "numeric", month: "short", day: "numeric" }, locale) : "today"}`,
+                      `تم الربط ${connection.connected_at ? formatDateString(connection.connected_at, { year: "numeric", month: "short", day: "numeric" }, locale) : "اليوم"}`,
+                    )}</span>
+                    <span>{t(
+                      `Last checked ${connection.last_synced_at ? formatDateTimeString(connection.last_synced_at, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }, locale) : "not yet"}`,
+                      `آخر تحقق ${connection.last_synced_at ? formatDateTimeString(connection.last_synced_at, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }, locale) : "لم يتم بعد"}`,
+                    )}</span>
                   </div>}
                 </div>
               </div>

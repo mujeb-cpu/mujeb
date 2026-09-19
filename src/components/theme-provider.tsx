@@ -124,6 +124,10 @@ export function ThemeProvider({
   const [theme, setThemeState] = React.useState<Theme>(defaultTheme)
   const hasHydratedTheme = React.useRef(false)
 
+  React.useEffect(() => {
+    document.documentElement.dataset.themeReady = "true"
+  }, [])
+
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
       localStorage.setItem(storageKey, nextTheme)

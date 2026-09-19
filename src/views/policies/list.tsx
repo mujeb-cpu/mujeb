@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PolicyListSkeleton } from "@/components/merchant-skeletons";
+import { useDelayedLoad } from "@/hooks/use-delayed-load";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { services } from "@/lib/services";
 import { formatDate } from "@/lib/domain";
@@ -22,13 +23,7 @@ export function PolicyListPage() {
   const drafts = useMemo(() => services.getDrafts(), []);
   const [showDrafts, setShowDrafts] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(false);
-    const t = setTimeout(() => setLoaded(true), 300);
-    return () => clearTimeout(t);
-  }, []);
+  const loaded = useDelayedLoad(300);
 
   const totalRules = policy?.rules.length ?? 0;
 
@@ -249,38 +244,6 @@ export function PolicyListPage() {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-function PolicyListSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <Skeleton className="mb-3 h-5 w-24" />
-        <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
-          <Skeleton className="size-10 rounded-lg" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-48" />
-          </div>
-        </div>
-      </div>
-      <div>
-        <Skeleton className="mb-3 h-5 w-20" />
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
-              <Skeleton className="size-10 rounded-lg" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-3 w-40" />
-              </div>
-              <Skeleton className="h-8 w-20 rounded-md" />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

@@ -11,9 +11,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { services } from "@/lib/services";
 import { DEMO_CREDENTIALS } from "@/lib/fixtures";
-import { Search, AlertCircle, Sparkles, ChevronDown, ChevronUp, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, AlertCircle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
+import { ReturnProgress } from "@/components/return-progress";
 
 export function ReturnVerifyPage() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export function ReturnVerifyPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <ProgressIndicator currentStep={1} />
+      <ReturnProgress currentStep={1} />
 
       <ScrollReveal>
         <div className="flex flex-col gap-1">
@@ -122,34 +122,6 @@ export function ReturnVerifyPage() {
           </CardContent>
         </Card>
       )}
-    </div>
-  );
-}
-
-function ProgressIndicator({ currentStep }: { currentStep: number }) {
-  const { t } = useLanguage();
-  const steps = [t("Verify", "التحقق"), t("Details", "التفاصيل"), t("Answer", "النتيجة")];
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      {steps.map((label, i) => {
-        const stepNum = i + 1;
-        const isDone = stepNum < currentStep;
-        const isCurrent = stepNum === currentStep;
-        return (
-          <div key={label} className="flex items-center gap-2">
-            <span className={cn(
-              "flex size-5 items-center justify-center rounded-full text-[10px] font-bold transition-colors",
-              isDone && "bg-eligible text-eligible-foreground",
-              isCurrent && "bg-primary text-primary-foreground",
-              !isDone && !isCurrent && "bg-muted text-muted-foreground",
-            )}>
-              {isDone ? <Check className="size-3" /> : stepNum}
-            </span>
-            <span className={cn(isCurrent ? "font-medium text-foreground" : "")}>{label}</span>
-            {i < steps.length - 1 && <span className="text-border">/</span>}
-          </div>
-        );
-      })}
     </div>
   );
 }

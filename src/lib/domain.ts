@@ -1,3 +1,9 @@
+import {
+  formatDateString,
+  formatDateTimeString,
+  formatNumber,
+} from "@/lib/numerals";
+
 export type EligibilityOutcome = "ELIGIBLE" | "NOT_ELIGIBLE" | "MANUAL_REVIEW";
 
 export type CaseStatus = "OPEN" | "AWAITING_ITEM" | "RECEIVED" | "RESOLVED" | "CANCELLED";
@@ -167,31 +173,25 @@ export function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-/**
- * Arabic month names with Western digits on a Gregorian calendar.
- *
- * Plain "ar-SA" would render "١٦ سبتمبر ٢٠٢٦" and "١٨٥ ر.س." — Arabic-Indic
- * numerals on the Islamic calendar. Saudi ecommerce (Salla, Zid) uses Western
- * digits, and order IDs/SKUs are Latin, so mixing numeral systems in one table
- * reads as a rendering bug. `-u-nu-latn` forces Latin digits; `-u-ca-gregory`
- * pins the Gregorian calendar.
- */
-const arabicLocale = "ar-SA-u-nu-latn-ca-gregory";
-const activeLocale = () =>
-  document.documentElement.lang === "ar" ? arabicLocale : "en-US";
-
 export function formatSAR(amount: number): string {
-  return new Intl.NumberFormat(activeLocale(), { style: "currency", currency: "SAR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  return formatNumber(amount, {
+    style: "currency",
+    currency: "SAR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 }
 
 export function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString(activeLocale(), { year: "numeric", month: "short", day: "numeric" });
+  return formatDateString(iso, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString(activeLocale(), {
+  return formatDateTimeString(iso, {
     year: "numeric",
     month: "short",
     day: "numeric",

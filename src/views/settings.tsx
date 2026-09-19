@@ -15,10 +15,13 @@ import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/language-provider";
 import { StoreMark } from "@/components/store-identity";
+import { useDelayedLoad } from "@/hooks/use-delayed-load";
+import { SettingsPageSkeleton } from "@/components/merchant-skeletons";
 
 export function SettingsPage() {
   const auth = useAuth();
   const { t, locale, setLocale } = useLanguage();
+  const loaded = useDelayedLoad(260);
   const [storeName, setStoreName] = useState(auth.workspace?.storeName ?? services.getStoreName());
   const [storeEmail, setStoreEmail] = useState(auth.user?.email ?? "");
   const [defaultWindow, setDefaultWindow] = useState("14");
@@ -48,8 +51,12 @@ export function SettingsPage() {
     toast.success(t("Notification preferences saved", "تم حفظ تفضيلات الإشعارات"));
   };
 
+  if (!loaded) {
+    return <SettingsPageSkeleton />;
+  }
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       <ScrollReveal>
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("Settings", "الإعدادات")}</h1>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export function ScrollReveal({
@@ -17,13 +17,30 @@ export function ScrollReveal({
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const reveal = () => setVisible(true);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      reveal();
+      return;
+    }
+
+    const rect = el.getBoundingClientRect();
+    const inView =
+      rect.top < window.innerHeight * 0.92 &&
+      rect.bottom > window.innerHeight * 0.08;
+    if (inView) {
+      reveal();
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
+          reveal();
           observer.disconnect();
         }
       },
@@ -43,7 +60,7 @@ export function ScrollReveal({
       )}
       style={{
         transform: visible ? undefined : `translateY(${y}px)`,
-        transitionDelay: `${delay}ms`,
+        transitionDelay: visible ? `${delay}ms` : "0ms",
       }}
     >
       {children}

@@ -278,7 +278,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       </div>
 
       <CurtainReveal>
-        <main className="min-h-svh bg-background pt-16">
+        <main className="relative isolate min-h-svh bg-background pt-16">
           {children}
         </main>
       </CurtainReveal>

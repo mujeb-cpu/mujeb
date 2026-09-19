@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CaseListSkeleton } from "@/components/merchant-skeletons";
+import { useDelayedLoad } from "@/hooks/use-delayed-load";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OutcomeBadge, CaseStatusBadge } from "@/components/outcome-badge";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -47,13 +48,7 @@ export function CaseListPage() {
   const [customViews, setCustomViews] = useState<SavedView[]>([]);
   const [showSaveView, setShowSaveView] = useState(false);
   const [newViewName, setNewViewName] = useState("");
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(false);
-    const t = setTimeout(() => setLoaded(true), 300);
-    return () => clearTimeout(t);
-  }, []);
+  const loaded = useDelayedLoad(300);
 
   const allViews = [...DEFAULT_VIEWS, ...customViews];
 
@@ -322,26 +317,6 @@ export function CaseListPage() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function CaseListSkeleton() {
-  return (
-    <div className="flex flex-col gap-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-          <Skeleton className="size-9 rounded-lg" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-48" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-5 w-20 rounded-full" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

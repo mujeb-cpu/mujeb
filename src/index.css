@@ -10,6 +10,9 @@
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-manrope), system-ui, sans-serif;
   --font-display: var(--font-sora), var(--font-manrope), system-ui, sans-serif;
+  --font-arabic: var(--font-thmanyah-sans), system-ui, sans-serif;
+  --font-arabic-display: var(--font-thmanyah-display), var(--font-thmanyah-sans),
+    system-ui, serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -186,15 +189,12 @@
      no scroll hijacking, so native wheel/trackpad/keyboard scrolling, the
      sticky footer, and the pinned outcome section all keep working as-is.
      The reduced-motion block below overrides this to `auto`. */
-  /* Footer colour on `html` only — for rubber-band past the document end.
-     A fixed 50/50 body split painted through the viewport on every scroll
-     frame and read as a sage/green band mid-page when layers composited. */
   html {
-    /* Smooth only for programmatic hash jumps (see public-layout), not wheel
-       scroll — global smooth makes native scrolling feel stuck and laggy. */
+    /* Match page chrome — using `--footer-bg` here showed through compositing
+       gaps mid-page (curtain stack) as a dark band over the landing content. */
     scroll-behavior: auto;
     color-scheme: light;
-    background: var(--footer-bg);
+    background: var(--background);
   }
   html.dark {
     color-scheme: dark;
@@ -206,15 +206,6 @@
     text-rendering: optimizeLegibility;
   }
 
-  html[data-locale-switching="true"] body {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--locale-fade-out) var(--locale-ease-out);
-  }
-
-  html[data-locale-ready="true"]:not([data-locale-switching="true"]) body {
-    transition: opacity var(--locale-fade-in) var(--locale-ease-in);
-  }
   h1,
   h2,
   h3,
@@ -225,7 +216,7 @@
 }
 
 html[dir="rtl"] body {
-  font-family: var(--font-noto-arabic), system-ui, sans-serif;
+  font-family: var(--font-arabic);
   /* Arabic is cursive — letters join. Any letter-spacing breaks the joins and
      makes text look broken, so it is forced to zero everywhere below. */
   letter-spacing: 0;
@@ -239,7 +230,7 @@ html[dir="rtl"] h3,
 html[dir="rtl"] h4,
 html[dir="rtl"] h5,
 html[dir="rtl"] .font-display {
-  font-family: var(--font-noto-arabic), system-ui, sans-serif;
+  font-family: var(--font-arabic-display);
   letter-spacing: 0;
   line-height: 1.45;
 }
@@ -259,9 +250,20 @@ html[dir="rtl"] .uppercase {
    SKUs, emails, code, and numeric/currency cells in tables. */
 html[dir="rtl"] .font-mono,
 html[dir="rtl"] .tabular-nums,
+html[dir="rtl"] .latin-nums,
 html[dir="rtl"] [dir="ltr"] {
   direction: ltr;
   unicode-bidi: isolate;
+}
+
+/* Western digits in Arabic UI (Salla/Zid convention). Latin font avoids
+   contextual Arabic-Indic shaping on U+0030–0039. */
+html[dir="rtl"] .latin-nums,
+html[dir="rtl"] .tabular-nums,
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[inputmode="numeric"] {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 html[dir="rtl"] .rtl-flip,
@@ -277,37 +279,35 @@ html[dir="rtl"] .rtl-mirror {
 :root {
   --theme-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --theme-fade: 380ms var(--theme-ease);
-  --locale-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --locale-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
-  --locale-fade-out: 220ms;
-  --locale-fade-in: 360ms;
 }
 
-body,
-header,
-footer,
-main,
-section,
-aside,
-nav,
-article,
-div,
-span,
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-a,
-button,
-input,
-textarea,
-select,
-svg,
-li,
-td,
-th {
+html[data-theme-ready="true"] :where(
+  body,
+  header,
+  footer,
+  main,
+  section,
+  aside,
+  nav,
+  article,
+  div,
+  span,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  svg,
+  li,
+  td,
+  th
+) {
   transition:
     background-color var(--theme-fade),
     border-color var(--theme-fade),
@@ -328,7 +328,9 @@ th {
 .mobile-menu-item,
 .public-header,
 .public-header-surface,
-.public-header-inner {
+.public-header-inner,
+.calculator-results,
+.calculator-range {
   transition-property: none;
 }
 
@@ -383,26 +385,11 @@ html[data-theme-transition="view"] :where(
 @media (prefers-reduced-motion: reduce) {
   :root {
     --theme-fade: 0s;
-    --locale-fade-out: 0s;
-    --locale-fade-in: 0s;
   }
 
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0s;
-  }
-}
-
-/* Locale switch: opacity on `body` (see @layer base) — one layer, no stagger. */
-.locale-fade {
-  display: contents;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html[data-locale-switching="true"] body {
-    opacity: 1;
-    pointer-events: auto;
-    transition: none;
   }
 }
 
@@ -420,8 +407,9 @@ html[dir="rtl"] .font-mono {
   .font-sans {
     font-family: var(--font-sans);
   }
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
+  .tabular-nums,
+  .latin-nums {
+    font-variant-numeric: tabular-nums lining-nums;
   }
   .text-balance {
     text-wrap: balance;
@@ -562,6 +550,49 @@ html[dir="rtl"] .font-mono {
   animation: ink-spread 1.2s ease-out forwards;
 }
 
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 92%, transparent) 0%,
+    color-mix(in srgb, var(--muted-foreground) 14%, var(--accent)) 45%,
+    color-mix(in srgb, var(--accent) 92%, transparent) 90%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.75s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: color-mix(in srgb, var(--accent) 92%, transparent);
+  }
+}
+
+@keyframes sidebar-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--sidebar-enter-x, -10px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sidebar-nav-enter {
+  animation: sidebar-item-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html[dir="rtl"] .sidebar-nav-enter {
+  --sidebar-enter-x: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav-enter {
+    animation: none;
+  }
+}
+
 .curtain-panel {
   transition: transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
   transform-origin: top;
@@ -603,8 +634,11 @@ html[dir="rtl"] .font-mono {
 
 .curtain-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   background: var(--background);
+  /* No `transform` here: a transform makes this a containing block for fixed
+     and sticky descendants, which breaks `.footer-surface`'s sticky
+     positioning and paints the footer over mid-page content. */
   /* Soft corner cups — matched radii so the arc meets the side edge cleanly.
      A very flat ellipse (e.g. 15rem × 7rem) plus overflow-x/y mismatch left a
      short horizontal “step” at the corner in WebKit. */
@@ -651,6 +685,12 @@ html[dir="rtl"] .font-mono {
   overflow: clip;
   background: var(--footer-bg);
   color: var(--footer-fg);
+  pointer-events: none;
+}
+
+.footer-surface a,
+.footer-surface button {
+  pointer-events: auto;
 }
 
 .footer-panel {

@@ -144,7 +144,6 @@ export function LandingPage() {
               {t("Return decisions for Saudi ecommerce", "قرارات إرجاع واضحة للتجارة الإلكترونية السعودية")}
             </motion.span>
             <HeroTagline
-              key={`${isArabic ? "ar" : "en"}-${heroLine1}`}
               line1={heroLine1}
               line2={heroLine2}
               body={heroBody}

@@ -43,7 +43,7 @@ export default async function RootLayout({
     >
       <body className={`${fontClassNames} ${manrope.className} antialiased`}>
         <Script id="locale-bootstrap" strategy="beforeInteractive">
-          {`(function(){try{var k="${LOCALE_COOKIE}";var s=localStorage.getItem(k);var l=(s==="ar"||s==="en")?s:(navigator.language.toLowerCase().startsWith("ar")?"ar":"en");document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";document.documentElement.dataset.locale=l;localStorage.setItem(k,l);document.cookie=k+"="+l+";path=/;max-age=31536000;SameSite=Lax";}catch(e){}})();`}
+          {`(function(){try{var k="${LOCALE_COOKIE}";var m=document.cookie.match(new RegExp("(?:^|; )"+k+"=([^;]*)"));var fromCookie=m&&(m[1]==="ar"||m[1]==="en")?m[1]:null;var s=localStorage.getItem(k);var l=fromCookie||(s==="ar"||s==="en"?s:(navigator.language.toLowerCase().startsWith("ar")?"ar":"en"));document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";document.documentElement.dataset.locale=l;localStorage.setItem(k,l);document.cookie=k+"="+l+";path=/;max-age=31536000;SameSite=Lax";}catch(e){}})();`}
         </Script>
         <Script id="theme-bootstrap" strategy="beforeInteractive">
           {`(function(){try{var stored=localStorage.getItem("theme");var dark=stored==="dark"||((!stored||stored==="system")&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);document.documentElement.classList.toggle("light",!dark);}catch(e){}})();`}

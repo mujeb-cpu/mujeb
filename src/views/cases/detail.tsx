@@ -2,6 +2,8 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
+import { useDelayedLoad } from "@/hooks/use-delayed-load";
+import { CaseDetailSkeleton } from "@/components/merchant-skeletons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,6 +65,11 @@ export function CaseDetailPage() {
   const [noteText, setNoteText] = useState("");
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const loaded = useDelayedLoad(260);
+
+  if (!loaded) {
+    return <CaseDetailSkeleton />;
+  }
 
   if (!caseData) {
     return (

@@ -6,14 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/language-provider";
+import { formatNumber } from "@/lib/numerals";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 }
 
 export function ReturnsCostCalculator() {
-  const { t, isArabic } = useLanguage();
-  const money = new Intl.NumberFormat(isArabic ? "ar-SA" : "en-SA", { style: "currency", currency: "SAR", maximumFractionDigits: 0 });
+  const { t, n } = useLanguage();
+  const formatMoney = (amount: number) =>
+    n(amount, {
+      style: "currency",
+      currency: "SAR",
+      maximumFractionDigits: 0,
+    });
   const [monthlyReturns, setMonthlyReturns] = useState(500);
   const [orderValue, setOrderValue] = useState(725);
   const [processingMinutes, setProcessingMinutes] = useState(24);
@@ -46,7 +52,7 @@ export function ReturnsCostCalculator() {
             </div>
 
             <div className="mt-8 border-t border-border/70 pt-5">
-              <p className="text-xs leading-relaxed text-muted-foreground">{t(`Based on ${resolutionDays.toFixed(1)} days to resolve a return and SAR ${hourlyCost} per staff hour.`, `بناءً على ${resolutionDays.toFixed(1)} يوم لمعالجة الإرجاع وتكلفة ${hourlyCost} ر.س لكل ساعة عمل.`)}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">{t(`Based on ${n(resolutionDays, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} days to resolve a return and SAR ${n(hourlyCost)} per staff hour.`, `بناءً على ${n(resolutionDays, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} يوم لمعالجة الإرجاع وتكلفة ${n(hourlyCost)} ر.س لكل ساعة عمل.`)}</p>
               <Dialog open={assumptionsOpen} onOpenChange={setAssumptionsOpen}>
                 <DialogTrigger asChild><Button variant="ghost" className="mt-2 -ms-3 gap-2 text-primary"><SlidersHorizontal className="size-4" />{t("Adjust assumptions", "تعديل الافتراضات")}</Button></DialogTrigger>
                 <DialogContent className="rounded-2xl sm:max-w-md">
@@ -68,14 +74,14 @@ export function ReturnsCostCalculator() {
             <ResultValue
               icon={<WalletCards className="size-5" />}
               label={t("Tied up in delayed returns", "قيمة معلّقة في مرتجعات متأخرة")}
-              value={money.format(results.tiedUp)}
+              value={formatMoney(results.tiedUp)}
               emphasis
             />
             <div className="relative mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              <ResultValue icon={<Clock3 className="size-4" />} label={t("Estimated operational cost", "التكلفة التشغيلية التقديرية")} value={`${money.format(results.operatingCost)} ${t("/ month", "/ شهر")}`} />
-              <ResultValue icon={<TimerReset className="size-4" />} label={t("Average return resolution", "متوسط مدة معالجة الإرجاع")} value={`${resolutionDays.toFixed(1)} ${t("days", "يوم")}`} />
+              <ResultValue icon={<Clock3 className="size-4" />} label={t("Estimated operational cost", "التكلفة التشغيلية التقديرية")} value={`${formatMoney(results.operatingCost)} ${t("/ month", "/ شهر")}`} />
+              <ResultValue icon={<TimerReset className="size-4" />} label={t("Average return resolution", "متوسط مدة معالجة الإرجاع")} value={`${n(resolutionDays, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${t("days", "يوم")}`} />
             </div>
-            <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-xs text-[#b6d8cc]"><span>{t("Monthly staff time", "وقت العمل الشهري")}</span><span className="font-semibold tabular-nums">{(monthlyReturns * processingMinutes / 60).toLocaleString(isArabic ? "ar-SA" : "en", { maximumFractionDigits: 1 })} {t("hours", "ساعة")}</span></div>
+            <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-xs text-[#b6d8cc]"><span>{t("Monthly staff time", "وقت العمل الشهري")}</span><span className="font-semibold tabular-nums latin-nums">{n(monthlyReturns * processingMinutes / 60, { maximumFractionDigits: 1 })} {t("hours", "ساعة")}</span></div>
             <p className="relative mt-7 border-t border-white/10 pt-5 text-xs leading-relaxed text-[#9fb9b2]">
               {t("Planning estimate, not guaranteed savings. Tied-up value assumes returns arrive evenly throughout a 30-day month. Operational cost uses processing time × staff cost.", "تقدير لأغراض التخطيط وليس توفيرًا مضمونًا. يفترض تقدير القيمة المعلّقة توزيع المرتجعات بالتساوي خلال شهر من 30 يومًا، وتُحسب التكلفة التشغيلية من وقت المعالجة وتكلفة الموظف.")}
             </p>
@@ -113,11 +119,11 @@ function CalculatorInput({ label, value, min, max, step, prefix, suffix, onChang
             if (raw !== "") update(Number(raw));
           }}
           onBlur={() => setDraft(null)}
-          className="h-auto border-0 bg-transparent p-0 text-base font-semibold shadow-none focus-visible:ring-0 dark:bg-transparent tabular-nums"
+          className="h-auto border-0 bg-transparent p-0 text-base font-semibold shadow-none focus-visible:ring-0 dark:bg-transparent tabular-nums latin-nums"
         />
         {suffix && <span className="ml-2 whitespace-nowrap text-xs text-muted-foreground">{suffix}</span>}
       </div>
-      {!compact && <><input aria-label={`${label} slider`} type="range" value={value} min={min} max={max} step={step} style={{ background: `linear-gradient(to right, var(--primary) ${(value-min)/(max-min)*100}%, var(--border) ${(value-min)/(max-min)*100}%)` }} onChange={(event) => { setDraft(null); update(Number(event.target.value)); }} className="calculator-range mt-4 w-full" /><div aria-hidden="true" className="mt-2 flex justify-between text-[10px] tabular-nums text-muted-foreground"><span>{min}</span><span>{max.toLocaleString()}</span></div></>}
+      {!compact && <><input aria-label={`${label} slider`} type="range" value={value} min={min} max={max} step={step} style={{ background: `linear-gradient(to right, var(--primary) ${(value-min)/(max-min)*100}%, var(--border) ${(value-min)/(max-min)*100}%)` }} onChange={(event) => { setDraft(null); update(Number(event.target.value)); }} className="calculator-range mt-4 w-full" /><div aria-hidden="true" className="mt-2 flex justify-between text-[10px] tabular-nums latin-nums text-muted-foreground"><span>{min}</span><span>{formatNumber(max)}</span></div></>}
     </div>
   );
 }
@@ -130,7 +136,7 @@ function ResultValue({ icon, label, value, emphasis = false }: {
       <div className="flex items-center gap-2 text-xs text-[#9fd5c7]">{icon}<span>{label}</span></div>
       {/* No `key` here: keying on the value remounts the node on every keystroke,
           which replays the fade and reads as a flicker while dragging a slider. */}
-      <p className={emphasis ? "mt-2 font-display text-[clamp(2.25rem,5vw,4.25rem)] font-semibold leading-none tracking-[-0.045em] tabular-nums" : "mt-2 text-lg font-semibold tracking-tight tabular-nums"}>
+      <p className={emphasis ? "mt-2 text-[clamp(2.25rem,5vw,4.25rem)] font-semibold leading-none tabular-nums latin-nums" : "mt-2 text-lg font-semibold tracking-tight tabular-nums latin-nums"}>
         {value}
       </p>
     </div>
