@@ -8,6 +8,14 @@ function redirect(path: string, status: string) {
   return Response.redirect(target.toString(), 302);
 }
 
+function errorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    return String(error.message);
+  }
+  return "unknown";
+}
+
 Deno.serve(async (request) => {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
@@ -62,7 +70,7 @@ Deno.serve(async (request) => {
     if (saveError) throw saveError;
     return redirect(savedState.redirect_path, "connected");
   } catch (error) {
-    console.error("salla_oauth_callback_failed", error instanceof Error ? error.message : "unknown");
+    console.error("salla_oauth_callback_failed", errorMessage(error));
     return redirect("/app/integrations", "error");
   }
 });

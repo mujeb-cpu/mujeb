@@ -36,7 +36,7 @@ Apply migrations `202609180002_channels_and_integrations.sql` and `202609180003_
 - `SALLA_CLIENT_SECRET`
 - `SALLA_WEBHOOK_SECRET`
 - `SALLA_REDIRECT_URI=https://clwczcvxosudfevjznmk.supabase.co/functions/v1/salla-oauth-callback`
-- `APP_URL=https://mujeb.vercel.app`
+- `APP_URL=https://mujeb-cpu-mujeb.vercel.app`
 - `INTEGRATION_ENCRYPTION_KEY` with 32 random bytes encoded as base64
 
 Deploy `salla-oauth-start`, `salla-oauth-callback`, `salla-connection`, and `salla-webhook`. In Salla Partners choose **Custom Mode** while testing, request only `orders.read`, and enter:

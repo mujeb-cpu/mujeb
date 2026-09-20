@@ -1,0 +1,59 @@
+-- Avoid a PL/pgSQL name collision between the local variable and the
+-- private.commerce_credentials.connection_id column.
+create or replace function public.finalize_salla_connection(
+  p_store_id uuid,
+  p_external_store_id text,
+  p_external_store_name text,
+  p_scopes text[],
+  p_token_expires_at timestamptz,
+  p_access_token_ciphertext text,
+  p_refresh_token_ciphertext text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_connection_id uuid;
+begin
+  insert into public.commerce_connections (
+    store_id, platform, external_store_id, external_store_name, status,
+    scopes, token_expires_at, connected_at, last_error_code, updated_at
+  ) values (
+    p_store_id, 'salla', p_external_store_id, p_external_store_name, 'CONNECTED',
+    coalesce(p_scopes, '{}'), p_token_expires_at, now(), null, now()
+  )
+  on conflict (store_id, platform) do update set
+    external_store_id = excluded.external_store_id,
+    external_store_name = excluded.external_store_name,
+    status = 'CONNECTED',
+    scopes = excluded.scopes,
+    token_expires_at = excluded.token_expires_at,
+    connected_at = coalesce(public.commerce_connections.connected_at, now()),
+    last_error_code = null,
+    updated_at = now()
+  returning id into v_connection_id;
+
+  insert into private.commerce_credentials (
+    connection_id, access_token_ciphertext, refresh_token_ciphertext,
+    encryption_key_version, updated_at
+  ) values (
+    v_connection_id, p_access_token_ciphertext, p_refresh_token_ciphertext, 1, now()
+  )
+  on conflict on constraint commerce_credentials_pkey do update set
+    access_token_ciphertext = excluded.access_token_ciphertext,
+    refresh_token_ciphertext = excluded.refresh_token_ciphertext,
+    encryption_key_version = excluded.encryption_key_version,
+    updated_at = now();
+
+  insert into public.audit_events (store_id, event_type, entity_type, entity_id, metadata)
+  values (p_store_id, 'COMMERCE_STORE_CONNECTED', 'commerce_connection', v_connection_id,
+    jsonb_build_object('platform', 'salla', 'external_store_id', p_external_store_id));
+
+  return v_connection_id;
+end;
+$$;
+
+revoke all on function public.finalize_salla_connection(uuid, text, text, text[], timestamptz, text, text) from public, anon, authenticated;
+grant execute on function public.finalize_salla_connection(uuid, text, text, text[], timestamptz, text, text) to service_role;
