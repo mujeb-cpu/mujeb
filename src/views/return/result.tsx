@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
 import { ReturnProgress } from "@/components/return-progress";
+import { supabase } from "@/lib/supabase";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ReturnResultPage() {
   const router = useRouter();
@@ -42,6 +44,7 @@ export function ReturnResultPage() {
   const [submitted, setSubmitted] = useState(false);
   const [caseId, setCaseId] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const rawDecision = sessionStorage.getItem("mujeeb-decision");
@@ -58,8 +61,24 @@ export function ReturnResultPage() {
 
   if (!decision || !order) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (submitted || !context) return;
+    const verificationToken = sessionStorage.getItem("mujeeb-verification-token");
+    const savedDecisionId = sessionStorage.getItem("mujeeb-decision-id");
+    if (verificationToken && savedDecisionId && supabase) {
+      setSubmitting(true);
+      const { data, error } = await supabase.functions.invoke("return-decide", {
+        body: { verificationToken, decisionId: savedDecisionId, itemId: context.itemId, quantity: context.quantity, reason: context.reason, condition: context.condition, action: "create_case" },
+      });
+      setSubmitting(false);
+      if (error || !data?.caseId) {
+        toast.error(t("Could not create the return request. Please try again.", "تعذر إنشاء طلب الإرجاع. حاول مرة أخرى."));
+        return;
+      }
+      setCaseId(data.caseId); setSubmitted(true);
+      toast.success(t("Return request submitted", "تم إرسال طلب الإرجاع"));
+      return;
+    }
     const newCase = services.createCase(
       order,
       context.itemId,
@@ -199,14 +218,14 @@ export function ReturnResultPage() {
       ) : (
         <div className="flex flex-col gap-2">
           {decision.outcome === "ELIGIBLE" && (
-            <Button size="lg" onClick={handleSubmit} className="group">
-              {t("Create return request", "إنشاء طلب الإرجاع")}
+            <Button size="lg" onClick={() => void handleSubmit()} disabled={submitting} className="group">
+              {submitting && <Spinner />}{submitting ? t("Creating request…", "جارٍ إنشاء الطلب…") : t("Create return request", "إنشاء طلب الإرجاع")}
               <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
             </Button>
           )}
           {decision.outcome === "MANUAL_REVIEW" && (
-            <Button size="lg" onClick={handleSubmit} className="group">
-              {t("Submit for review", "إرسال للمراجعة")}
+            <Button size="lg" onClick={() => void handleSubmit()} disabled={submitting} className="group">
+              {submitting && <Spinner />}{submitting ? t("Submitting…", "جارٍ الإرسال…") : t("Submit for review", "إرسال للمراجعة")}
               <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
             </Button>
           )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,21 +9,45 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { PolicyListSkeleton } from "@/components/merchant-skeletons";
 import { useDelayedLoad } from "@/hooks/use-delayed-load";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { services } from "@/lib/services";
-import { formatDate } from "@/lib/domain";
+import { formatDate, type PolicyDraft, type PolicyRule, type PolicyVersion } from "@/lib/domain";
 import { Plus, FileText, CheckCircle2, Clock, ChevronDown, ArrowRight, ShieldCheck, History, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
+import { useAuth } from "@/components/auth-provider";
+import { supabase } from "@/lib/supabase";
 
 export function PolicyListPage() {
   const router = useRouter();
   const { t, isArabic } = useLanguage();
-  const policy = useMemo(() => services.getPublishedPolicy(), []);
-  const versions = useMemo(() => services.getPublishedVersions(), []);
-  const drafts = useMemo(() => services.getDrafts(), []);
+  const { workspace } = useAuth();
+  const [versions, setVersions] = useState<PolicyVersion[]>([]);
+  const [drafts, setDrafts] = useState<PolicyDraft[]>([]);
   const [showDrafts, setShowDrafts] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const loaded = useDelayedLoad(300);
+  const policy = versions[0];
+
+  useEffect(() => {
+    let active = true;
+    if (!supabase || !workspace) return;
+    void Promise.all([
+      supabase.from("policy_versions").select("id, version_label, source_text, rules_snapshot, published_at, published_by").eq("store_id", workspace.storeId).order("published_at", { ascending: false }),
+      supabase.from("policy_drafts").select("id, name, source_text, rules, extraction_state, created_at, updated_at").eq("store_id", workspace.storeId).order("updated_at", { ascending: false }),
+    ]).then(([versionResult, draftResult]) => {
+      if (!active) return;
+      setVersions((versionResult.data ?? []).map((row: Record<string, unknown>) => ({
+        id: String(row.id), versionLabel: String(row.version_label), publishedAt: String(row.published_at),
+        publishedBy: String(row.published_by), rules: (row.rules_snapshot ?? []) as PolicyRule[],
+        sourceText: String(row.source_text), frozenSnapshot: String(row.source_text),
+      })));
+      setDrafts((draftResult.data ?? []).map((row: Record<string, unknown>) => ({
+        id: String(row.id), name: String(row.name), sourceText: String(row.source_text),
+        rules: (row.rules ?? []) as PolicyRule[], extractionState: row.extraction_state === "failed" ? "error" : String(row.extraction_state) as PolicyDraft["extractionState"],
+        createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+      })));
+    });
+    return () => { active = false; };
+  }, [workspace]);
 
   const totalRules = policy?.rules.length ?? 0;
 
@@ -143,7 +167,7 @@ export function PolicyListPage() {
                 <CollapsibleContent>
                   <div className="border-t border-border px-6 py-4">
                     <div className="flex flex-col gap-3">
-                      {[...versions].reverse().map((v, i) => (
+                      {versions.map((v, i) => (
                         <div key={v.id} className="flex items-center gap-3">
                           <div className={cn(
                             "flex size-7 items-center justify-center rounded-full text-[10px] font-bold",

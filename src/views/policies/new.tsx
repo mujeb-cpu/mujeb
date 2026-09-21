@@ -17,12 +17,15 @@ import { FileText, Link2, PencilLine, Sparkles, Check, X, Edit3, ArrowRight, Cal
 import { cn } from "@/lib/utils";
 
 import { useLanguage } from "@/components/language-provider";
+import { useAuth } from "@/components/auth-provider";
+import { supabase } from "@/lib/supabase";
 
 type InputMethod = "paste" | "url" | "manual";
 
 export function PolicyNewPage() {
   const router = useRouter();
   const { t, isArabic } = useLanguage();
+  const { workspace } = useAuth();
   const [method, setMethod] = useState<InputMethod>("paste");
   const [policyName, setPolicyName] = useState("");
   const [sourceText, setSourceText] = useState("");
@@ -31,12 +34,18 @@ export function PolicyNewPage() {
   const [extractionState, setExtractionState] = useState<"idle" | "reading" | "proposing" | "ready" | "error">("idle");
   const [rules, setRules] = useState<PolicyRule[]>([]);
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
 
 
   const sampleText = useMemo(() => services.getSamplePolicyText(), []);
 
   const handleExtract = async () => {
-    const text = method === "paste" ? sourceText : sampleText;
+    if (method !== "paste") {
+      toast.info(t("Paste the policy text to use live extraction.", "الصق نص السياسة لاستخدام الاستخراج الفعلي."));
+      return;
+    }
+    const text = sourceText;
     if (!text.trim()) {
       toast.error(t("Please enter policy text first", "يرجى إدخال نص السياسة أولًا"));
       return;
@@ -45,19 +54,25 @@ export function PolicyNewPage() {
     setExtractionState("reading");
     setRules([]);
 
-    await new Promise((r) => setTimeout(r, 900));
     setExtractionState("proposing");
-
-    await new Promise((r) => setTimeout(r, 1300));
-    const sampleRules = services.getSampleRules().map((r) => ({
-      ...r,
-      id: `rule-${Math.random().toString(36).slice(2, 8)}`,
-      approvalState: "pending" as RuleApprovalState,
-    }));
-    setRules(sampleRules);
-    setExtractionState("ready");
-    setExtracting(false);
-    toast.success(t("Sample rules ready to review", "القواعد النموذجية جاهزة للمراجعة"));
+    if (!supabase || !workspace) {
+      setExtractionState("error"); setExtracting(false);
+      toast.error(t("Your workspace is not ready. Please sign in again.", "مساحة العمل غير جاهزة. يرجى تسجيل الدخول مجددًا."));
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke("policy-extract", {
+      body: { storeId: workspace.storeId, name: policyName.trim() || t("Returns Policy", "سياسة الإرجاع"), sourceText: text },
+    });
+    if (error || !data?.draft?.id || !Array.isArray(data.draft.rules)) {
+      setExtractionState("error"); setExtracting(false);
+      toast.error(t("We could not extract this policy. Check the text and try again.", "تعذّر استخراج هذه السياسة. تحقق من النص وحاول مرة أخرى."));
+      return;
+    }
+    setDraftId(data.draft.id);
+    setRules(data.draft.rules as PolicyRule[]);
+    setWarnings(Array.isArray(data.warnings) ? data.warnings : []);
+    setExtractionState("ready"); setExtracting(false);
+    toast.success(t("Proposed rules are ready for review", "القواعد المقترحة جاهزة للمراجعة"));
   };
 
   const handleApprove = (ruleId: string) => {
@@ -72,15 +87,19 @@ export function PolicyNewPage() {
     setRules((prev) => prev.map((r) => r.id === ruleId ? { ...r, value: newValue, approvalState: "edited" as RuleApprovalState, creator: "merchant" as const } : r));
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const unresolved = rules.some((r) => r.approvalState === "pending");
     if (unresolved) {
       toast.error(t("Some rules still need review", "بعض القواعد لا تزال بحاجة إلى المراجعة"));
       return;
     }
-    const draft = services.createDraft(policyName.trim() || t("Returns Policy", "سياسة الإرجاع"), method === "paste" ? sourceText : sampleText);
-    draft.rules = rules;
-    router.push(`/app/policies/review/${draft.id}`);
+    if (!supabase || !draftId) return;
+    const { error } = await supabase.from("policy_drafts").update({ rules }).eq("id", draftId);
+    if (error) {
+      toast.error(t("Could not save your review. Please try again.", "تعذّر حفظ المراجعة. يرجى المحاولة مرة أخرى."));
+      return;
+    }
+    router.push(`/app/policies/review/${draftId}`);
   };
 
   const pendingCount = rules.filter((r) => r.approvalState === "pending").length;
@@ -114,8 +133,8 @@ export function PolicyNewPage() {
         <Tabs dir={isArabic ? "rtl" : "ltr"} defaultValue="paste" onValueChange={(v) => setMethod(v as InputMethod)}>
           <TabsList className="h-auto flex-wrap">
             <TabsTrigger value="paste"><FileText className="size-3.5" /> {t("Paste text", "لصق النص")}</TabsTrigger>
-            <TabsTrigger value="url"><Link2 className="size-3.5" /> {t("Policy URL", "رابط السياسة")}</TabsTrigger>
-            <TabsTrigger value="manual"><PencilLine className="size-3.5" /> {t("Manual rules", "إدخال القواعد يدويًا")}</TabsTrigger>
+            <TabsTrigger value="url" disabled><Link2 className="size-3.5" /> {t("Policy URL · soon", "رابط السياسة · قريبًا")}</TabsTrigger>
+            <TabsTrigger value="manual" disabled><PencilLine className="size-3.5" /> {t("Manual rules · soon", "إدخال القواعد · قريبًا")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="paste">
@@ -214,7 +233,10 @@ export function PolicyNewPage() {
               </div>
             </div>
             <p className="mb-4 text-xs leading-6 text-muted-foreground">{t("Check each rule against your policy, then approve or edit it before publishing.", "قارن كل قاعدة بسياسة متجرك، ثم اعتمدها أو عدّلها قبل النشر.")}</p>
-            <p className="mb-4 rounded-lg bg-muted/60 px-3 py-2 text-xs leading-6 text-muted-foreground">{t("Preview only: these are sample rules, not an analysis of the text you entered.", "معاينة تجريبية: هذه قواعد نموذجية، وليست نتيجة تحليل النص الذي أدخلته.")}</p>
+            {warnings.length > 0 && <div className="mb-4 rounded-lg border border-review/20 bg-review-muted px-3 py-2 text-xs leading-6 text-review">
+              <p className="font-semibold">{t("Needs merchant clarification", "بحاجة إلى توضيح من التاجر")}</p>
+              <ul className="mt-1 list-disc ps-4">{warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>
+            </div>}
             <div className="flex flex-col gap-3">
               {rules.map((rule) => (
                 <RuleRow
@@ -228,7 +250,7 @@ export function PolicyNewPage() {
                 />
               ))}
             </div>
-            <Button className="mt-4 w-full" onClick={handlePublish} disabled={pendingCount > 0}>
+            <Button className="mt-4 w-full" onClick={() => void handlePublish()} disabled={pendingCount > 0 || !draftId}>
               {pendingCount > 0 ? t(`Review remaining rules (${pendingCount})`, `راجع القواعد المتبقية (${pendingCount})`) : t("Review for publication", "مراجعة للنشر")}
               <ArrowRight className="size-4 rtl:rotate-180" />
             </Button>

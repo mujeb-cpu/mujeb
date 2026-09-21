@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Check, Clock, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
+import { Check, Clock, Copy, ExternalLink, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -31,6 +31,7 @@ export function IntegrationsPage() {
   const [connection, setConnection] = useState<SallaConnection | null>(null);
   const [loading, setLoading] = useState(true);
   const [action, setAction] = useState<"connect" | "test" | "disconnect" | null>(null);
+  const [returnCode, setReturnCode] = useState<string | null>(null);
 
   const loadConnection = useCallback(async () => {
     if (!supabase || !workspace) return setLoading(false);
@@ -39,6 +40,8 @@ export function IntegrationsPage() {
       .eq("store_id", workspace.storeId).eq("platform", "salla").maybeSingle();
     if (error) toast.error(t("Could not load the Salla connection.", "تعذّر تحميل ربط سلة."));
     setConnection(data as SallaConnection | null);
+    const { data: store } = await supabase.from("stores").select("return_code").eq("id", workspace.storeId).maybeSingle();
+    setReturnCode(typeof store?.return_code === "string" ? store.return_code : null);
     setLoading(false);
   }, [workspace]);
 
@@ -80,6 +83,13 @@ export function IntegrationsPage() {
   };
 
   const connected = connection?.status === "CONNECTED";
+  const returnPath = returnCode ? `/return?store=${encodeURIComponent(returnCode)}` : null;
+
+  const copyReturnLink = async () => {
+    if (!returnPath) return;
+    await navigator.clipboard.writeText(`${window.location.origin}${returnPath}`);
+    toast.success(t("Customer return link copied.", "تم نسخ رابط إرجاع العملاء."));
+  };
 
   if (loading) {
     return <IntegrationsPageSkeleton />;
@@ -134,6 +144,12 @@ export function IntegrationsPage() {
               <div className="flex items-center gap-3 border-y border-border/60 p-4 text-sm sm:border-x sm:border-y-0"><Link2 className="size-4 text-primary" /><span>{t("Orders read only", "قراءة الطلبات فقط")}</span></div>
               <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>{t("Disconnect anytime", "إمكانية فصل الربط في أي وقت")}</span></div>
             </div>
+            {connected && returnPath && <div className="border-t border-border/60 p-5 sm:p-6">
+              <div className="flex flex-col gap-4 rounded-2xl border border-primary/15 bg-primary/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div><p className="text-sm font-semibold">{t("Test a real customer order", "اختبر طلب عميل فعلي")}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t("Use an order number and the customer email or mobile from this Salla store.", "استخدم رقم طلب وبريد العميل أو رقم جواله من متجر سلة هذا.")}</p></div>
+                <div className="flex flex-wrap gap-2"><Button variant="outline" size="sm" onClick={() => void copyReturnLink()}><Copy className="size-4" />{t("Copy link", "نسخ الرابط")}</Button><Button size="sm" asChild><a href={returnPath} target="_blank" rel="noreferrer"><ExternalLink className="size-4" />{t("Open test flow", "فتح مسار الاختبار")}</a></Button></div>
+              </div>
+            </div>}
           </CardContent>
         </Card>
       </ScrollReveal>

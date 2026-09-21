@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,20 +14,42 @@ import { DEMO_CREDENTIALS } from "@/lib/fixtures";
 import { Search, AlertCircle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { ReturnProgress } from "@/components/return-progress";
+import { supabase } from "@/lib/supabase";
 
 export function ReturnVerifyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDemo, setShowDemo] = useState(false);
+  const returnCode = searchParams.get("store");
+  const live = Boolean(returnCode);
 
-  const handleVerify = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (returnCode) sessionStorage.setItem("mujeeb-return-code", returnCode);
+  }, [returnCode]);
+
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    if (live && supabase && returnCode) {
+      const { data, error: lookupError } = await supabase.functions.invoke("salla-order-lookup", {
+        body: { returnCode, orderNumber, verifier: email },
+      });
+      setLoading(false);
+      if (lookupError || !data?.order || !data?.verificationToken) {
+        setError(t("We couldn't verify this order. Please check your details and try again.", "تعذر التحقق من الطلب. راجع بياناتك ثم حاول مرة أخرى."));
+        return;
+      }
+      sessionStorage.setItem("mujeeb-verified-order", JSON.stringify(data.order));
+      sessionStorage.setItem("mujeeb-verification-token", data.verificationToken);
+      router.push("/return/details");
+      return;
+    }
     setTimeout(() => {
       const order = services.verifyOrder(orderNumber, email);
       setLoading(false);
@@ -80,7 +102,8 @@ export function ReturnVerifyPage() {
                 <Label htmlFor="email">{t("Email or mobile", "البريد الإلكتروني أو رقم الجوال")}</Label>
                 <Input
                   id="email"
-                  type="email"
+                type="text"
+                inputMode="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
@@ -96,7 +119,7 @@ export function ReturnVerifyPage() {
         </Card>
       </ScrollReveal>
 
-      <ScrollReveal delay={200}>
+      {!live && <ScrollReveal delay={200}>
         <button
           onClick={() => setShowDemo(!showDemo)}
           className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -105,9 +128,9 @@ export function ReturnVerifyPage() {
           {t("Demo helper", "بيانات التجربة")}
           {showDemo ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
         </button>
-      </ScrollReveal>
+      </ScrollReveal>}
 
-      {showDemo && (
+      {!live && showDemo && (
         <Card className="border-dashed bg-muted/20 animate-scale-in">
           <CardContent className="pt-6">
             <div className="flex flex-col gap-3 text-sm">

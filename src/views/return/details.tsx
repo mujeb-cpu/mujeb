@@ -20,6 +20,9 @@ import { ArrowRight, ArrowLeft, Package, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
 import { ReturnProgress } from "@/components/return-progress";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ReturnDetailsPage() {
   const router = useRouter();
@@ -34,6 +37,7 @@ export function ReturnDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [reason, setReason] = useState<ReturnReason>("defective");
   const [condition, setCondition] = useState<ItemCondition>("new_unopened");
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("mujeeb-verified-order");
@@ -58,9 +62,25 @@ export function ReturnDetailsPage() {
   const selectedItem = order.items.find((i) => i.id === selectedItemId);
   const maxQty = selectedItem?.quantity ?? 1;
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     if (!selectedItemId) return;
-    const decision = services.evaluate(order, selectedItemId, quantity, reason, condition);
+    const verificationToken = sessionStorage.getItem("mujeeb-verification-token");
+    let decision = null;
+    if (verificationToken && supabase) {
+      setChecking(true);
+      const { data, error } = await supabase.functions.invoke("return-decide", {
+        body: { verificationToken, itemId: selectedItemId, quantity, reason, condition, action: "evaluate" },
+      });
+      setChecking(false);
+      if (error || !data?.decision || !data?.decisionId) {
+        toast.error(t("We could not check this return. Please try again.", "تعذر التحقق من طلب الإرجاع. حاول مرة أخرى."));
+        return;
+      }
+      decision = data.decision;
+      sessionStorage.setItem("mujeeb-decision-id", data.decisionId);
+    } else {
+      decision = services.evaluate(order, selectedItemId, quantity, reason, condition);
+    }
     if (!decision) {
       router.push("/return");
       return;
@@ -179,8 +199,8 @@ export function ReturnDetailsPage() {
           <ArrowLeft className={cn("size-4", isArabic && "rotate-180")} />
           {t("Back", "رجوع")}
         </Button>
-        <Button onClick={handleCheck} disabled={!selectedItemId} className="flex-1 group">
-          {t("Check eligibility", "التحقق من الأهلية")}
+        <Button onClick={() => void handleCheck()} disabled={!selectedItemId || checking} className="flex-1 group">
+          {checking && <Spinner />}{checking ? t("Checking…", "جارٍ التحقق…") : t("Check eligibility", "التحقق من الأهلية")}
           <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
         </Button>
       </div>

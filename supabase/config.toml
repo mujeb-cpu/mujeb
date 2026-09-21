@@ -11,3 +11,12 @@ verify_jwt = false
 
 [functions.salla-connection]
 verify_jwt = true
+
+[functions.policy-extract]
+verify_jwt = true
+
+[functions.salla-order-lookup]
+verify_jwt = false
+
+[functions.return-decide]
+verify_jwt = false

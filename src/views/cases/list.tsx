@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,11 +10,12 @@ import { useDelayedLoad } from "@/hooks/use-delayed-load";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OutcomeBadge, CaseStatusBadge } from "@/components/outcome-badge";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { services } from "@/lib/services";
-import { formatDateTime } from "@/lib/domain";
+import { formatDateTime, type ReturnCase } from "@/lib/domain";
 import { Search, ArrowRight, PackageOpen, AlertCircle, X, Calendar, Bookmark, Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
+import { useAuth } from "@/components/auth-provider";
+import { supabase } from "@/lib/supabase";
 
 interface SavedView {
   id: string;
@@ -32,6 +33,7 @@ const DEFAULT_VIEWS: SavedView[] = [
 export function CaseListPage() {
   const router = useRouter();
   const { t, isArabic } = useLanguage();
+  const { workspace } = useAuth();
   // Default view names are declared outside the component; translate them by id at render time.
   const defaultViewNames: Record<string, string> = {
     all: t("All cases", "كل الحالات"),
@@ -39,7 +41,7 @@ export function CaseListPage() {
     open: t("Open", "مفتوحة"),
     resolved: t("Resolved", "مغلقة"),
   };
-  const allCases = useMemo(() => services.getCases(), []);
+  const [allCases, setAllCases] = useState<ReturnCase[]>([]);
   const [search, setSearch] = useState("");
   const [outcomeFilter, setOutcomeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -49,6 +51,29 @@ export function CaseListPage() {
   const [showSaveView, setShowSaveView] = useState(false);
   const [newViewName, setNewViewName] = useState("");
   const loaded = useDelayedLoad(300);
+
+  useEffect(() => {
+    let active = true;
+    if (!supabase || !workspace) return;
+    void supabase.from("return_cases").select("id, order_id, status, customer_snapshot, item_snapshot, created_at, updated_at, eligibility_decisions(outcome, reason_codes, order_facts_snapshot, policy_snapshot, evaluated_at, policy_versions(version_label))")
+      .eq("store_id", workspace.storeId).order("created_at", { ascending: false }).then(({ data }: { data: unknown }) => {
+        if (!active) return;
+        setAllCases(((data ?? []) as Array<Record<string, any>>).map((row) => {
+          const decision = row.eligibility_decisions ?? {};
+          const customer = row.customer_snapshot ?? {};
+          const item = row.item_snapshot ?? {};
+          const policy = decision.policy_versions ?? {};
+          return {
+            id: String(row.id), orderId: String(row.order_id), customerName: String(customer.name ?? "Customer"), customerEmail: String(customer.email ?? ""),
+            itemId: String(item.id ?? ""), itemName: String(item.name ?? "Item"), quantity: Number(item.quantity ?? 1), reason: item.reason ?? "defective", condition: item.condition ?? "new_unopened",
+            outcome: decision.outcome, caseStatus: row.status, createdAt: row.created_at, updatedAt: row.updated_at,
+            decision: { outcome: decision.outcome, reasonCodes: decision.reason_codes ?? [], explanation: "", appliedRules: decision.policy_snapshot?.rules_snapshot?.map((rule: any) => ({ rule, passed: true, evaluatedValue: "", reasonCode: "" })) ?? [], policyVersionId: "", policyVersionLabel: policy.version_label ?? "—", evaluatedAt: decision.evaluated_at, relevantFacts: [] },
+            events: [], notes: [],
+          } as ReturnCase;
+        }));
+      });
+    return () => { active = false; };
+  }, [workspace]);
 
   const allViews = [...DEFAULT_VIEWS, ...customViews];
 
@@ -73,7 +98,7 @@ export function CaseListPage() {
     setShowSaveView(false);
   };
 
-  const now = new Date("2026-09-16T10:00:00+03:00");
+  const now = new Date();
 
   const filtered = allCases.filter((c) => {
     const matchesSearch = !search ||
