@@ -244,18 +244,18 @@ export function MerchantLayout({ children }: { children: ReactNode }) {
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset>
+      <SidebarInset className="merchant-workspace">
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/85 px-3 backdrop-blur-md sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <SidebarTrigger className="size-8 shrink-0 rounded-lg hover:bg-muted/60" />
             <WorkspaceBreadcrumb pathname={pathname} />
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <LanguageToggle compact className="size-8" />
+            <LanguageToggle />
             <ModeToggle className="size-8" />
           </div>
         </header>
-        <div className="mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6">
+        <div className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-8 sm:py-9 lg:px-10">
           <PageTransition>{children}</PageTransition>
         </div>
       </SidebarInset>

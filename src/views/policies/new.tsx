@@ -13,15 +13,18 @@ import { Spinner } from "@/components/ui/spinner";
 import { services } from "@/lib/services";
 import { type PolicyRule, type RuleApprovalState } from "@/lib/domain";
 import { toast } from "sonner";
-import { FileText, Link2, PencilLine, Sparkles, Check, X, Edit3, ArrowRight } from "lucide-react";
+import { FileText, Link2, PencilLine, Sparkles, Check, X, Edit3, ArrowRight, CalendarDays, ListChecks, PackageCheck, PackageX, Truck, Hash, UserRound, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { useLanguage } from "@/components/language-provider";
 
 type InputMethod = "paste" | "url" | "manual";
 
 export function PolicyNewPage() {
   const router = useRouter();
+  const { t, isArabic } = useLanguage();
   const [method, setMethod] = useState<InputMethod>("paste");
-  const [policyName, setPolicyName] = useState("Returns Policy");
+  const [policyName, setPolicyName] = useState("");
   const [sourceText, setSourceText] = useState("");
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
@@ -35,7 +38,7 @@ export function PolicyNewPage() {
   const handleExtract = async () => {
     const text = method === "paste" ? sourceText : sampleText;
     if (!text.trim()) {
-      toast.error("Please enter policy text first");
+      toast.error(t("Please enter policy text first", "يرجى إدخال نص السياسة أولًا"));
       return;
     }
     setExtracting(true);
@@ -54,7 +57,7 @@ export function PolicyNewPage() {
     setRules(sampleRules);
     setExtractionState("ready");
     setExtracting(false);
-    toast.success("Rules extracted — ready for your review");
+    toast.success(t("Sample rules ready to review", "القواعد النموذجية جاهزة للمراجعة"));
   };
 
   const handleApprove = (ruleId: string) => {
@@ -72,10 +75,10 @@ export function PolicyNewPage() {
   const handlePublish = () => {
     const unresolved = rules.some((r) => r.approvalState === "pending");
     if (unresolved) {
-      toast.error("Some rules still need review");
+      toast.error(t("Some rules still need review", "بعض القواعد لا تزال بحاجة إلى المراجعة"));
       return;
     }
-    const draft = services.createDraft(policyName, method === "paste" ? sourceText : sampleText);
+    const draft = services.createDraft(policyName.trim() || t("Returns Policy", "سياسة الإرجاع"), method === "paste" ? sourceText : sampleText);
     draft.rules = rules;
     router.push(`/app/policies/review/${draft.id}`);
   };
@@ -88,52 +91,52 @@ export function PolicyNewPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">1</span>
-          Create
+          {t("Create", "إنشاء")}
           <span className="text-border">/</span>
           <span className="flex size-5 items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-bold">2</span>
-          Review
+          {t("Review", "مراجعة")}
           <span className="text-border">/</span>
           <span className="flex size-5 items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-bold">3</span>
-          Publish
+          {t("Publish", "نشر")}
         </div>
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">New policy</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Create rules from your return policy text, then approve each one before publishing.</p>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("New policy", "سياسة جديدة")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Create rules from your return policy text, then approve each one before publishing.", "أنشئ قواعد من نص سياسة الإرجاع، ثم راجع كل قاعدة واعتمدها قبل النشر.")}</p>
         </div>
       </div>
 
       <div className="grid gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="policy-name">Policy name</Label>
-          <Input id="policy-name" value={policyName} onChange={(e) => setPolicyName(e.target.value)} placeholder="Returns Policy" className="max-w-md" />
+          <Label htmlFor="policy-name">{t("Policy name", "اسم السياسة")}</Label>
+          <Input id="policy-name" value={policyName} onChange={(e) => setPolicyName(e.target.value)} placeholder={t("Returns Policy", "سياسة الإرجاع")} className="max-w-md" />
         </div>
 
-        <Tabs defaultValue="paste" onValueChange={(v) => setMethod(v as InputMethod)}>
-          <TabsList>
-            <TabsTrigger value="paste"><FileText className="size-3.5" /> Paste text</TabsTrigger>
-            <TabsTrigger value="url"><Link2 className="size-3.5" /> Policy URL</TabsTrigger>
-            <TabsTrigger value="manual"><PencilLine className="size-3.5" /> Manual rules</TabsTrigger>
+        <Tabs dir={isArabic ? "rtl" : "ltr"} defaultValue="paste" onValueChange={(v) => setMethod(v as InputMethod)}>
+          <TabsList className="h-auto flex-wrap">
+            <TabsTrigger value="paste"><FileText className="size-3.5" /> {t("Paste text", "لصق النص")}</TabsTrigger>
+            <TabsTrigger value="url"><Link2 className="size-3.5" /> {t("Policy URL", "رابط السياسة")}</TabsTrigger>
+            <TabsTrigger value="manual"><PencilLine className="size-3.5" /> {t("Manual rules", "إدخال القواعد يدويًا")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="paste">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-3">
-                  <Label htmlFor="source">Paste your return policy text</Label>
+                  <Label htmlFor="source">{t("Paste your return policy text", "الصق نص سياسة الإرجاع")}</Label>
                   <Textarea
                     id="source"
                     value={sourceText}
                     onChange={(e) => setSourceText(e.target.value)}
-                    placeholder="Paste your store's return and refund policy here..."
+                    placeholder={t("Paste your store's return and refund policy here...", "الصق سياسة الإرجاع واسترداد الأموال لمتجرك هنا...")} dir="auto"
                     className="min-h-[200px]"
                   />
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <Button variant="outline" size="sm" onClick={() => setSourceText(sampleText)}>
-                      Use sample policy
+                      {t("Use sample policy", "استخدام سياسة نموذجية")}
                     </Button>
                     <Button onClick={handleExtract} disabled={extracting || !sourceText.trim()}>
                       {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
-                      Extract rules
+                      {t("Extract rules", "استخراج القواعد")}
                     </Button>
                   </div>
                 </div>
@@ -145,14 +148,14 @@ export function PolicyNewPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-3">
-                  <Label htmlFor="url">Policy URL</Label>
+                  <Label htmlFor="url">{t("Policy URL", "رابط السياسة")}</Label>
                   <Input id="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourstore.sa/policies/returns" />
                   <p className="text-xs text-muted-foreground">
-                    This is a simulated preview. No real URL is fetched.
+                    {t("This is a simulated preview. No real URL is fetched.", "هذه معاينة تجريبية. لا يتم جلب محتوى الرابط فعليًا.")}
                   </p>
                   <Button onClick={handleExtract} disabled={extracting} className="self-start">
                     {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
-                    Preview extraction
+                    {t("Preview extraction", "معاينة الاستخراج")}
                   </Button>
                 </div>
               </CardContent>
@@ -164,7 +167,7 @@ export function PolicyNewPage() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center gap-3 py-8 text-center">
                   <PencilLine className="size-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Manual rule creation will be available after extraction. Start with paste or URL to get AI-proposed rules, then edit them manually.</p>
+                  <p className="text-sm text-muted-foreground">{t("Manual rule creation will be available after extraction. Start with paste or URL to get AI-proposed rules, then edit them manually.", "يمكنك تعديل القواعد يدويًا بعد استخراجها. ابدأ بلصق النص أو إدخال رابط، ثم راجع القواعد المقترحة وعدّلها.")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -179,7 +182,7 @@ export function PolicyNewPage() {
       {extractionState === "idle" && (
         <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p className="text-xs leading-relaxed text-muted-foreground"><span className="font-medium text-foreground">How it works:</span> Mujeeb proposes rules from your text. You decide what gets approved and published.</p>
+          <p className="text-xs leading-relaxed text-muted-foreground"><span className="font-medium text-foreground">{t("How it works:", "كيف يعمل:")}</span> {t("Mujeeb proposes rules from your text. You decide what gets approved and published.", "يقترح مجيب القواعد من نصك، وأنت تقرر ما يُعتمد ويُنشر.")}</p>
         </div>
       )}
 
@@ -188,7 +191,7 @@ export function PolicyNewPage() {
           <div>
             <div className="mb-3 flex items-center gap-2">
               <FileText className="size-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Source text</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("Source text", "النص الأصلي")}</h3>
             </div>
             <Card className="overflow-hidden">
               <CardContent className="max-h-[500px] overflow-y-auto p-4">
@@ -200,17 +203,19 @@ export function PolicyNewPage() {
           </div>
 
           <div>
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="size-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">Proposed rules</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("Review your return rules", "راجع قواعد الإرجاع")}</h3>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-eligible">{approvedCount} approved</span>
-                {pendingCount > 0 && <span className="text-review">{pendingCount} pending</span>}
+                <span className="text-eligible">{t(`${approvedCount} approved`, `${approvedCount} معتمدة`)}</span>
+                {pendingCount > 0 && <span className="text-review">{t(`${pendingCount} pending`, `${pendingCount} بانتظار المراجعة`)}</span>}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
+            <p className="mb-4 text-xs leading-6 text-muted-foreground">{t("Check each rule against your policy, then approve or edit it before publishing.", "قارن كل قاعدة بسياسة متجرك، ثم اعتمدها أو عدّلها قبل النشر.")}</p>
+            <p className="mb-4 rounded-lg bg-muted/60 px-3 py-2 text-xs leading-6 text-muted-foreground">{t("Preview only: these are sample rules, not an analysis of the text you entered.", "معاينة تجريبية: هذه قواعد نموذجية، وليست نتيجة تحليل النص الذي أدخلته.")}</p>
+            <div className="flex flex-col gap-3">
               {rules.map((rule) => (
                 <RuleRow
                   key={rule.id}
@@ -224,8 +229,8 @@ export function PolicyNewPage() {
               ))}
             </div>
             <Button className="mt-4 w-full" onClick={handlePublish} disabled={pendingCount > 0}>
-              {pendingCount > 0 ? `${pendingCount} rules need review` : "Review for publication"}
-              <ArrowRight className="size-4" />
+              {pendingCount > 0 ? t(`Review remaining rules (${pendingCount})`, `راجع القواعد المتبقية (${pendingCount})`) : t("Review for publication", "مراجعة للنشر")}
+              <ArrowRight className="size-4 rtl:rotate-180" />
             </Button>
           </div>
         </div>
@@ -235,15 +240,16 @@ export function PolicyNewPage() {
 }
 
 function ExtractionProgress({ state }: { state: string }) {
+  const { t } = useLanguage();
   const steps = [
-    { key: "reading", label: "Reading policy", icon: FileText },
-    { key: "proposing", label: "Proposing rules", icon: Sparkles },
-    { key: "ready", label: "Ready for your review", icon: Check },
+    { key: "reading", label: t("Reading policy", "قراءة السياسة"), icon: FileText },
+    { key: "proposing", label: t("Proposing rules", "اقتراح القواعد"), icon: Sparkles },
+    { key: "ready", label: t("Ready for your review", "جاهزة للمراجعة"), icon: Check },
   ];
   const currentIndex = steps.findIndex((s) => s.key === state);
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-4">
       {steps.map((step, i) => {
         const isDone = i < currentIndex;
         const isActive = i === currentIndex;
@@ -283,14 +289,49 @@ function RuleRow({
   onReject: () => void;
   onEditValue: (val: string) => void;
 }) {
+  const { t } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(rule.value);
 
+  const presentation = {
+    window: { title: t("Return period", "مهلة الإرجاع"), icon: CalendarDays, help: t("Counted from the delivery date.", "تُحسب من تاريخ التسليم.") },
+    reasons: { title: t("Accepted reasons", "أسباب الإرجاع المقبولة"), icon: ListChecks, help: t("Customers can request a return for these reasons.", "يمكن للعميل طلب الإرجاع للأسباب التالية.") },
+    conditions: { title: t("Item condition", "حالة المنتج"), icon: PackageCheck, help: t("The item must be in one of these conditions.", "يجب أن يكون المنتج بإحدى الحالات التالية.") },
+    exclusions: { title: t("Excluded product codes", "رموز المنتجات المستثناة"), icon: PackageX, help: t("Items with these exact product codes cannot be returned.", "لا يُقبل إرجاع المنتجات التي تطابق رموزها الرموز التالية تمامًا.") },
+    order_status: { title: t("Order status", "حالة الطلب"), icon: Truck, help: t("Returns are accepted for orders in these states.", "يُقبل الإرجاع للطلبات في الحالات التالية.") },
+    quantity: { title: t("Quantity limit", "الحد الأقصى للكمية"), icon: Hash, help: t("Cannot exceed the quantity in the order.", "لا يمكن تجاوز الكمية الموجودة في الطلب.") },
+    fallback: { title: t("When information is missing", "عند نقص المعلومات"), icon: UserRound, help: t("If the delivery date or order status cannot be verified.", "إذا تعذّر التحقق من تاريخ التسليم أو حالة الطلب.") },
+  }[rule.category];
+  const valueLabels: Record<string, string> = {
+    defective: t("Faulty item", "منتج معيب"),
+    wrong_item: t("Wrong item received", "استلام منتج مختلف"),
+    not_as_described: t("Not as described", "غير مطابق للوصف"),
+    damaged_in_transit: t("Damaged during delivery", "تلف أثناء التوصيل"),
+    changed_mind: t("Changed mind", "تغيير الرأي"),
+    new_unopened: t("New and unopened", "جديد وغير مفتوح"),
+    opened_unused: t("Opened but unused", "مفتوح ولم يُستخدم"),
+    used: t("Used", "مستخدم"),
+    delivered: t("Delivered", "تم التسليم"),
+    shipped: t("Shipped", "تم الشحن"),
+    processing: t("Processing", "قيد التجهيز"),
+    cancelled: t("Cancelled", "ملغي"),
+    manual_review: t("Ask the store to review", "إحالة الطلب إلى المتجر للمراجعة"),
+  };
+  const values = rule.category === "window"
+    ? [t(`${rule.value} days after delivery`, `${rule.value} يومًا من التسليم`)]
+    : rule.category === "quantity"
+      ? [t(`Up to ${rule.value} per item`, `حتى ${rule.value} من كل منتج`)]
+      : rule.value.split(",").map(value => {
+        const code = value.trim();
+        return rule.category === "exclusions" ? code : valueLabels[code] ?? code;
+      });
+  const Icon = presentation.icon;
+
   const stateConfig: Record<RuleApprovalState, { label: string; class: string }> = {
-    pending: { label: "Pending", class: "bg-review-muted text-review border-review/20" },
-    approved: { label: "Approved", class: "bg-eligible-muted text-eligible border-eligible/20" },
-    rejected: { label: "Rejected", class: "bg-not-eligible-muted text-not-eligible border-not-eligible/20" },
-    edited: { label: "Edited", class: "bg-accent text-accent-foreground border-border" },
+    pending: { label: t("Needs review", "بحاجة إلى مراجعة"), class: "bg-review-muted text-review border-review/20" },
+    approved: { label: t("Approved", "معتمدة"), class: "bg-eligible-muted text-eligible border-eligible/20" },
+    rejected: { label: t("Rejected", "مرفوضة"), class: "bg-not-eligible-muted text-not-eligible border-not-eligible/20" },
+    edited: { label: t("Edited", "معدّلة"), class: "bg-accent text-accent-foreground border-border" },
   };
 
   const { label: stateLabel, class: stateClass } = stateConfig[rule.approvalState];
@@ -298,72 +339,70 @@ function RuleRow({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-card p-4 transition-all cursor-pointer",
+        "rounded-xl border bg-card p-4 transition-colors sm:p-5",
         isSelected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/30",
       )}
-      onClick={onSelect}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{rule.name}</span>
+      <div className="flex flex-col gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="size-4" aria-hidden="true" /></span>
+            <span className="text-sm font-semibold text-foreground">{presentation.title}</span>
             <Badge variant="outline" className={cn("text-[10px] py-0", stateClass)}>{stateLabel}</Badge>
-            {rule.creator === "ai" ? (
-              <span className="text-[10px] text-muted-foreground">AI-proposed</span>
-            ) : (
-              <span className="text-[10px] text-muted-foreground">Merchant-created</span>
-            )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">{rule.description}</p>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">{presentation.help}</p>
           {editing ? (
             <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
-              <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-7 text-xs" />
-              <Button size="xs" onClick={() => { onEditValue(editValue); setEditing(false); }}>
+              <Input aria-label={t("Rule value", "قيمة القاعدة")} value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-7 text-xs" />
+              <Button aria-label={t("Save value", "حفظ القيمة")} size="xs" onClick={() => { onEditValue(editValue); setEditing(false); }}>
                 <Check className="size-3" />
               </Button>
-              <Button size="xs" variant="ghost" onClick={() => { setEditing(false); setEditValue(rule.value); }}>
+              <Button aria-label={t("Cancel editing", "إلغاء التعديل")} size="xs" variant="ghost" onClick={() => { setEditing(false); setEditValue(rule.value); }}>
                 <X className="size-3" />
               </Button>
             </div>
           ) : (
-            <div className="mt-2 flex items-center gap-2">
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-foreground">{rule.value}</code>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {values.map((value, index) => <span key={index} className="max-w-full break-words rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs leading-5 text-foreground"><bdi>{value}</bdi></span>)}
             </div>
           )}
+          {rule.sourceExcerpt && <button type="button" onClick={onSelect} aria-expanded={isSelected} className="mt-3 inline-flex items-center gap-1.5 rounded-md text-xs text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4">
+            <FileText className="size-3.5" aria-hidden="true" />{t("View policy wording", "عرض نص السياسة")}<ChevronDown className={cn("size-3.5 transition-transform motion-reduce:transition-none", isSelected && "rotate-180")} aria-hidden="true" />
+          </button>}
           {isSelected && rule.sourceExcerpt && (
             <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 p-2">
-              <div className="text-[10px] font-medium text-primary">Source clause</div>
-              <p className="mt-1 text-xs text-muted-foreground italic">"{rule.sourceExcerpt}"</p>
+              <div className="text-[10px] font-medium text-primary">{t("Source clause", "البند الأصلي")}</div>
+              <blockquote dir="auto" className="mt-1 text-xs leading-6 text-muted-foreground">{rule.sourceExcerpt}</blockquote>
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
           {rule.approvalState === "pending" && (
             <>
-              <Button size="icon-xs" variant="outline" onClick={onApprove} title="Approve">
-                <Check className="size-3" />
+              <Button size="sm" variant="outline" className="border-eligible/25 text-eligible hover:bg-eligible-muted hover:text-eligible" onClick={onApprove}>
+                <Check className="size-4" />{t("Approve", "اعتماد")}
               </Button>
-              <Button size="icon-xs" variant="outline" onClick={onReject} title="Reject">
-                <X className="size-3" />
+              <Button size="sm" variant="ghost" onClick={onReject}>
+                <X className="size-4" />{t("Reject", "رفض")}
               </Button>
-              <Button size="icon-xs" variant="ghost" onClick={() => setEditing(true)} title="Edit">
-                <Edit3 className="size-3" />
+              <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+                <Edit3 className="size-4" />{t("Edit", "تعديل")}
               </Button>
             </>
           )}
           {(rule.approvalState === "approved" || rule.approvalState === "edited") && (
             <>
-              <Button size="icon-xs" variant="ghost" onClick={() => setEditing(true)} title="Edit">
-                <Edit3 className="size-3" />
+              <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+                <Edit3 className="size-4" />{t("Edit", "تعديل")}
               </Button>
-              <Button size="icon-xs" variant="ghost" onClick={onReject} title="Reject">
-                <X className="size-3" />
+              <Button size="sm" variant="ghost" onClick={onReject}>
+                <X className="size-4" />{t("Reject", "رفض")}
               </Button>
             </>
           )}
           {rule.approvalState === "rejected" && (
-            <Button size="icon-xs" variant="outline" onClick={onApprove} title="Approve">
-              <Check className="size-3" />
+            <Button size="sm" variant="outline" onClick={onApprove}>
+              <Check className="size-4" />{t("Approve", "اعتماد")}
             </Button>
           )}
         </div>

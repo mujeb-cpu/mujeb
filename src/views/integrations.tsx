@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Check, Clock, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
@@ -94,20 +95,20 @@ export function IntegrationsPage() {
         </div>
       </ScrollReveal>
       <ScrollReveal delay={80}>
-        <Card className="overflow-hidden border-border/70 shadow-[0_22px_70px_-42px_hsl(var(--foreground)/0.28)]">
+        <Card className="overflow-hidden rounded-3xl border-border/70 shadow-[0_22px_70px_-42px_hsl(var(--foreground)/0.28)]">
           <CardContent className="p-0">
-            <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+            <div className="flex flex-col gap-7 p-5 sm:p-8">
               <div className="flex items-start gap-4">
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm"><span className="font-display text-lg font-bold">S</span></div>
+                <div className="shrink-0 rounded-2xl bg-[#004d5a] p-2 shadow-sm"><Image src="/salla-logo.png" alt="" width={44} height={44} className="rounded-xl" /></div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-display text-lg font-semibold">Salla</h2>
+                    <h2 className="font-display text-xl font-semibold">{t("Salla", "سلة")}</h2>
                     {connected ? (
                       <Badge className="border-eligible/20 bg-eligible-muted text-eligible"><Check className="size-3" /> {t("Connected", "متصل")}</Badge>
                     ) : <Badge variant="outline">{t("Not connected", "غير متصل")}</Badge>}
                   </div>
                   <p className="mt-1 max-w-lg text-sm leading-6 text-muted-foreground">
-                    {connected ? t(`${connection.external_store_name ?? "Your store"} is ready for order verification.`, `${connection.external_store_name ?? "متجرك"} جاهز للتحقق من الطلبات.`) : t("Authorize read-only order access through Salla. Mujeeb never receives your merchant password.", "امنح صلاحية قراءة الطلبات فقط عبر سلة. لن يطّلع مجيب على كلمة مرور متجرك إطلاقًا.")}
+                    {connected ? t(`Store authorization is active for ${connection.external_store_name ?? "your store"}.`, `تفويض الوصول إلى ${connection.external_store_name ?? "متجرك"} مفعّل.`) : t("Authorize read-only order access through Salla. Mujeeb never receives your merchant password.", "امنح صلاحية قراءة الطلبات فقط عبر سلة. لن يطّلع مجيب على كلمة مرور متجرك إطلاقًا.")}
                   </p>
                   {connected && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span>{t(
@@ -121,17 +122,17 @@ export function IntegrationsPage() {
                   </div>}
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-5" aria-busy={action !== null}>
                 {connected ? <>
                   <Button variant="outline" onClick={() => void runAction("test")} disabled={action !== null}>{action === "test" ? <Spinner /> : <RefreshCw className="size-4" />} {t("Check connection", "فحص الربط")}</Button>
-                  <Button variant="ghost" className="text-muted-foreground" onClick={() => void runAction("disconnect")} disabled={action !== null}><Unplug className="size-4" /> {t("Disconnect", "فصل الربط")}</Button>
+                  <Button variant="ghost" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ms-auto" onClick={() => void runAction("disconnect")} disabled={action !== null}>{action === "disconnect" ? <Spinner /> : <Unplug className="size-4" />} {t("Disconnect", "فصل الربط")}</Button>
                 </> : <Button onClick={() => void connect()} disabled={loading || action !== null}>{action === "connect" ? <Spinner /> : <Link2 className="size-4" />} {t("Connect Salla", "ربط سلة")}</Button>}
               </div>
             </div>
             <div className="grid border-t border-border/60 bg-muted/20 sm:grid-cols-3">
               <div className="flex items-center gap-3 p-4 text-sm"><ShieldCheck className="size-4 text-primary" /><span>{t("Encrypted credentials", "بيانات اعتماد مشفّرة")}</span></div>
               <div className="flex items-center gap-3 border-y border-border/60 p-4 text-sm sm:border-x sm:border-y-0"><Link2 className="size-4 text-primary" /><span>{t("Orders read only", "قراءة الطلبات فقط")}</span></div>
-              <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>{t("Secure token renewal", "تجديد آمن للرموز")}</span></div>
+              <div className="flex items-center gap-3 p-4 text-sm"><Clock className="size-4 text-primary" /><span>{t("Disconnect anytime", "إمكانية فصل الربط في أي وقت")}</span></div>
             </div>
           </CardContent>
         </Card>

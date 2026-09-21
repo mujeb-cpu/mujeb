@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { services } from "@/lib/services";
 import { toast } from "sonner";
-import { Users, Globe, Shield, User, Bell, FileText } from "lucide-react";
+import { Users, Globe, Shield, User } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/language-provider";
+import { Spinner } from "@/components/ui/spinner";
 import { StoreMark } from "@/components/store-identity";
 import { useDelayedLoad } from "@/hooks/use-delayed-load";
 import { SettingsPageSkeleton } from "@/components/merchant-skeletons";
@@ -22,33 +21,31 @@ export function SettingsPage() {
   const auth = useAuth();
   const { t, locale, setLocale } = useLanguage();
   const loaded = useDelayedLoad(260);
-  const [storeName, setStoreName] = useState(auth.workspace?.storeName ?? services.getStoreName());
-  const [storeEmail, setStoreEmail] = useState(auth.user?.email ?? "");
-  const [defaultWindow, setDefaultWindow] = useState("14");
-  const [autoApproveEligible, setAutoApproveEligible] = useState(false);
-  const [requirePhoto, setRequirePhoto] = useState(false);
-  const [notifyNewCase, setNotifyNewCase] = useState(true);
-  const [notifyManualReview, setNotifyManualReview] = useState(true);
-  const [notifyResolved, setNotifyResolved] = useState(false);
-  const [notifyWeeklyDigest, setNotifyWeeklyDigest] = useState(true);
+  const [storeName, setStoreName] = useState(auth.workspace?.storeName ?? "");
+  const [saving, setSaving] = useState(false);
+  const canEditStore = auth.workspace?.role === "owner" || auth.workspace?.role === "admin";
+  const name = storeName.trim();
+  const nameValid = name.length > 0 && name.length <= 120;
+  const nameChanged = name !== auth.workspace?.storeName;
+
+  useEffect(() => {
+    setStoreName(auth.workspace?.storeName ?? "");
+  }, [auth.workspace?.storeId, auth.workspace?.storeName]);
 
   const handleSaveStore = async () => {
-    if (auth.user && auth.workspace && supabase) {
-      const { error } = await supabase.from("stores").update({ name: storeName.trim() }).eq("id", auth.workspace.storeId);
-      if (error) return toast.error(error.message);
+    if (!supabase || !auth.workspace || !canEditStore || !nameValid || saving) return;
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.from("stores")
+        .update({ name }).eq("id", auth.workspace.storeId).select("id").single();
+      if (error || !data) throw new Error("save_failed");
       await auth.refreshWorkspace();
-    } else {
-      services.setStoreName(storeName);
+      toast.success(t("Store settings saved", "تم حفظ إعدادات المتجر"));
+    } catch {
+      toast.error(t("Could not save your store name. Please try again.", "تعذّر حفظ اسم المتجر. يرجى المحاولة مرة أخرى."));
+    } finally {
+      setSaving(false);
     }
-    toast.success(t("Store settings saved", "تم حفظ إعدادات المتجر"));
-  };
-
-  const handleSavePolicyDefaults = () => {
-    toast.success(t("Return policy defaults saved", "تم حفظ الإعدادات الافتراضية لسياسة الإرجاع"));
-  };
-
-  const handleSaveNotifications = () => {
-    toast.success(t("Notification preferences saved", "تم حفظ تفضيلات الإشعارات"));
   };
 
   if (!loaded) {
@@ -56,7 +53,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-7 animate-fade-in">
       <ScrollReveal>
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">{t("Settings", "الإعدادات")}</h1>
@@ -65,84 +62,56 @@ export function SettingsPage() {
       </ScrollReveal>
 
       <ScrollReveal delay={100}>
-        <div className="mb-1 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+        <div className="mb-5 flex flex-wrap items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
           <Shield className="size-3.5 text-primary" />
           <span>{t(`Signed in as ${auth.user?.email}. Store access is scoped by membership.`, `تم تسجيل الدخول باسم ${auth.user?.email}. الوصول مقيد بعضوية المتجر.`)}</span>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Store profile */}
-          <Card>
+          <Card className="h-full rounded-2xl border-border/70 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <StoreMark size="md" />
                 <CardTitle className="text-base">{t("Store profile", "ملف المتجر")}</CardTitle>
               </div>
-              <CardDescription>{t("Your store identity and contact details.", "هوية المتجر وبيانات التواصل.")}</CardDescription>
+              <CardDescription>{t("The name shown across your workspace.", "الاسم الذي يظهر في مساحة عملك.")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-4">
+              <form className="flex flex-col gap-4" onSubmit={(event) => { event.preventDefault(); void handleSaveStore(); }}>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="store-name">{t("Store name", "اسم المتجر")}</Label>
-                  <Input id="store-name" value={storeName} onChange={(e) => setStoreName(e.target.value)} />
+                  <Input id="store-name" required maxLength={120} disabled={!canEditStore || saving} aria-describedby="store-name-help" value={storeName} onChange={(e) => setStoreName(e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="store-email">{t("Contact email", "بريد التواصل")}</Label>
-                  <Input id="store-email" type="email" value={storeEmail} onChange={(e) => setStoreEmail(e.target.value)} />
+                  <Label htmlFor="store-email">{t("Account email", "بريد الحساب")}</Label>
+                  <Input id="store-email" type="email" dir="ltr" value={auth.user?.email ?? ""} readOnly className="bg-muted/40 text-muted-foreground" />
                 </div>
-                <Button size="sm" onClick={handleSaveStore} className="self-start">{t("Save changes", "حفظ التغييرات")}</Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Return policy defaults */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <FileText className="size-4 text-muted-foreground" />
-                <CardTitle className="text-base">{t("Return policy defaults", "إعدادات سياسة الإرجاع")}</CardTitle>
-              </div>
-              <CardDescription>{t("Default settings applied to new return requests.", "الإعدادات الافتراضية لطلبات الإرجاع الجديدة.")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="default-window">{t("Default return window (days)", "مدة الإرجاع الافتراضية (بالأيام)")}</Label>
-                  <Input id="default-window" type="number" value={defaultWindow} onChange={(e) => setDefaultWindow(e.target.value)} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Auto-approve eligible cases", "اعتماد الحالات المؤهلة تلقائيًا")}</div>
-                    <div className="text-xs text-muted-foreground">{t("Skip manual review for eligible returns", "تجاوز المراجعة البشرية للحالات المؤهلة")}</div>
-                  </div>
-                  <Switch checked={autoApproveEligible} onCheckedChange={setAutoApproveEligible} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Require customer photo", "طلب صورة من العميل")}</div>
-                    <div className="text-xs text-muted-foreground">{t("Ask for a photo on defective claims", "طلب صورة عند الإبلاغ عن منتج معيب")}</div>
-                  </div>
-                  <Switch checked={requirePhoto} onCheckedChange={setRequirePhoto} />
-                </div>
-                <Button size="sm" onClick={handleSavePolicyDefaults} className="self-start">{t("Save defaults", "حفظ الإعدادات")}</Button>
-              </div>
+                <p id="store-name-help" className="text-xs leading-5 text-muted-foreground">{canEditStore
+                  ? t("Use 1–120 characters. Your account email is read-only.", "استخدم من 1 إلى 120 حرفًا. لا يمكن تعديل بريد الحساب هنا.")
+                  : t("Only store owners and admins can change the store name.", "يمكن لمالك المتجر والمسؤولين فقط تعديل اسم المتجر.")}</p>
+                <Button type="submit" size="sm" disabled={!canEditStore || !nameValid || !nameChanged || saving} className="self-start">
+                  {saving && <Spinner />}
+                  {saving ? t("Saving…", "جارٍ الحفظ…") : t("Save changes", "حفظ التغييرات")}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
           {/* Team access */}
-          <Card>
+          <Card className="h-full rounded-2xl border-border/70 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Users className="size-4 text-muted-foreground" />
                 <CardTitle className="text-base">{t("Team access", "صلاحيات الفريق")}</CardTitle>
               </div>
-              <CardDescription>{t("Manage team members and roles.", "إدارة أعضاء الفريق وأدوارهم.")}</CardDescription>
+              <CardDescription>{t("Your current access to this store.", "صلاحياتك الحالية في هذا المتجر.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
                   <div>
                     <div className="text-sm font-medium text-foreground">{auth.user?.email}</div>
-                    <div className="text-xs text-muted-foreground">{auth.workspace?.role ?? "Owner"}</div>
+                    <div className="text-xs text-muted-foreground">{auth.workspace?.role === "owner" ? t("Owner", "المالك") : auth.workspace?.role === "admin" ? t("Admin", "مسؤول") : t("Member", "عضو")}</div>
                   </div>
                   <span className="rounded-full bg-eligible-muted px-2 py-0.5 text-[11px] font-medium text-eligible">{t("Active", "نشط")}</span>
                 </div>
@@ -151,52 +120,8 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Notifications */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Bell className="size-4 text-muted-foreground" />
-                <CardTitle className="text-base">{t("Notifications", "الإشعارات")}</CardTitle>
-              </div>
-              <CardDescription>{t("Choose what you want to be notified about.", "اختر الإشعارات التي تريد استلامها.")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("New case created", "إنشاء حالة جديدة")}</div>
-                    <div className="text-xs text-muted-foreground">{t("When a customer submits a return", "عند إرسال العميل طلب إرجاع")}</div>
-                  </div>
-                  <Switch checked={notifyNewCase} onCheckedChange={setNotifyNewCase} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Manual review needed", "الحالة تتطلب مراجعة بشرية")}</div>
-                    <div className="text-xs text-muted-foreground">{t("When a case needs your attention", "عندما تحتاج حالة إلى تدخلك")}</div>
-                  </div>
-                  <Switch checked={notifyManualReview} onCheckedChange={setNotifyManualReview} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Case resolved", "إغلاق الحالة")}</div>
-                    <div className="text-xs text-muted-foreground">{t("When a case reaches resolved status", "عند إغلاق الحالة")}</div>
-                  </div>
-                  <Switch checked={notifyResolved} onCheckedChange={setNotifyResolved} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Weekly digest", "الملخص الأسبوعي")}</div>
-                    <div className="text-xs text-muted-foreground">{t("Summary of returns activity each week", "ملخص أسبوعي لنشاط المرتجعات")}</div>
-                  </div>
-                  <Switch checked={notifyWeeklyDigest} onCheckedChange={setNotifyWeeklyDigest} />
-                </div>
-                <Button size="sm" onClick={handleSaveNotifications} className="self-start">{t("Save preferences", "حفظ التفضيلات")}</Button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Language */}
-          <Card>
+          <Card className="h-full rounded-2xl border-border/70 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Globe className="size-4 text-muted-foreground" />
@@ -206,8 +131,8 @@ export function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
-                <Select value={locale} onValueChange={(value) => setLocale(value as "en" | "ar")}>
-                  <SelectTrigger>
+                <Select dir={locale === "ar" ? "rtl" : "ltr"} value={locale} onValueChange={(value) => setLocale(value as "en" | "ar")}>
+                  <SelectTrigger aria-label={t("Workspace language", "لغة مساحة العمل")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -220,37 +145,8 @@ export function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Security */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Shield className="size-4 text-muted-foreground" />
-                <CardTitle className="text-base">{t("Security", "الأمان")}</CardTitle>
-              </div>
-              <CardDescription>{t("Authentication and access control.", "تسجيل الدخول والتحكم في الوصول.")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("Two-factor authentication", "المصادقة الثنائية")}</div>
-                    <div className="text-xs text-muted-foreground">{t("Available in production rollout", "ستتوفر عند الإطلاق الفعلي")}</div>
-                  </div>
-                  <Switch disabled />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t("API rate limiting", "تحديد معدل طلبات الواجهة البرمجية")}</div>
-                    <div className="text-xs text-muted-foreground">{t("Available in production rollout", "ستتوفر عند الإطلاق الفعلي")}</div>
-                  </div>
-                  <Switch disabled />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Account */}
-          <Card>
+          <Card className="h-full rounded-2xl border-border/70 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <User className="size-4 text-muted-foreground" />

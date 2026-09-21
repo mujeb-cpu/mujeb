@@ -1,1 +1,16 @@
 @import "../index.css";
+
+.merchant-workspace button {
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.merchant-workspace button:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .merchant-workspace button > svg { transition: transform 180ms ease; }
+  .merchant-workspace button:hover:not(:disabled) > svg { transform: translateY(-1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .merchant-workspace button { transition: none; }
+}
