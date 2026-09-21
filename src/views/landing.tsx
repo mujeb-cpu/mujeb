@@ -116,11 +116,11 @@ export function LandingPage() {
   const heroItem = reduceMotion ? heroCopyItemStatic : heroCopyItem;
   const [heroIntroDone, setHeroIntroDone] = useState(!!reduceMotion);
   const onHeroIntroComplete = useCallback(() => setHeroIntroDone(true), []);
-  const heroLine1 = t("Your policy.", "سياستك.");
-  const heroLine2 = t("Their answer.", "إجابتهم.");
+  const heroLine1 = t("Faster return decisions.", "قرارات إرجاع أسرع.");
+  const heroLine2 = t("A clearer path to financing.", "وطريق أوضح للتمويل.");
   const heroBody = t(
-    "Clear return answers, in a channel your customers already use. Mujeeb applies merchant-approved rules and keeps the evidence behind every decision.",
-    "إجابات واضحة لطلبات الإرجاع عبر قناة يستخدمها عملاؤك بالفعل. يطبق مجيب القواعد التي يعتمدها التاجر ويحفظ الأدلة المرتبطة بكل قرار.",
+    "Mujeeb turns your store policy into automated return decisions with AI — every one traced to the clause behind it. Understand your returns first, then unlock returns financing as you qualify.",
+    "يحوّل مجيب سياسة متجرك إلى قرارات إرجاع مؤتمتة بالذكاء الاصطناعي، وكل قرار مرتبط بالبند الذي استُخرج منه. افهم مرتجعاتك أولًا، ثم افتح تمويل المرتجعات عند استيفاء الشروط.",
   );
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];
@@ -141,7 +141,7 @@ export function LandingPage() {
           >
             <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
               <span className="size-1.5 rounded-full bg-primary" />
-              {t("Return decisions for Saudi ecommerce", "قرارات إرجاع واضحة للتجارة الإلكترونية السعودية")}
+              {t("AI-powered returns for Saudi ecommerce", "مرتجعات مدعومة بالذكاء الاصطناعي للتجارة الإلكترونية السعودية")}
             </motion.span>
             <HeroTagline
               line1={heroLine1}
@@ -161,7 +161,7 @@ export function LandingPage() {
                 onClick={() => router.push("/app")}
                 className="group"
               >
-                {t("Open the workspace", "فتح مساحة العمل")}
+                {t("Explore returns financing", "اكتشف تمويل المرتجعات")}
                 <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
               </Button>
               <Button
@@ -170,7 +170,7 @@ export function LandingPage() {
                 onClick={() => router.push("/return")}
                 className="bg-card/50 backdrop-blur transition-all duration-200 hover:-translate-y-px"
               >
-                {t("Try a customer return", "تجربة طلب إرجاع")}
+                {t("See how it works", "شاهد كيف يعمل")}
               </Button>
             </motion.div>
             <motion.div
@@ -247,13 +247,13 @@ export function LandingPage() {
           <ScrollReveal>
             <div className="max-w-2xl">
               <span className="text-sm font-semibold text-primary">
-                {t("The problem", "المشكلة")}
+                {t("Why Mujeeb", "لماذا مجيب")}
               </span>
               <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-foreground md:text-[40px] md:leading-[1.1] text-balance">
-                {t("Policy text leaves customers and staff interpreting individual cases.", "نص السياسة وحده يترك العميل والموظف أمام تفسيرات مختلفة لكل حالة.")}
+                {t("Returns tie up cash. Mujeeb shortens the gap.", "المرتجعات تجمّد نقدك. مجيب يقصّر الفجوة.")}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
-                {t("A return policy is a document. Every return request is a decision. Without a clear connection between the two, customers guess, support staff improvise, and nobody can explain why a particular answer was given.", "سياسة الإرجاع وثيقة، أما كل طلب إرجاع فهو قرار. من دون رابط واضح بينهما، يحتار العملاء، ويجتهد موظفو الدعم، ويصعب تفسير سبب كل نتيجة.")}
+                {t("Every day a return sits undecided is working capital locked in stock you cannot sell. When decisions are automated against your own policy, cases close sooner, your return data becomes reliable, and the path to financing gets shorter.", "كل يوم يبقى فيه طلب الإرجاع دون قرار هو رأس مال عامل محتجز في بضاعة لا يمكن بيعها. وعندما تُؤتمت القرارات وفق سياسة متجرك، تُغلق الحالات أسرع، وتصبح بيانات مرتجعاتك موثوقة، ويقصر الطريق إلى التمويل.")}
               </p>
             </div>
           </ScrollReveal>
@@ -262,16 +262,16 @@ export function LandingPage() {
             <div className="mt-10 grid gap-8 sm:grid-cols-3">
               {[
                 {
-                  label: t("Customer confusion", "حيرة العميل"),
-                  desc: t("Customers don't know if their return is valid until they ask.", "لا يعرف العميل إن كان طلبه مقبولًا إلا بعد التواصل مع المتجر."),
+                  label: t("Policy automation", "أتمتة السياسة"),
+                  desc: t("AI reads your policy and turns it into repeatable return decisions.", "يقرأ الذكاء الاصطناعي سياستك ويحوّلها إلى قرارات إرجاع قابلة للتكرار."),
                 },
                 {
-                  label: t("Staff improvisation", "اختلاف اجتهاد الموظفين"),
-                  desc: t("Each agent interprets the policy independently.", "يفسر كل موظف السياسة بطريقته."),
+                  label: t("Returns financing", "تمويل المرتجعات"),
+                  desc: t("Move from an approved return to a clearer funding path.", "انتقل من إرجاع معتمد إلى طريق أوضح للتمويل."),
                 },
                 {
-                  label: t("No audit trail", "غياب سجل القرار"),
-                  desc: t("Nobody can explain why a particular decision was made.", "لا يوجد سجل واضح يبين سبب اتخاذ القرار."),
+                  label: t("Evidence and control", "الأدلة والتحكم"),
+                  desc: t("Every decision stays connected to the clause that produced it.", "يبقى كل قرار مرتبطًا بالبند الذي أنتجه."),
                 },
               ].map((item) => (
                 <div key={item.label}>
@@ -593,7 +593,7 @@ export function LandingPage() {
                   onClick={() => router.push("/app")}
                   className="group"
                 >
-                  {t("Open the workspace", "فتح مساحة العمل")}
+                  {t("Explore returns financing", "اكتشف تمويل المرتجعات")}
                   <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
                 </Button>
                 <Button
@@ -601,7 +601,7 @@ export function LandingPage() {
                   size="lg"
                   onClick={() => router.push("/return")}
                 >
-                  {t("Try a customer return", "تجربة طلب إرجاع")}
+                  {t("See how it works", "شاهد كيف يعمل")}
                 </Button>
               </div>
             </div>

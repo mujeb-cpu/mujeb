@@ -29,7 +29,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
   const isHome = pathname === "/";
   const activeSection = useSectionSpy(
-    isHome ? ["product", "how-it-works"] : [],
+    isHome ? ["product", "how-it-works", "returns-financing"] : [],
   );
   const navLinks = [
     { id: "product", label: t("Product", "المنتج"), href: "/#product" },
@@ -37,6 +37,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       id: "how-it-works",
       label: t("How it works", "كيف يعمل"),
       href: "/#how-it-works",
+    },
+    {
+      id: "returns-financing",
+      label: t("Returns financing", "تمويل المرتجعات"),
+      href: "/#returns-financing",
     },
   ];
   const isNavActive = (sectionId: string) =>

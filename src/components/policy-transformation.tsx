@@ -53,13 +53,13 @@ export function PolicyTransformation() {
       <div className="mx-auto max-w-[1200px] px-5 py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-sm font-semibold text-primary">
-            {t("From language to approved rules", "من نص السياسة إلى قواعد معتمدة")}
+            {t("From policy to financing-ready decisions", "من السياسة إلى قرارات جاهزة للتمويل")}
           </span>
           <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.025em] text-foreground md:text-[42px] md:leading-[1.08]">
-            {t("Every rule stays connected to the sentence that produced it.", "كل قاعدة مرتبطة بالنص الذي استُخرجت منه.")}
+            {t("Policy becomes a clear path to financing.", "تتحول السياسة إلى طريق واضح للتمويل.")}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            {t("AI proposes a structured interpretation. You see its source, review it, and decide what becomes active.", "يقترح الذكاء الاصطناعي تفسيرًا منظمًا. ترى مصدر كل قاعدة، وتراجعها، ثم تقرر ما يُنشر منها.")}
+            {t("Your store policy becomes an AI-assisted return decision, and every approved decision becomes a financing-ready case. You review each rule before it goes live.", "تتحول سياسة متجرك إلى قرار إرجاع مدعوم بالذكاء الاصطناعي، ويصبح كل قرار معتمد حالة جاهزة للتمويل. وتراجع كل قاعدة قبل نشرها.")}
           </p>
         </div>
 

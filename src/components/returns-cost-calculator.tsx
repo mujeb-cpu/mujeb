@@ -33,11 +33,15 @@ export function ReturnsCostCalculator() {
   }), [hourlyCost, monthlyReturns, orderValue, processingMinutes, resolutionDays]);
 
   return (
-    <section aria-labelledby="returns-calculator-title" className="px-5 pb-20 md:pb-28">
+    <section
+      id="returns-financing"
+      aria-labelledby="returns-calculator-title"
+      className="scroll-mt-20 px-5 pb-20 md:pb-28"
+    >
       <div className="mx-auto mb-8 flex max-w-[1200px] items-end justify-between gap-6">
         <div><p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-primary"><Calculator className="size-4" />{t("Returns cost calculator", "حاسبة تكلفة المرتجعات")}</p>
-        <h2 id="returns-calculator-title" className="font-display text-3xl font-semibold tracking-tight text-foreground md:text-4xl">{t("What does waiting cost your store?", "كم يكلف تأخر الإرجاع متجرك؟")}</h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">{t("A few numbers. A clearer picture of the value waiting on a decision.", "أدخل بعض الأرقام لتعرف قيمة الطلبات المعلّقة بانتظار القرار.")}</p></div>
+        <h2 id="returns-calculator-title" className="font-display text-3xl font-semibold tracking-tight text-foreground md:text-4xl">{t("What could faster returns unlock?", "ماذا يمكن أن تتيح لك مرتجعات أسرع؟")}</h2>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">{t("A few numbers. A clearer picture of the working capital sitting in undecided returns.", "أدخل بعض الأرقام لتعرف حجم رأس المال المحتجز في مرتجعات بلا قرار.")}</p></div>
         <ArrowUpRight aria-hidden="true" className="hidden size-10 text-primary/40 sm:block" />
       </div>
       <div className="mx-auto max-w-[1200px] overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-[0_28px_80px_-48px_rgba(10,50,41,.4)]">
