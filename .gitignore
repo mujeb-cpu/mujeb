@@ -42,3 +42,6 @@ pnpm-lock.yaml
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Working briefs (not part of the build)
+docs/briefs/

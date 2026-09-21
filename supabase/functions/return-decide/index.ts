@@ -21,7 +21,17 @@ function evaluate(rule: Rule, facts: Facts, item: Item, quantity: number, reason
   if (rule.category === "reasons") { const passed = list.includes(reason); return { rule, passed, evaluatedValue: reason, reasonCode: passed ? "REASON_ALLOWED" : "REASON_NOT_ALLOWED" }; }
   if (rule.category === "conditions") { const passed = list.includes(condition); return { rule, passed, evaluatedValue: condition, reasonCode: passed ? "CONDITION_ALLOWED" : "CONDITION_NOT_ALLOWED" }; }
   if (rule.category === "exclusions") { const passed = !list.some((code) => item.sku.toLowerCase().startsWith(code.toLowerCase())); return { rule, passed, evaluatedValue: item.sku, reasonCode: passed ? "ITEM_NOT_EXCLUDED" : "ITEM_EXCLUDED" }; }
-  if (rule.category === "order_status") { const passed = list.includes(facts.orderStatus); return { rule, passed, evaluatedValue: facts.orderStatus, reasonCode: passed ? "ORDER_STATUS_OK" : "ORDER_STATUS_FAIL" }; }
+  if (rule.category === "order_status") {
+    // A missing status is an unknown fact, not a failed check. Without this the
+    // customer is auto-rejected when the platform omits the field, which
+    // contradicts "every missing fact required by an active rule is
+    // MANUAL_REVIEW; do not guess".
+    if (!facts.orderStatus?.trim()) {
+      return { rule, passed: false, evaluatedValue: "No order status available", reasonCode: "MISSING_ORDER_STATUS" };
+    }
+    const passed = list.includes(facts.orderStatus);
+    return { rule, passed, evaluatedValue: facts.orderStatus, reasonCode: passed ? "ORDER_STATUS_OK" : "ORDER_STATUS_FAIL" };
+  }
   if (rule.category === "quantity") { const max = Number.parseInt(rule.value, 10); const passed = quantity > 0 && quantity <= max && quantity <= item.quantity; return { rule, passed, evaluatedValue: `${quantity} requested (max ${max}, available ${item.quantity})`, reasonCode: passed ? "QUANTITY_OK" : "QUANTITY_EXCEEDED" }; }
   return { rule, passed: true, evaluatedValue: "N/A", reasonCode: "FALLBACK_OK" };
 }

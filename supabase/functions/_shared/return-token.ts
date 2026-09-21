@@ -28,9 +28,32 @@ export async function signReturnFacts(facts: unknown) {
   return `${payload}.${await signature(payload)}`;
 }
 
+/**
+ * Constant-time string comparison.
+ *
+ * `a !== b` short-circuits on the first differing byte, so rejecting a token
+ * takes longer the more of the signature an attacker has guessed correctly.
+ * That leak lets a signature be brute-forced byte by byte instead of all at
+ * once. Comparing every byte keeps the timing flat.
+ */
+function timingSafeEqual(expected: string, actual: string) {
+  const left = encoder.encode(expected);
+  const right = encoder.encode(actual);
+  // Fold the length difference in rather than returning early, and always walk
+  // the full expected length so the loop count never depends on the input.
+  let mismatch = left.length ^ right.length;
+  for (let index = 0; index < left.length; index += 1) {
+    mismatch |= left[index] ^ (right[index] ?? 0);
+  }
+  return mismatch === 0;
+}
+
 export async function verifyReturnFacts<T>(token: string): Promise<T> {
   const [payload, received] = token.split(".");
-  if (!payload || !received || await signature(payload) !== received) throw new Error("invalid_return_token");
+  if (!payload || !received) throw new Error("invalid_return_token");
+  if (!timingSafeEqual(await signature(payload), received)) {
+    throw new Error("invalid_return_token");
+  }
   const parsed = JSON.parse(decode(payload));
   if (!parsed.exp || parsed.exp < Date.now()) throw new Error("expired_return_token");
   return parsed.facts as T;
