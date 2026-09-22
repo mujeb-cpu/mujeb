@@ -119,8 +119,8 @@ export function LandingPage() {
   const heroLine1 = t("Faster return decisions.", "قرارات إرجاع أسرع.");
   const heroLine2 = t("A clearer path to financing.", "وطريق أوضح للتمويل.");
   const heroBody = t(
-    "Mujeeb turns your store policy into automated return decisions with AI — every one traced to the clause behind it. Understand your returns first, then unlock returns financing as you qualify.",
-    "يحوّل مجيب سياسة متجرك إلى قرارات إرجاع مؤتمتة بالذكاء الاصطناعي، وكل قرار مرتبط بالبند الذي استُخرج منه. افهم مرتجعاتك أولًا، ثم افتح تمويل المرتجعات عند استيفاء الشروط.",
+    "Relod turns your store policy into automated return decisions with AI — every one traced to the clause behind it. Understand your returns first, then unlock returns financing as you qualify.",
+    "يحوّل ريلود سياسة متجرك إلى قرارات إرجاع مؤتمتة بالذكاء الاصطناعي، وكل قرار مرتبط بالبند الذي استُخرج منه. افهم مرتجعاتك أولًا، ثم افتح تمويل المرتجعات عند استيفاء الشروط.",
   );
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];
@@ -247,10 +247,10 @@ export function LandingPage() {
           <ScrollReveal>
             <div className="max-w-2xl">
               <span className="text-sm font-semibold text-primary">
-                {t("Why Mujeeb", "لماذا مجيب")}
+                {t("Why Relod", "لماذا ريلود")}
               </span>
               <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-foreground md:text-[40px] md:leading-[1.1] text-balance">
-                {t("Returns tie up cash. Mujeeb shortens the gap.", "المرتجعات تجمّد نقدك. مجيب يقصّر الفجوة.")}
+                {t("Returns tie up cash. Relod shortens the gap.", "المرتجعات تجمّد نقدك. ريلود يقصّر الفجوة.")}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
                 {t("Every day a return sits undecided is working capital locked in stock you cannot sell. When decisions are automated against your own policy, cases close sooner, your return data becomes reliable, and the path to financing gets shorter.", "كل يوم يبقى فيه طلب الإرجاع دون قرار هو رأس مال عامل محتجز في بضاعة لا يمكن بيعها. وعندما تُؤتمت القرارات وفق سياسة متجرك، تُغلق الحالات أسرع، وتصبح بيانات مرتجعاتك موثوقة، ويقصر الطريق إلى التمويل.")}

@@ -19,7 +19,7 @@ import {
   SAMPLE_POLICY_RULES,
 } from "./fixtures";
 
-const STORAGE_KEY = "mujeeb-workspace-state-v1";
+const STORAGE_KEY = "relod-workspace-state-v1";
 
 interface DemoState {
   cases: ReturnCase[];

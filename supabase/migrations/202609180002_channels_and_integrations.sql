@@ -1,4 +1,4 @@
--- Mujeeb MVP: Salla and WhatsApp integration boundaries.
+-- Relod MVP: Salla and WhatsApp integration boundaries.
 -- Apply after 202609180001_initial_mvp.sql.
 
 create table public.commerce_connections (

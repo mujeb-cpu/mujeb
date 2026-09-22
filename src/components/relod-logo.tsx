@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
 
 /**
- * Mujeeb mark: a chat bubble whose counter is a return arrow — the brand's
+ * Relod mark: a chat bubble whose counter is a return arrow — the brand's
  * two ideas (a conversation, a return) in one shape. Drawn as solid fills so
  * it stays legible at favicon size; `currentColor` lets it take the theme.
  */
-export function MujeebMark({ className }: { className?: string }) {
+export function RelodMark({ className }: { className?: string }) {
   // The mark renders several times per page; ids must not collide.
   const maskId = useId();
   return (
@@ -45,7 +45,7 @@ export function MujeebMark({ className }: { className?: string }) {
   );
 }
 
-export function MujeebLogo({
+export function RelodLogo({
   className,
   showText = true,
 }: {
@@ -55,10 +55,10 @@ export function MujeebLogo({
   const { t } = useLanguage();
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <MujeebMark className="size-7 text-primary" />
+      <RelodMark className="size-7 text-primary" />
       {showText && (
         <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-          {t("Mujeeb", "مجيب")}
+          {t("Relod", "ريلود")}
         </span>
       )}
     </div>

@@ -44,7 +44,7 @@ function FooterPanel({
 }) {
   const router = useRouter();
   const { t, isArabic } = useLanguage();
-  const wordmark = t("Mujeeb", "مجيب");
+  const wordmark = t("Relod", "ريلود");
   const footerLinks = [
     { label: t("Product", "المنتج"), href: "/#product" },
     { label: t("How it works", "كيف يعمل"), href: "/#how-it-works" },
@@ -52,7 +52,7 @@ function FooterPanel({
     { label: t("Start a return", "بدء طلب إرجاع"), href: "/return" },
   ];
   const companyLinks = [
-    { label: t("About", "عن مجيب"), href: "/#product" },
+    { label: t("About", "عن ريلود"), href: "/#product" },
     { label: t("Contact", "تواصل معنا"), href: "mailto:mujebteem@gmail.com" },
   ];
   const legalLinks = [
@@ -152,8 +152,8 @@ function FooterPanel({
                   never has to reorder a trailing "©" or full stop. */}
               <span>
                 {t(
-                  `© ${new Date().getFullYear()} Mujeeb. All rights reserved.`,
-                  `جميع الحقوق محفوظة لمجيب © ${new Date().getFullYear()}`,
+                  `© ${new Date().getFullYear()} Relod. All rights reserved.`,
+                  `جميع الحقوق محفوظة لريلود © ${new Date().getFullYear()}`,
                 )}
               </span>
               <nav aria-label={t("Footer company navigation", "روابط الشركة في التذييل")} className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">

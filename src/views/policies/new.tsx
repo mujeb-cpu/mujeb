@@ -201,7 +201,7 @@ export function PolicyNewPage() {
       {extractionState === "idle" && (
         <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p className="text-xs leading-relaxed text-muted-foreground"><span className="font-medium text-foreground">{t("How it works:", "كيف يعمل:")}</span> {t("Mujeeb proposes rules from your text. You decide what gets approved and published.", "يقترح مجيب القواعد من نصك، وأنت تقرر ما يُعتمد ويُنشر.")}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground"><span className="font-medium text-foreground">{t("How it works:", "كيف يعمل:")}</span> {t("Relod proposes rules from your text. You decide what gets approved and published.", "يقترح ريلود القواعد من نصك، وأنت تقرر ما يُعتمد ويُنشر.")}</p>
         </div>
       )}
 

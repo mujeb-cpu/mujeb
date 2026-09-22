@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { MujeebLogo } from "@/components/mujeeb-logo";
+import { RelodLogo } from "@/components/relod-logo";
 
 export function NotFoundPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-5">
-      <MujeebLogo />
+      <RelodLogo />
       <div className="text-center">
         <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground">
           Page not found

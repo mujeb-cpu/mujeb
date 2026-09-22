@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { MujeebMark } from "@/components/mujeeb-logo";
+import { RelodMark } from "@/components/relod-logo";
 import { PageTransition } from "@/components/page-transition";
 import { services } from "@/lib/services";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -33,9 +33,9 @@ export function CustomerLayout({ children }: { children: ReactNode }) {
               href="/"
               className="ms-1 flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 transition-colors duration-200 hover:border-border hover:bg-muted/40"
             >
-              <MujeebMark className="size-5 text-primary" />
+              <RelodMark className="size-5 text-primary" />
               <span className="hidden font-display text-xs font-semibold sm:inline">
-                {t("Mujeeb", "مجيب")}
+                {t("Relod", "ريلود")}
               </span>
             </Link>
           </div>
@@ -52,8 +52,8 @@ export function CustomerLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-[520px] px-5 py-4">
           <p className="text-center text-[11px] leading-relaxed text-muted-foreground/75">
             {t(
-              "Powered by Mujeeb · Return decisions, explained.",
-              "بدعم من مجيب · قرارات إرجاع واضحة ومفسّرة.",
+              "Powered by Relod · Return decisions, explained.",
+              "بدعم من ريلود · قرارات إرجاع واضحة ومفسّرة.",
             )}
           </p>
         </div>

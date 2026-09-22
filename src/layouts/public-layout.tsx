@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { MujeebLogo } from "@/components/mujeeb-logo";
+import { RelodLogo } from "@/components/relod-logo";
 
 import { CurtainReveal } from "@/components/curtain-reveal";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -124,7 +124,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         <div className="public-header-surface">
           <div className="public-header-inner">
             <Link href="/" className="rounded-lg p-1 shrink-0 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
-              <MujeebLogo
+              <RelodLogo
                 className={cn(
                   "transition-all duration-300",
                   scrolled ? "scale-90" : "scale-100",

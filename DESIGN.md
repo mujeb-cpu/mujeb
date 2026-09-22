@@ -1,4 +1,4 @@
-# Mujeeb design system
+# Relod design system
 
 ## Direction
 

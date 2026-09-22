@@ -47,9 +47,9 @@ export function ReturnResultPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const rawDecision = sessionStorage.getItem("mujeeb-decision");
-    const rawOrder = sessionStorage.getItem("mujeeb-verified-order");
-    const rawContext = sessionStorage.getItem("mujeeb-return-context");
+    const rawDecision = sessionStorage.getItem("relod-decision");
+    const rawOrder = sessionStorage.getItem("relod-verified-order");
+    const rawContext = sessionStorage.getItem("relod-return-context");
     if (!rawDecision || !rawOrder) {
       router.push("/return");
       return;
@@ -63,8 +63,8 @@ export function ReturnResultPage() {
 
   const handleSubmit = async () => {
     if (submitted || !context) return;
-    const verificationToken = sessionStorage.getItem("mujeeb-verification-token");
-    const savedDecisionId = sessionStorage.getItem("mujeeb-decision-id");
+    const verificationToken = sessionStorage.getItem("relod-verification-token");
+    const savedDecisionId = sessionStorage.getItem("relod-decision-id");
     if (verificationToken && savedDecisionId && supabase) {
       setSubmitting(true);
       const { data, error } = await supabase.functions.invoke("return-decide", {

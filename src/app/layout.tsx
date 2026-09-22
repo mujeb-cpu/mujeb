@@ -7,11 +7,11 @@ import { LOCALE_COOKIE, resolveRequestLocale } from "@/lib/locale-server";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mujeeb — Return decisions, explained",
+  title: "Relod — Return decisions, explained",
   description:
     "Turn approved return rules into clear answers for customers—and a decision trail your team can inspect.",
   openGraph: {
-    title: "Mujeeb — Return decisions, explained",
+    title: "Relod — Return decisions, explained",
     description:
       "Turn approved return rules into clear answers for customers—and a decision trail your team can inspect.",
   },
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   icons: {
-    icon: "/mujeeb-mark.svg",
+    icon: "/relod-mark.svg",
   },
 };
 

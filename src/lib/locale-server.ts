@@ -1,6 +1,6 @@
 export type Locale = "en" | "ar";
 
-export const LOCALE_COOKIE = "mujeeb-language";
+export const LOCALE_COOKIE = "relod-language";
 
 export function parseLocale(value: string | undefined | null): Locale | null {
   if (value === "ar" || value === "en") return value;

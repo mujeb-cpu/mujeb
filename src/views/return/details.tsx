@@ -40,7 +40,7 @@ export function ReturnDetailsPage() {
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("mujeeb-verified-order");
+    const raw = sessionStorage.getItem("relod-verified-order");
     if (!raw) {
       router.push("/return");
       return;
@@ -64,7 +64,7 @@ export function ReturnDetailsPage() {
 
   const handleCheck = async () => {
     if (!selectedItemId) return;
-    const verificationToken = sessionStorage.getItem("mujeeb-verification-token");
+    const verificationToken = sessionStorage.getItem("relod-verification-token");
     let decision = null;
     if (verificationToken && supabase) {
       setChecking(true);
@@ -77,7 +77,7 @@ export function ReturnDetailsPage() {
         return;
       }
       decision = data.decision;
-      sessionStorage.setItem("mujeeb-decision-id", data.decisionId);
+      sessionStorage.setItem("relod-decision-id", data.decisionId);
     } else {
       decision = services.evaluate(order, selectedItemId, quantity, reason, condition);
     }
@@ -85,8 +85,8 @@ export function ReturnDetailsPage() {
       router.push("/return");
       return;
     }
-    sessionStorage.setItem("mujeeb-decision", JSON.stringify(decision));
-    sessionStorage.setItem("mujeeb-return-context", JSON.stringify({
+    sessionStorage.setItem("relod-decision", JSON.stringify(decision));
+    sessionStorage.setItem("relod-return-context", JSON.stringify({
       orderId: order.orderId,
       itemId: selectedItemId,
       quantity,

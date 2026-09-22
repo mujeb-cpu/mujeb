@@ -29,7 +29,7 @@ export function ReturnVerifyPage() {
   const live = Boolean(returnCode);
 
   useEffect(() => {
-    if (returnCode) sessionStorage.setItem("mujeeb-return-code", returnCode);
+    if (returnCode) sessionStorage.setItem("relod-return-code", returnCode);
   }, [returnCode]);
 
   const handleVerify = async (e: React.FormEvent) => {
@@ -45,8 +45,8 @@ export function ReturnVerifyPage() {
         setError(t("We couldn't verify this order. Please check your details and try again.", "تعذر التحقق من الطلب. راجع بياناتك ثم حاول مرة أخرى."));
         return;
       }
-      sessionStorage.setItem("mujeeb-verified-order", JSON.stringify(data.order));
-      sessionStorage.setItem("mujeeb-verification-token", data.verificationToken);
+      sessionStorage.setItem("relod-verified-order", JSON.stringify(data.order));
+      sessionStorage.setItem("relod-verification-token", data.verificationToken);
       router.push("/return/details");
       return;
     }
@@ -54,7 +54,7 @@ export function ReturnVerifyPage() {
       const order = services.verifyOrder(orderNumber, email);
       setLoading(false);
       if (order) {
-        sessionStorage.setItem("mujeeb-verified-order", JSON.stringify(order));
+        sessionStorage.setItem("relod-verified-order", JSON.stringify(order));
         router.push("/return/details");
       } else {
         setError(t("We couldn't verify this order. Please check your order number and email and try again.", "تعذر التحقق من الطلب. راجع رقم الطلب والبريد الإلكتروني ثم حاول مرة أخرى."));
