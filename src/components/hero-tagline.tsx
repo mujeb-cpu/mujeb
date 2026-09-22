@@ -146,11 +146,11 @@ export function HeroTagline({
   if (reduceMotion) {
     return (
       <div className="flex flex-col items-start gap-7">
-        <h1 className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground text-balance sm:text-6xl lg:text-[74px]">
+        <h1 className="mx-auto max-w-[18ch] font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground text-balance sm:text-[56px] lg:text-[64px]">
           <span className="block">{line1}</span>
           <span className="hero-gradient-text block">{line2}</span>
         </h1>
-        <p className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty">
+        <p className="mx-auto max-w-[46ch] text-lg leading-relaxed text-muted-foreground text-pretty">
           {body}
         </p>
       </div>
@@ -159,7 +159,7 @@ export function HeroTagline({
 
   return (
     <div className="flex flex-col items-start gap-7">
-      <h1 className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground text-balance sm:text-6xl lg:text-[74px]">
+      <h1 className="mx-auto max-w-[18ch] font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground text-balance sm:text-[56px] lg:text-[64px]">
         <RevealedLine text={line1} delay={0.05} wordByWord={wordByWord} />
         <RevealedLine
           text={line2}
@@ -170,7 +170,7 @@ export function HeroTagline({
       </h1>
 
       <motion.p
-        className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty will-change-[opacity,transform,filter]"
+        className="mx-auto max-w-[46ch] text-lg leading-relaxed text-muted-foreground text-pretty will-change-[opacity,transform,filter]"
         initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ delay: bodyDelay, duration: 0.75, ease: EASE }}

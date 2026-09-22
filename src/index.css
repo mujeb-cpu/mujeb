@@ -122,6 +122,9 @@
   --footer-subtle: #c8c2bb;
   --footer-gold: #ea580c;
   --footer-gold-foreground: #ffffff;
+  /* Hero inset card: the page it floats on, and the card itself. */
+  --hero-shell-bg: #faf9f6;
+  --hero-card-bg: #14100d;
 }
 
 .dark {
@@ -179,6 +182,10 @@
   --footer-subtle: #463c35;
   --footer-gold: #fb923c;
   --footer-gold-foreground: #1c1917;
+  /* Dark mode: the page recedes and the card lifts, so the inset edge still
+     reads without the light-mode contrast. */
+  --hero-shell-bg: #0a0806;
+  --hero-card-bg: #17130f;
 }
 
 @layer base {
@@ -1355,6 +1362,84 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   position: relative;
   overflow: visible;
   background: var(--background);
+}
+
+/* Inset hero card.
+   The shell is the light page; the card is a dark panel floating on it with a
+   margin all round. The contrast at that boundary is what makes it read as a
+   window rather than a section with a border. The fixed header sits over the
+   card, so the card's top padding leaves room for it. */
+.hero-shell {
+  position: relative;
+  padding: 0 clamp(12px, 2.2vw, 28px) clamp(12px, 2.2vw, 28px);
+  background: var(--hero-shell-bg);
+}
+
+.hero-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: clamp(20px, 2.4vw, 34px);
+  background: var(--hero-card-bg);
+  box-shadow:
+    0 30px 70px -40px rgb(8 14 12 / 0.55),
+    0 2px 8px -4px rgb(8 14 12 / 0.3);
+}
+
+/* The strip continues the shell surface below the card, so the marquee reads
+   as page rather than something sliding under the card's rounded edge. */
+.principles-strip {
+  background: var(--hero-shell-bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+/* Scroll-linked depth: the card tilts back and settles as it leaves the top of
+   the viewport, so the page has a sense of dimension rather than flat scroll.
+   `animation-timeline: view()` is GPU-driven and needs no JS. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    .hero-card {
+      transform-origin: 50% 0%;
+      animation: hero-card-recede linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+@keyframes hero-card-recede {
+  from {
+    transform: perspective(1400px) rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: perspective(1400px) rotateX(7deg) scale(0.93);
+    opacity: 0.55;
+  }
+}
+
+.hero-card-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: clamp(6.5rem, 12vh, 9.5rem) clamp(1.25rem, 4vw, 2.5rem)
+    clamp(4rem, 9vh, 7rem);
+  text-align: center;
+}
+
+/* The card is dark in both themes, so its contents stay light-on-dark. */
+.hero-card .hero-tagline-line,
+.hero-card h1 {
+  color: #f6f8f7;
+}
+
+.hero-card p {
+  color: rgb(246 248 247 / 0.72);
 }
 
 .hero-aurora {

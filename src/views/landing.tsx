@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { HeroTagline } from "@/components/hero-tagline";
-import { StoreIdentity } from "@/components/store-identity";
 import { Button } from "@/components/ui/button";
 import {
   AnimatedDecisionTrace,
@@ -123,26 +122,28 @@ export function LandingPage() {
     "يقرأ الذكاء الاصطناعي سياسة الإرجاع ويجيب عملاءك خلال ثوانٍ. أغلق المرتجعات أسرع، ثم تأهّل للتمويل.",
   );
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
-  const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];
+  // "Required for the live pilot" was an internal note, not a customer claim.
+  const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Traced to your policy", "مرتبطة بسياستك"), t("Answers in seconds", "إجابات خلال ثوانٍ")];
   const examples = EXAMPLES.map((example) => isArabic ? ({ ...example, messages: [{ ...example.messages[0], text: `هل يمكنني إرجاع هذا المنتج؟ رقم طلبي ${example.facts.orderId}.` }, { ...example.messages[1], text: example.decision.outcome === "ELIGIBLE" ? "هذا المنتج مؤهل للإرجاع. تم استيفاء جميع شروط السياسة." : example.decision.outcome === "MANUAL_REVIEW" ? "لا يتوفر تاريخ التسليم، لذلك يحتاج المتجر إلى مراجعة الطلب." : "هذا المنتج خارج مدة الإرجاع المحددة في السياسة.", rule: example.decision.outcome === "MANUAL_REVIEW" ? "تاريخ التسليم غير متوفر · يلزم مراجعة التاجر" : "مدة الإرجاع 14 يومًا من تاريخ التسليم" }] }) : example);
 
   return (
     <div className="overflow-x-clip bg-background">
-      {/* Hero — a moment of use */}
-      <section id="whatsapp" className="hero-scene relative scroll-mt-24">
-        <div className="hero-aurora" aria-hidden="true" />
-        <div className="hero-scene-content relative mx-auto grid max-w-[1200px] items-center gap-10 px-5 pb-16 pt-12 md:grid-cols-[1.05fr_1fr] md:gap-16 md:pb-20 md:pt-14 lg:pb-24 lg:pt-16">
-          {/* Keep the existing reduced-motion end state and stagger the copy once. */}
+      {/* Hero — an inset card floating on the page, nav included by the
+          layout. Centred copy, no imagery: the card itself is the object. */}
+      <section id="whatsapp" className="hero-shell scroll-mt-24">
+        <div className="hero-card">
+          <div className="hero-aurora" aria-hidden="true" />
           <motion.div
             initial="hidden"
             animate="visible"
             variants={{ hidden: {}, visible: { transition: { delayChildren: reduceMotion ? 0 : 0.08, staggerChildren: reduceMotion ? 0 : 0.11 } } }}
-            className="flex flex-col items-start gap-7"
+            className="hero-card-content"
           >
-            <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
+            <motion.span variants={heroItem} className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur">
               <span className="size-1.5 rounded-full bg-primary" />
               {t("AI-powered returns for Saudi ecommerce", "مرتجعات مدعومة بالذكاء الاصطناعي للتجارة الإلكترونية السعودية")}
             </motion.span>
+
             <HeroTagline
               line1={heroLine1}
               line2={heroLine2}
@@ -150,17 +151,14 @@ export function LandingPage() {
               isArabic={isArabic}
               onComplete={onHeroIntroComplete}
             />
+
             <motion.div
               variants={heroItem}
               initial="hidden"
               animate={heroIntroDone ? "visible" : "hidden"}
-              className="flex flex-wrap items-center gap-3"
+              className="flex flex-wrap items-center justify-center gap-3"
             >
-              <Button
-                size="lg"
-                onClick={() => router.push("/app")}
-                className="group"
-              >
+              <Button size="lg" onClick={() => router.push("/app")} className="group">
                 {t("Explore returns financing", "اكتشف تمويل المرتجعات")}
                 <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
               </Button>
@@ -168,55 +166,39 @@ export function LandingPage() {
                 variant="outline"
                 size="lg"
                 onClick={() => router.push("/return")}
-                className="bg-card/50 backdrop-blur transition-all duration-200 hover:-translate-y-px"
+                className="border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.1] hover:text-white"
               >
                 {t("See how it works", "شاهد كيف يعمل")}
               </Button>
             </motion.div>
+
             <motion.div
               variants={heroItem}
               initial="hidden"
               animate={heroIntroDone ? "visible" : "hidden"}
-              className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground"
+              className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/55"
             >
-              <span className="hero-trust-chip">
-                <ShieldCheck className="size-4 text-primary/70" />
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="size-4 text-primary" />
                 {t("Human-approved rules", "قواعد يعتمدها التاجر")}
               </span>
-              <span className="hero-trust-chip">
-                <Lock className="size-4 text-primary/70" />
+              <span className="inline-flex items-center gap-1.5">
+                <Lock className="size-4 text-primary" />
                 {t("Evidence with every answer", "أدلة مع كل إجابة")}
               </span>
-              <span className="hero-trust-chip">
+              <span className="inline-flex items-center gap-1.5">
                 <WhatsAppChannel />
               </span>
             </motion.div>
           </motion.div>
-          <figure className="hero-stage relative isolate m-0 flex flex-col items-center py-4">
-            <div className="hero-phone-3d">
-              <div aria-hidden="true" className="hero-phone-glow" />
-              <PhoneFrame className="hero-phone">
-                <WhatsAppThread messages={examples[0].messages} animated />
-              </PhoneFrame>
-            </div>
-            <figcaption className="mt-7 flex max-w-[320px] flex-col items-center gap-1.5 text-center">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70">
-                <span>Order SA-10492 ·</span>
-                <StoreIdentity name="Nova Store" markSize="sm" />
-              </span>
-              <span className="text-[11px] leading-relaxed text-muted-foreground">
-                {WHATSAPP_STATUS === "coming-soon"
-                  ? t("Live today on the web. Arriving on WhatsApp next.", "متاح اليوم على الويب، وقريبًا عبر واتساب.")
-                  : t("A real decision, from published Policy v1.0.", "قرار فعلي استنادًا إلى السياسة المنشورة v1.0.")}
-              </span>
-            </figcaption>
-          </figure>
         </div>
       </section>
 
+      {/* Sits on the shell background so it reads as part of the page the hero
+          card floats on, not as a strip running under the card's edge. */}
       <section
         aria-label="Product principles"
-        className="bg-muted/30 py-6"
+        className="principles-strip py-7"
       >
         <div className="principles-marquee">
           <div className="principles-track">
