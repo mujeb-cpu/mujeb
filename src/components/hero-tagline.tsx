@@ -11,7 +11,7 @@ const lineContainer: Variants = {
   visible: (delay = 0) => ({
     transition: {
       delayChildren: delay,
-      staggerChildren: 0.055,
+      staggerChildren: 0.075,
     },
   }),
 };
@@ -27,7 +27,7 @@ const wordReveal: Variants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 0.58,
+      duration: 0.82,
       ease: EASE,
     },
   },
@@ -45,7 +45,7 @@ const lineReveal: Variants = {
     filter: "blur(0px)",
     transition: {
       delay,
-      duration: 0.65,
+      duration: 0.9,
       ease: EASE,
     },
   }),
@@ -130,15 +130,15 @@ export function HeroTagline({
 
   // Word split is English-only — Arabic shaping must stay on whole lines.
   const wordByWord = !isArabic && !reduceMotion;
-  const line2Delay = reduceMotion ? 0 : wordByWord ? 0.28 : 0.2;
-  const bodyDelay = reduceMotion ? 0 : wordByWord ? 0.58 : 0.48;
+  const line2Delay = reduceMotion ? 0 : wordByWord ? 0.42 : 0.3;
+  const bodyDelay = reduceMotion ? 0 : wordByWord ? 0.95 : 0.8;
 
   useEffect(() => {
     if (reduceMotion) {
       onCompleteRef.current?.();
       return;
     }
-    const ms = Math.round((bodyDelay + 0.6) * 1000);
+    const ms = Math.round((bodyDelay + 0.8) * 1000);
     const id = window.setTimeout(() => onCompleteRef.current?.(), ms);
     return () => window.clearTimeout(id);
   }, [line1, line2, body, isArabic, reduceMotion, bodyDelay]);
@@ -173,7 +173,7 @@ export function HeroTagline({
         className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty will-change-[opacity,transform,filter]"
         initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ delay: bodyDelay, duration: 0.55, ease: EASE }}
+        transition={{ delay: bodyDelay, duration: 0.75, ease: EASE }}
       >
         {body}
       </motion.p>
