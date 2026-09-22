@@ -15,7 +15,10 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme
+  /** "system" resolved to what is actually on screen — a toggle needs this. */
+  resolvedTheme: ResolvedTheme
   setTheme: (theme: Theme) => void
+  toggleTheme: () => void
 }
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
@@ -122,6 +125,9 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(defaultTheme)
+  // Mirrors the class actually on <html>, so "system" resolves to what the user
+  // sees. Kept in state (not read from the DOM at render) to stay SSR-safe.
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light")
   const hasHydratedTheme = React.useRef(false)
 
   React.useEffect(() => {
@@ -138,9 +144,10 @@ export function ThemeProvider({
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
-      const resolvedTheme =
+      const nextResolved =
         nextTheme === "system" ? getSystemTheme() : nextTheme
-      transitionTheme(resolvedTheme, disableTransitionOnChange)
+      setResolvedTheme(nextResolved)
+      transitionTheme(nextResolved, disableTransitionOnChange)
     },
     [disableTransitionOnChange]
   )
@@ -249,9 +256,13 @@ export function ThemeProvider({
   const value = React.useMemo(
     () => ({
       theme,
+      resolvedTheme,
       setTheme,
+      // Toggling from "system" commits to the opposite of what is shown, so a
+      // single click always visibly flips the theme.
+      toggleTheme: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
     }),
-    [theme, setTheme]
+    [theme, resolvedTheme, setTheme]
   )
 
   return (

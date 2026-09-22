@@ -1,46 +1,46 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useTheme } from "@/components/theme-provider"
-import { cn } from "@/lib/utils"
-import { useLanguage } from "@/components/language-provider"
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
 
+/**
+ * One tap flips the theme — no menu.
+ *
+ * A dropdown for two visible states is friction: picking "System" is a setting,
+ * not an action people take mid-browse. The OS preference still seeds the first
+ * visit; this just commits to the opposite of whatever is on screen.
+ */
 export function ModeToggle({ className }: { className?: string }) {
-  const { setTheme } = useTheme()
-  const { t } = useLanguage()
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("rounded-full border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground", className)}
-        >
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">{t("Toggle theme", "تبديل المظهر")}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          {t("Light", "فاتح")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          {t("Dark", "داكن")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          {t("System", "حسب النظام")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={
+        isDark
+          ? t("Switch to light theme", "التبديل إلى المظهر الفاتح")
+          : t("Switch to dark theme", "التبديل إلى المظهر الداكن")
+      }
+      title={
+        isDark
+          ? t("Switch to light theme", "التبديل إلى المظهر الفاتح")
+          : t("Switch to dark theme", "التبديل إلى المظهر الداكن")
+      }
+      className={cn(
+        "mode-toggle grid size-8 place-items-center rounded-full border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        className,
+      )}
+    >
+      {/* Both icons stay mounted and cross-fade with a rotation, so the swap
+          eases rather than popping. */}
+      <Sun className="mode-toggle-icon mode-toggle-sun size-[1.1rem]" />
+      <Moon className="mode-toggle-icon mode-toggle-moon size-[1.1rem]" />
+    </button>
+  );
 }

@@ -1082,6 +1082,44 @@ html[dir="rtl"] .sidebar-nav-enter {
   transform: rotate(-45deg) scale(0.8);
 }
 
+/* Theme toggle: sun and moon share one grid cell and cross-fade with a
+   rotation, so a tap reads as one icon turning into the other. */
+.mode-toggle-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mode-toggle-moon {
+  opacity: 0;
+  transform: rotate(-70deg) scale(0.6);
+}
+
+.dark .mode-toggle-sun {
+  opacity: 0;
+  transform: rotate(70deg) scale(0.6);
+}
+
+.dark .mode-toggle-moon {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+/* Press feedback on the visible icon only. Each rule is scoped to the theme
+   where that icon is shown, or it would out-specify the hidden icon's
+   rotation and flash both at once. */
+html:not(.dark) .mode-toggle:active .mode-toggle-sun,
+html.dark .mode-toggle:active .mode-toggle-moon {
+  transform: scale(0.88);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-toggle-icon {
+    transition: none;
+  }
+}
+
 .menu-toggle[data-open="true"] .menu-toggle-open {
   opacity: 0;
   transform: rotate(45deg) scale(0.8);
