@@ -67,39 +67,39 @@
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: #faf9f6;
-  --foreground: #202623;
+  --radius: 0.5rem;
+  --background: #f5f5f4;
+  --foreground: #1c1917;
   --card: #ffffff;
-  --card-foreground: #202623;
+  --card-foreground: #1c1917;
   --popover: #ffffff;
-  --popover-foreground: #202623;
-  --primary: #0f766e;
-  --primary-foreground: #ffffff;
-  --secondary: #eef3f0;
-  --secondary-foreground: #202623;
-  --muted: #f0f3ef;
-  --muted-foreground: #626e68;
-  --accent: #e0f2ee;
-  --accent-foreground: #115e59;
+  --popover-foreground: #1c1917;
+  --primary: #f97316;
+  --primary-foreground: #1c1917;
+  --secondary: #fafaf9;
+  --secondary-foreground: #292524;
+  --muted: #eeece9;
+  --muted-foreground: #6f6761;
+  --accent: #ffedd5;
+  --accent-foreground: #9a3412;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #dde5df;
-  --input: #c8d5ce;
-  --ring: #0f766e;
-  --chart-1: #0f766e;
+  --border: #e7e5e4;
+  --input: #d6d3d1;
+  --ring: #f97316;
+  --chart-1: #f97316;
   --chart-2: #f59e0b;
-  --chart-3: #626e68;
-  --chart-4: #5eead4;
+  --chart-3: #78716c;
+  --chart-4: #fdba74;
   --chart-5: #dc2626;
-  --sidebar: #f8f7f4;
-  --sidebar-foreground: #202623;
-  --sidebar-primary: #0f766e;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e0f2ee;
-  --sidebar-accent-foreground: #115e59;
-  --sidebar-border: #dde5df;
-  --sidebar-ring: #0f766e;
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #ffedd5;
+  --sidebar-accent-foreground: #9a3412;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #f97316;
   --eligible: #059669;
   --eligible-foreground: #ffffff;
   --eligible-muted: #d1fae5;
@@ -109,54 +109,54 @@
   --review: #d97706;
   --review-foreground: #ffffff;
   --review-muted: #fef3c7;
-  --brand-tint: #e0f2ee;
+  --brand-tint: #ffedd5;
   --saffron: #f59e0b;
-  --saffron-foreground: #202623;
+  --saffron-foreground: #1c1917;
   --saffron-muted: #fef3c7;
   /* Light-mode footer: a distinctly deeper tinted surface than the page panel
      (#faf9f6) — enough separation for the curtain reveal to read, while still
      clearly a light surface. */
-  --footer-bg: #c7d5ce;
-  --footer-fg: #16211e;
-  --footer-muted: #44544e;
-  --footer-subtle: #a9bdb4;
-  --footer-gold: #0f766e;
+  --footer-bg: #e7e2dc;
+  --footer-fg: #1c1917;
+  --footer-muted: #57534e;
+  --footer-subtle: #c8c2bb;
+  --footer-gold: #ea580c;
   --footer-gold-foreground: #ffffff;
 }
 
 .dark {
-  --background: #0d1110;
-  --foreground: #f1f5f3;
-  --card: #151a18;
-  --card-foreground: #f1f5f3;
-  --popover: #1b211f;
-  --popover-foreground: #f1f5f3;
-  --primary: #14b8a6;
-  --primary-foreground: #061311;
-  --secondary: #1b211f;
-  --secondary-foreground: #f1f5f3;
-  --muted: #191f1d;
-  --muted-foreground: #9ca9a3;
-  --accent: #222a27;
-  --accent-foreground: #ccfbf1;
+  --background: #141210;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #231f1c;
+  --popover-foreground: #fafaf9;
+  --primary: #fb923c;
+  --primary-foreground: #1c1917;
+  --secondary: #292524;
+  --secondary-foreground: #fafaf9;
+  --muted: #24201d;
+  --muted-foreground: #b0a9a3;
+  --accent: #3a2418;
+  --accent-foreground: #fed7aa;
   --destructive: #f87171;
   --destructive-foreground: #1a0a0a;
-  --border: #29322e;
-  --input: #36413c;
-  --ring: #5eead4;
-  --chart-1: #5eead4;
+  --border: #37312c;
+  --input: #4a423c;
+  --ring: #fb923c;
+  --chart-1: #fb923c;
   --chart-2: #fbbf24;
-  --chart-3: #a3b5ac;
-  --chart-4: #99f6e4;
+  --chart-3: #a8a29e;
+  --chart-4: #fdba74;
   --chart-5: #f87171;
-  --sidebar: #111513;
-  --sidebar-foreground: #f1f5f3;
-  --sidebar-primary: #14b8a6;
-  --sidebar-primary-foreground: #061311;
-  --sidebar-accent: #1b211f;
-  --sidebar-accent-foreground: #ccfbf1;
-  --sidebar-border: #29322e;
-  --sidebar-ring: #5eead4;
+  --sidebar: #181512;
+  --sidebar-foreground: #fafaf9;
+  --sidebar-primary: #fb923c;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #342218;
+  --sidebar-accent-foreground: #fed7aa;
+  --sidebar-border: #37312c;
+  --sidebar-ring: #fb923c;
   --eligible: #34d399;
   --eligible-foreground: #0a1a14;
   --eligible-muted: #0a2a1e;
@@ -166,19 +166,19 @@
   --review: #fbbf24;
   --review-foreground: #1a1408;
   --review-muted: #2a2414;
-  --brand-tint: #172421;
+  --brand-tint: #342218;
   --saffron: #fbbf24;
   --saffron-foreground: #1a1408;
   --saffron-muted: #2a2414;
   /* Lighter than the page (#0d1110), not darker: there is no headroom below
      near-black, so a darker footer gave the curtain edge ~1.03:1 and the reveal
      was invisible. Raising it instead reads as a lit surface behind the panel. */
-  --footer-bg: #1b2523;
-  --footer-fg: #f1f5f3;
-  --footer-muted: #9ca9a3;
-  --footer-subtle: #2c3a37;
-  --footer-gold: #5eead4;
-  --footer-gold-foreground: #061311;
+  --footer-bg: #28221e;
+  --footer-fg: #fafaf9;
+  --footer-muted: #b0a9a3;
+  --footer-subtle: #463c35;
+  --footer-gold: #fb923c;
+  --footer-gold-foreground: #1c1917;
 }
 
 @layer base {
@@ -712,7 +712,7 @@ html[dir="rtl"] .sidebar-nav-enter {
    shadow pressed into the top lip, bright catch-light on the bottom edge where
    the cut rises back to the surface. */
 .footer-wordmark {
-  color: color-mix(in srgb, var(--footer-bg) 84%, #2c4740);
+  color: color-mix(in srgb, var(--footer-bg) 84%, #4a3d34);
   text-shadow:
     0 -0.012em 0.008em rgb(10 26 22 / 0.6),
     0 -0.028em 0.045em rgb(10 26 22 / 0.4),
@@ -723,7 +723,7 @@ html[dir="rtl"] .sidebar-nav-enter {
 }
 
 .dark .footer-wordmark {
-  color: color-mix(in srgb, var(--footer-bg) 82%, #05100d);
+  color: color-mix(in srgb, var(--footer-bg) 82%, #0f0c0a);
   text-shadow:
     0 -0.012em 0.008em rgb(0 0 0 / 0.98),
     0 -0.028em 0.045em rgb(0 0 0 / 0.75),

@@ -71,10 +71,10 @@ export function ReturnsCostCalculator() {
             </div>
           </div>
 
-          <div className="calculator-results relative isolate flex min-h-[440px] flex-col justify-center overflow-hidden bg-[#0d2a25] p-6 text-[#effaf6] sm:p-8 lg:p-10" aria-live="polite">
-            <div aria-hidden="true" className="absolute -right-24 -top-24 size-64 rounded-full bg-[#5eead4]/12 blur-3xl" />
-            <div aria-hidden="true" className="absolute -bottom-32 -left-24 size-72 rounded-full bg-[#0f766e]/30 blur-3xl" />
-            <p className="relative flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#9fd5c7]"><span className="size-1.5 rounded-full bg-[#5eead4]" />{t("The cost of unresolved returns", "تكلفة المرتجعات غير المعالجة")}</p>
+          <div className="calculator-results relative isolate flex min-h-[440px] flex-col justify-center overflow-hidden bg-[#211a16] p-6 text-[#fffaf5] sm:p-8 lg:p-10" aria-live="polite">
+            <div aria-hidden="true" className="absolute -right-24 -top-24 size-64 rounded-full bg-primary/15 blur-3xl" />
+            <div aria-hidden="true" className="absolute -bottom-32 -left-24 size-72 rounded-full bg-primary/25 blur-3xl" />
+            <p className="relative flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-orange-200"><span className="size-1.5 rounded-full bg-primary" />{t("The cost of unresolved returns", "تكلفة المرتجعات غير المعالجة")}</p>
             <ResultValue
               icon={<WalletCards className="size-5" />}
               label={t("Tied up in delayed returns", "قيمة معلّقة في مرتجعات متأخرة")}
@@ -85,8 +85,8 @@ export function ReturnsCostCalculator() {
               <ResultValue icon={<Clock3 className="size-4" />} label={t("Estimated operational cost", "التكلفة التشغيلية التقديرية")} value={`${formatMoney(results.operatingCost)} ${t("/ month", "/ شهر")}`} />
               <ResultValue icon={<TimerReset className="size-4" />} label={t("Average return resolution", "متوسط مدة معالجة الإرجاع")} value={`${n(resolutionDays, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${t("days", "يوم")}`} />
             </div>
-            <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-xs text-[#b6d8cc]"><span>{t("Monthly staff time", "وقت العمل الشهري")}</span><span className="font-semibold tabular-nums latin-nums">{n(monthlyReturns * processingMinutes / 60, { maximumFractionDigits: 1 })} {t("hours", "ساعة")}</span></div>
-            <p className="relative mt-7 border-t border-white/10 pt-5 text-xs leading-relaxed text-[#9fb9b2]">
+            <div className="relative mt-6 flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-xs text-orange-100/75"><span>{t("Monthly staff time", "وقت العمل الشهري")}</span><span className="font-semibold tabular-nums latin-nums">{n(monthlyReturns * processingMinutes / 60, { maximumFractionDigits: 1 })} {t("hours", "ساعة")}</span></div>
+            <p className="relative mt-7 border-t border-white/10 pt-5 text-xs leading-relaxed text-orange-100/65">
               {t("Planning estimate, not guaranteed savings. Tied-up value assumes returns arrive evenly throughout a 30-day month. Operational cost uses processing time × staff cost.", "تقدير لأغراض التخطيط وليس توفيرًا مضمونًا. يفترض تقدير القيمة المعلّقة توزيع المرتجعات بالتساوي خلال شهر من 30 يومًا، وتُحسب التكلفة التشغيلية من وقت المعالجة وتكلفة الموظف.")}
             </p>
           </div>
@@ -140,7 +140,7 @@ function ResultValue({ icon, label, value, emphasis = false }: {
 }) {
   return (
     <div className={emphasis ? "relative mt-5" : "rounded-2xl border border-white/10 bg-white/[0.045] p-4 backdrop-blur-sm transition-colors hover:bg-white/[0.07]"}>
-      <div className="flex items-center gap-2 text-xs text-[#9fd5c7]">{icon}<span>{label}</span></div>
+      <div className="flex items-center gap-2 text-xs text-orange-200/80">{icon}<span>{label}</span></div>
       {/* No `key` here: keying on the value remounts the node on every keystroke,
           which replays the fade and reads as a flicker while dragging a slider. */}
       <p className={emphasis ? "mt-2 text-[clamp(2.25rem,5vw,4.25rem)] font-semibold leading-none tabular-nums latin-nums" : "mt-2 text-lg font-semibold tracking-tight tabular-nums latin-nums"}>
