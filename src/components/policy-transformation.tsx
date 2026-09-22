@@ -57,12 +57,18 @@ export function PolicyTransformation() {
     const update = () => {
       frame = 0;
       if (userDriven.current) return;
+      const pin = element.querySelector<HTMLElement>(".policy-scroll-pin");
+      if (!pin) return;
       const rect = element.getBoundingClientRect();
-      // Progress across the portion of the section that sits in the viewport.
-      const span = rect.height - window.innerHeight * 0.4;
+      // The scrub runs only while the panel is pinned: from the moment the
+      // section's top passes the heading, until its bottom reaches the
+      // viewport. Measuring the whole section would start it too early.
+      const headingOffset = pin.offsetTop;
+      const span = rect.height - headingOffset - window.innerHeight;
       if (span <= 0) return;
-      const travelled = (window.innerHeight * 0.6 - rect.top) / span;
-      const step = Math.floor(travelled * DEMO_RULES.length);
+      const travelled = -rect.top - headingOffset;
+      const progress = Math.min(1, Math.max(0, travelled / span));
+      const step = Math.floor(progress * DEMO_RULES.length);
       const next = Math.min(DEMO_RULES.length - 1, Math.max(0, step));
       setActive((current) => (current === next ? current : next));
     };
@@ -92,8 +98,14 @@ export function PolicyTransformation() {
   };
 
   return (
-    <section ref={sectionRef} id="how-it-works" className="scroll-mt-20 bg-muted/30">
-      <div className="mx-auto max-w-[1200px] px-5 py-20 md:py-28">
+    <section
+      ref={sectionRef}
+      id="how-it-works"
+      className="policy-scroll-section scroll-mt-20 bg-muted/30"
+    >
+      {/* Heading scrolls away normally — keeping it inside the pin pushed the
+          workspace off the bottom of the viewport. */}
+      <div className="mx-auto w-full max-w-[1200px] px-5 pb-0 pt-20 md:pt-28">
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-sm font-semibold text-primary">
             {t("From policy to financing-ready decisions", "من السياسة إلى قرارات جاهزة للتمويل")}
@@ -105,8 +117,11 @@ export function PolicyTransformation() {
             {t("Your store policy becomes an AI-assisted return decision, and every approved decision becomes a financing-ready case. You review each rule before it goes live.", "تتحول سياسة متجرك إلى قرار إرجاع مدعوم بالذكاء الاصطناعي، ويصبح كل قرار معتمد حالة جاهزة للتمويل. وتراجع كل قاعدة قبل نشرها.")}
           </p>
         </div>
+      </div>
 
-        <div className="policy-workspace mt-12 overflow-hidden rounded-[28px] border border-border/75 bg-card shadow-[0_30px_90px_-55px_rgba(8,42,34,.55)] md:mt-16">
+      <div className="policy-scroll-pin">
+        <div className="mx-auto w-full max-w-[1200px] px-5 py-10">
+        <div className="policy-workspace overflow-hidden rounded-[28px] border border-border/75 bg-card shadow-[0_30px_90px_-55px_rgba(8,42,34,.55)]">
           {/* Workspace bar: progress lives here, not in a separate panel. */}
           <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -137,7 +152,10 @@ export function PolicyTransformation() {
           <div className="grid lg:grid-cols-[1fr_1fr]">
             {/* Source document — the active clause lights up. */}
             <div className="hidden border-b border-border/70 bg-background/50 p-5 sm:p-7 lg:block lg:border-b-0 lg:border-r">
-              <div className="lg:sticky lg:top-24">
+              {/* No inner sticky: the whole panel is pinned by
+                  .policy-scroll-pin, and nesting a second sticky context makes
+                  this column drift against it. */}
+              <div>
                 <p className="mb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {t("Source policy", "نص السياسة")}
                 </p>
@@ -276,6 +294,7 @@ export function PolicyTransformation() {
               </span>
             </div>
           </motion.div>
+        </div>
         </div>
       </div>
     </section>

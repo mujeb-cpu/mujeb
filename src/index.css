@@ -1618,13 +1618,35 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   .policy-rule-card::before { display: none; }
 }
 
-/* Extra height on desktop so the three rules step through over a comfortable
-   scroll rather than all firing within a few pixels. The source column is
-   sticky inside it, so the reader stays with the clause as rules advance.
-   Mobile keeps the natural height — it is a plain stack there. */
+/* Desktop: the section is three viewports tall and its contents pin to the
+   screen, so each rule holds in place for a full scroll before the next one
+   takes over. Without the hold, the highlights flick past faster than anyone
+   can read them. Mobile keeps natural height — it is a plain stack there. */
 @media (min-width: 1024px) {
-  #how-it-works {
-    padding-bottom: 28vh;
+  /* Heading (normal flow) + three viewports of scrub for the pinned panel. */
+  .policy-scroll-section {
+    min-height: 300svh;
+    padding-bottom: 0;
+  }
+
+  .policy-scroll-pin {
+    position: sticky;
+    top: 0;
+    display: flex;
+    min-height: 100svh;
+    align-items: center;
+  }
+}
+
+/* Reduced motion gets the plain, un-pinned layout. */
+@media (prefers-reduced-motion: reduce) {
+  .policy-scroll-section {
+    height: auto;
+  }
+
+  .policy-scroll-pin {
+    position: static;
+    min-height: 0;
   }
 }
 
