@@ -1399,22 +1399,72 @@ html.dark .mode-toggle:active .mode-toggle-moon {
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
     .hero-card {
-      transform-origin: 50% 0%;
-      animation: hero-card-recede linear both;
+      transform-origin: 50% 100%;
+      animation:
+        hero-card-recede linear both,
+        hero-card-shadow linear both;
+      animation-timeline: view(), view();
+      animation-range: exit 0% exit 100%, exit 0% exit 100%;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(
+        to bottom,
+        rgb(4 6 5 / 0.9),
+        rgb(4 6 5 / 0.35) 55%,
+        transparent
+      );
+      opacity: 0;
+      animation: hero-card-shade linear both;
       animation-timeline: view();
       animation-range: exit 0% exit 100%;
     }
   }
 }
 
+/* No opacity change: fading the card let the light page show through and
+   washed it grey. Depth comes from the tilt and a shorter perspective, with a
+   darkening overlay (.hero-card::after) standing in for the light falling off
+   as the surface angles away. */
 @keyframes hero-card-recede {
   from {
-    transform: perspective(1400px) rotateX(0deg) scale(1);
-    opacity: 1;
+    transform: perspective(900px) rotateX(0deg) scale(1);
   }
   to {
-    transform: perspective(1400px) rotateX(7deg) scale(0.93);
-    opacity: 0.55;
+    /* Pivots on its bottom edge, so the top tips away from the viewer — the
+       card lies back like a laptop lid closing. */
+    transform: perspective(900px) rotateX(20deg) scale(0.9);
+  }
+}
+
+/* Shadow deepens as the card lifts and tips back. */
+@keyframes hero-card-shadow {
+  from {
+    box-shadow:
+      0 30px 70px -40px rgb(8 14 12 / 0.55),
+      0 2px 8px -4px rgb(8 14 12 / 0.3);
+  }
+  to {
+    box-shadow:
+      0 60px 110px -40px rgb(8 14 12 / 0.75),
+      0 8px 24px -8px rgb(8 14 12 / 0.45);
+  }
+}
+
+/* A dark scrim that comes in as the card angles away — reads as the top of the
+   panel catching less light, rather than the card becoming transparent. */
+@keyframes hero-card-shade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.45;
   }
 }
 
