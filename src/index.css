@@ -67,6 +67,7 @@
 }
 
 :root {
+  --header-progress: 0;
   --radius: 0.5rem;
   --background: #f5f5f4;
   --foreground: #1c1917;
@@ -123,8 +124,9 @@
   --footer-gold: #ea580c;
   --footer-gold-foreground: #ffffff;
   /* Hero inset card: the page it floats on, and the card itself. */
-  --hero-shell-bg: #faf9f6;
+  --hero-shell-bg: var(--background);
   --hero-card-bg: #14100d;
+  --hero-card-rim: transparent;
 }
 
 .dark {
@@ -184,8 +186,9 @@
   --footer-gold-foreground: #1c1917;
   /* Dark mode: the page recedes and the card lifts, so the inset edge still
      reads without the light-mode contrast. */
-  --hero-shell-bg: #0a0806;
-  --hero-card-bg: #17130f;
+  --hero-shell-bg: var(--background);
+  --hero-card-bg: #1c1713;
+  --hero-card-rim: rgb(255 255 255 / 0.07);
 }
 
 @layer base {
@@ -1011,13 +1014,17 @@ html[dir="rtl"] .sidebar-nav-enter {
   top: 0;
   left: 50%;
   width: 100%;
-  max-width: 100%;
-  padding-inline: 0;
-  transform: translateX(-50%);
-  transition:
-    top 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    max-width 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    padding 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  max-width: 1120px;
+  padding-inline: 16px;
+  /* --header-progress goes 0→1 across the first 120px of scroll (set in
+     PublicLayout). Interpolating from it makes the pill track the scroll
+     continuously instead of snapping between two states on a threshold. */
+  transform:
+    translateX(-50%)
+    translateY(calc(14px - 8px * var(--header-progress)))
+    scale(calc(1 - 0.06 * var(--header-progress)));
+  transform-origin: 50% 0;
+  will-change: transform;
 }
 
 /* Translucent at rest: a low-alpha tint plus saturation boost, so page content
@@ -1025,17 +1032,22 @@ html[dir="rtl"] .sidebar-nav-enter {
    (A fully opaque background would make the backdrop-filter a no-op.) */
 .public-header-surface {
   position: relative;
-  border: 1px solid transparent;
-  border-radius: 0;
-  background: color-mix(in srgb, var(--background) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  /* Full pill at every size — the bar was only rounding after scroll, which is
+     what made the rest state read as a traditional boxy header. */
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  box-shadow:
+    0 10px 30px -18px rgb(8 14 12 / 0.4),
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
   /* Modest saturation: at 180% the blurred page tints the bar noticeably,
      which reads as a coloured slab rather than glass. */
   backdrop-filter: blur(24px) saturate(125%);
   -webkit-backdrop-filter: blur(24px) saturate(125%);
   transition:
-    border-radius 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 420ms ease-out,
-    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    background-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Fallback: without backdrop-filter support, go opaque so text stays readable. */
@@ -1290,23 +1302,17 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 62px;
-  /* Content stays within the page grid even though the surface is full-bleed. */
-  max-width: 1200px;
+  height: calc(54px - 6px * var(--header-progress));
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 12px;
   margin-inline: auto;
-  padding-inline: 20px;
-  transition:
-    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    padding 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  padding-inline: 14px;
 }
 
 /* Scrolled: compact floating pill — shorter than rest, shadow-only depth
    (no hairline border; that framed the hero and felt noisy). */
-.public-header-scrolled {
-  top: 8px;
-  max-width: 900px;
-  padding-inline: 12px;
-}
+
 
 .public-header-scrolled .public-header-surface {
   border-color: transparent;
@@ -1333,10 +1339,7 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   }
 }
 
-.public-header-scrolled .public-header-inner {
-  height: 40px;
-  padding-inline: 8px;
-}
+
 
 /* Keep every footer link reachable when the viewport is shorter than its content. */
 .phone-device {
@@ -1371,8 +1374,16 @@ html.dark .mode-toggle:active .mode-toggle-moon {
    card, so the card's top padding leaves room for it. */
 .hero-shell {
   position: relative;
-  padding: 0 clamp(12px, 2.2vw, 28px) clamp(12px, 2.2vw, 28px);
-  background: var(--hero-shell-bg);
+  /* `main` carries pt-16 (64px) to clear the old static header, which stacked on
+     top of this padding — 142px of dead space above the card. The hero owns its
+     own clearance, so pull that 64px back and set the gap here outright: the
+     pill ends at 68px (14px offset + 54px row), and 12px past it is the whole
+     gap the design wants. Both surfaces are dark, so more reads as a black void. */
+  margin-top: -64px;
+  padding: 80px clamp(12px, 2.2vw, 28px) clamp(12px, 2.2vw, 28px);
+  /* No background of its own: painting the shell tint here put a full-width
+     band behind the floating header pill. The page background shows through
+     and the card supplies the only surface. */
 }
 
 .hero-card {
@@ -1381,9 +1392,18 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   overflow: hidden;
   border-radius: clamp(20px, 2.4vw, 34px);
   background: var(--hero-card-bg);
+  /* Light mode gets separation from tone alone (18:1); dark mode cannot, so a
+     hairline rim defines the card edge there. */
   box-shadow:
     0 30px 70px -40px rgb(8 14 12 / 0.55),
-    0 2px 8px -4px rgb(8 14 12 / 0.3);
+    0 2px 8px -4px rgb(8 14 12 / 0.3),
+    inset 0 0 0 1px var(--hero-card-rim);
+  /* Promote to its own layer up front so the scroll-linked transform never
+     triggers a mid-animation layer promotion, and keep text sharp while the
+     card is rotated in 3D. */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* The strip continues the shell surface below the card, so the marquee reads
@@ -1400,12 +1420,11 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
     .hero-card {
       transform-origin: 50% 100%;
-      animation:
-        hero-card-recede linear both,
-        hero-card-shadow linear both;
-      animation-timeline: view(), view();
-      animation-range: exit 0% exit 100%, exit 0% exit 100%;
+      animation: hero-card-recede linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
     }
+
 
     .hero-card::after {
       content: "";
@@ -1421,6 +1440,7 @@ html.dark .mode-toggle:active .mode-toggle-moon {
         transparent
       );
       opacity: 0;
+      will-change: opacity;
       animation: hero-card-shade linear both;
       animation-timeline: view();
       animation-range: exit 0% exit 100%;
@@ -1440,20 +1460,6 @@ html.dark .mode-toggle:active .mode-toggle-moon {
     /* Pivots on its bottom edge, so the top tips away from the viewer — the
        card lies back like a laptop lid closing. */
     transform: perspective(900px) rotateX(20deg) scale(0.9);
-  }
-}
-
-/* Shadow deepens as the card lifts and tips back. */
-@keyframes hero-card-shadow {
-  from {
-    box-shadow:
-      0 30px 70px -40px rgb(8 14 12 / 0.55),
-      0 2px 8px -4px rgb(8 14 12 / 0.3);
-  }
-  to {
-    box-shadow:
-      0 60px 110px -40px rgb(8 14 12 / 0.75),
-      0 8px 24px -8px rgb(8 14 12 / 0.45);
   }
 }
 
@@ -1477,8 +1483,10 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   gap: 1.75rem;
   max-width: 62rem;
   margin-inline: auto;
-  padding: clamp(6.5rem, 12vh, 9.5rem) clamp(1.25rem, 4vw, 2.5rem)
-    clamp(4rem, 9vh, 7rem);
+  /* Vertical padding scales with the viewport so the card fills the screen
+     rather than floating in it; the min keeps it honest on short laptops. */
+  padding: clamp(5rem, 13vh, 8rem) clamp(1.25rem, 4vw, 2.5rem)
+    clamp(5rem, 13vh, 8rem);
   text-align: center;
 }
 
@@ -2257,7 +2265,17 @@ textarea:focus-visible,
 [tabindex]:not([tabindex="-1"]):focus-visible {
   outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent);
   outline-offset: 2px;
-  border-radius: inherit;
+  /* No `border-radius: inherit` here — a round control inside a square parent
+     inherited square corners, so the ring drew as a hard box around it. The
+     outline follows the element's own radius by default. */
+}
+
+/* Components that draw their own ring opt out of the global outline. Plain
+   selectors, not :where() — that has zero specificity and would lose. */
+.mode-toggle:focus-visible,
+.nav-ghost:focus-visible,
+.nav-cta:focus-visible {
+  outline: none;
 }
 
 /* Interactive card: lifts slightly on hover, settles on press. Applied to the

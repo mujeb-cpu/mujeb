@@ -81,16 +81,42 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   }, [menuOpen]);
 
   useEffect(() => {
-    let scrolledPast = window.scrollY > 40;
-    setScrolled(scrolledPast);
-    const onScroll = () => {
-      const next = window.scrollY > 40;
-      if (next === scrolledPast) return;
-      scrolledPast = next;
-      setScrolled(next);
+    // Continuous progress rather than a boolean. A class toggle fires the whole
+    // 520ms transition in one step the instant a threshold is crossed, which is
+    // what read as static. Driving a 0→1 variable from scroll position means
+    // the pill tracks the scroll itself — the YC/Linear approach.
+    const RANGE = 120;
+    let last = -1;
+
+    const apply = () => {
+      const progress = Math.min(1, Math.max(0, window.scrollY / RANGE));
+      // Quantise so React re-renders at most ~50 times over the range instead
+      // of on every pixel; the CSS variable still interpolates smoothly.
+      const stepped = Math.round(progress * 50) / 50;
+      if (stepped === last) return;
+      last = stepped;
+      document.documentElement.style.setProperty(
+        "--header-progress",
+        String(stepped),
+      );
+      setScrolled(stepped > 0.5);
     };
+
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        apply();
+      });
+    };
+
+    apply();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -123,10 +149,10 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       >
         <div className="public-header-surface">
           <div className="public-header-inner">
-            <Link href="/" className="rounded-lg p-1 shrink-0 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+            <Link href="/" className="rounded-lg p-1 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
               <RelodLogo
                 className={cn(
-                  "transition-all duration-300",
+                  "transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
                   scrolled ? "scale-90" : "scale-100",
                 )}
               />
