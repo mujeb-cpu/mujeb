@@ -1415,19 +1415,24 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   color: transparent;
 }
 
-/* `leading-[0.98]` makes the line box shorter than the glyphs, so descenders
-   (g, y, j) fall outside it. That is invisible for normal text, but
-   `background-clip: text` paints only within the box — clipping the gradient
-   off the tail of a "g". A little bottom padding restores the paint area
-   without changing the visual line spacing. */
+/* Arabic and reduced-motion take the non-word-by-word branch, where the
+   gradient class lands on the line itself — so it needs the same paint room. */
 .hero-tagline-line {
   display: block;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
 }
 
+/* `leading-[0.98]` makes the line box shorter than the glyphs, so descenders
+   (g, y, j) fall outside it. Harmless for normal text, but `background-clip:
+   text` paints only within the box, cutting the tail off a "g".
+   The gradient class sits on the WORD span in word-by-word mode, so the extra
+   paint area has to live here. The negative margin cancels the layout effect
+   so line spacing is unchanged. */
 .hero-tagline-word {
   display: inline-block;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
 }
 
 .hero-scene-content {
