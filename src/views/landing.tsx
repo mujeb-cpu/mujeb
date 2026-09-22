@@ -119,8 +119,8 @@ export function LandingPage() {
   const heroLine1 = t("Faster return decisions.", "قرارات إرجاع أسرع.");
   const heroLine2 = t("A clearer path to financing.", "وطريق أوضح للتمويل.");
   const heroBody = t(
-    "Relod turns your store policy into automated return decisions with AI — every one traced to the clause behind it. Understand your returns first, then unlock returns financing as you qualify.",
-    "يحوّل ريلود سياسة متجرك إلى قرارات إرجاع مؤتمتة بالذكاء الاصطناعي، وكل قرار مرتبط بالبند الذي استُخرج منه. افهم مرتجعاتك أولًا، ثم افتح تمويل المرتجعات عند استيفاء الشروط.",
+    "AI reads your return policy and answers customers in seconds. Close returns faster, then qualify for financing.",
+    "يقرأ الذكاء الاصطناعي سياسة الإرجاع ويجيب عملاءك خلال ثوانٍ. أغلق المرتجعات أسرع، ثم تأهّل للتمويل.",
   );
   const heroSteps = HERO_STEPS.map((step, index) => ({ ...step, label: [t("Policy clause", "نص السياسة"), t("Approved rule", "قاعدة معتمدة"), t("Order fact", "بيانات الطلب")][index], value: [t("Items may be returned within 14 days of delivery", "يمكن إرجاع المنتجات خلال 14 يومًا من التسليم"), t("Return window: 14 days from delivery date", "مدة الإرجاع: 14 يومًا من تاريخ التسليم"), t("Delivered 6 days ago", "تم التسليم قبل 6 أيام")][index] }));
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Required for the live pilot", "أساسي للتجربة الفعلية")];

@@ -1415,8 +1415,15 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   color: transparent;
 }
 
+/* `leading-[0.98]` makes the line box shorter than the glyphs, so descenders
+   (g, y, j) fall outside it. That is invisible for normal text, but
+   `background-clip: text` paints only within the box — clipping the gradient
+   off the tail of a "g". A little bottom padding restores the paint area
+   without changing the visual line spacing. */
 .hero-tagline-line {
   display: block;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
 }
 
 .hero-tagline-word {
