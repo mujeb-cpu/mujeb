@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";
 import { SAMPLE_POLICY_RULES } from "@/lib/fixtures";
@@ -37,8 +37,51 @@ export function PolicyTransformation() {
   const reduceMotion = useReducedMotion();
   const approvedCount = approved.filter(Boolean).length;
   const published = approvedCount === DEMO_RULES.length;
+  const sectionRef = useRef<HTMLElement>(null);
+  // True once the visitor has interacted directly; scroll stops overriding them.
+  const userDriven = useRef(false);
+
+  /**
+   * Scroll advances the active rule so the clause-to-rule link tells itself.
+   * Most visitors never hover, so without this the section's whole point is
+   * invisible. Desktop only — on mobile the layout is a plain stack and there
+   * is no source column to highlight against.
+   */
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (!element || reduceMotion) return;
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    if (!desktop.matches) return;
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      if (userDriven.current) return;
+      const rect = element.getBoundingClientRect();
+      // Progress across the portion of the section that sits in the viewport.
+      const span = rect.height - window.innerHeight * 0.4;
+      if (span <= 0) return;
+      const travelled = (window.innerHeight * 0.6 - rect.top) / span;
+      const step = Math.floor(travelled * DEMO_RULES.length);
+      const next = Math.min(DEMO_RULES.length - 1, Math.max(0, step));
+      setActive((current) => (current === next ? current : next));
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [reduceMotion]);
 
   const approve = (index: number) => {
+    userDriven.current = true;
     if (approved[index]) return;
     const next = [...approved];
     next[index] = true;
@@ -49,7 +92,7 @@ export function PolicyTransformation() {
   };
 
   return (
-    <section id="how-it-works" className="scroll-mt-20 bg-muted/30">
+    <section ref={sectionRef} id="how-it-works" className="scroll-mt-20 bg-muted/30">
       <div className="mx-auto max-w-[1200px] px-5 py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-sm font-semibold text-primary">
@@ -153,8 +196,8 @@ export function PolicyTransformation() {
                         data-policy-rule={index + 1}
                         data-active={isActive}
                         data-approved={isApproved}
-                        onMouseEnter={() => setActive(index)}
-                        onFocusCapture={() => setActive(index)}
+                        onMouseEnter={() => { userDriven.current = true; setActive(index); }}
+                        onFocusCapture={() => { userDriven.current = true; setActive(index); }}
                         className="policy-rule-card rounded-2xl border border-border/70 bg-background p-4 sm:p-5"
                       >
                         <div className="flex items-start gap-3">

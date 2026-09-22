@@ -124,7 +124,7 @@ export function PolicyListPage() {
                   <CheckCircle2 className="size-4 text-eligible" />
                   <h2 className="text-sm font-semibold text-foreground">{t("Current version", "الإصدار الحالي")}</h2>
                 </div>
-                <Card className="group transition-all hover:shadow-md">
+                <Card className="group interactive-card">
                   <CardContent className="flex items-center justify-between p-5">
                     <div className="flex items-center gap-4">
                       <div className="flex size-10 items-center justify-center rounded-lg bg-eligible-muted text-eligible transition-transform group-hover:scale-110">
@@ -208,7 +208,7 @@ export function PolicyListPage() {
                     {drafts.map((draft, i) => (
                       <Card
                         key={draft.id}
-                        className="group transition-all hover:shadow-md"
+                        className="group interactive-card"
                         style={{
                           opacity: loaded ? 1 : 0,
                           transform: loaded ? "translateY(0)" : "translateY(8px)",

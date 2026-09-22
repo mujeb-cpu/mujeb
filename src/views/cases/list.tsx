@@ -310,7 +310,7 @@ export function CaseListPage() {
                 key={c.id}
                 onClick={() => router.push(`/app/cases/${c.id}`)}
                 className={cn(
-                  "group rounded-xl border bg-card p-4 text-start transition-all hover:shadow-md",
+                  "group interactive-card rounded-xl border bg-card p-4 text-start",
                   c.outcome === "ELIGIBLE" && "border-eligible/15 hover:border-eligible/30",
                   c.outcome === "NOT_ELIGIBLE" && "border-not-eligible/15 hover:border-not-eligible/30",
                   c.outcome === "MANUAL_REVIEW" && "border-review/15 hover:border-review/30",

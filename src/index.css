@@ -1618,6 +1618,16 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   .policy-rule-card::before { display: none; }
 }
 
+/* Extra height on desktop so the three rules step through over a comfortable
+   scroll rather than all firing within a few pixels. The source column is
+   sticky inside it, so the reader stays with the clause as rules advance.
+   Mobile keeps the natural height — it is a plain stack there. */
+@media (min-width: 1024px) {
+  #how-it-works {
+    padding-bottom: 28vh;
+  }
+}
+
 .policy-rule-card {
   position: relative;
   transition:
@@ -2053,5 +2063,114 @@ html.dark .mode-toggle:active .mode-toggle-moon {
 @media (max-height: 700px), (prefers-reduced-motion: reduce) {
   .footer-surface {
     position: relative;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Shared interaction polish
+   One easing curve and one set of timings across the app, so hover and press
+   feel like the same product rather than per-component guesses.
+   --------------------------------------------------------------------------- */
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+}
+
+/* A consistent focus ring on anything keyboard-reachable. `:focus-visible`
+   keeps it off mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ring) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* Interactive card: lifts slightly on hover, settles on press. Applied to the
+   large clickable rows in the workspace. */
+.interactive-card {
+  transition:
+    transform var(--dur-base) var(--ease-out-soft),
+    box-shadow var(--dur-base) var(--ease-out-soft),
+    border-color var(--dur-base) var(--ease-out-soft),
+    background-color var(--dur-base) var(--ease-out-soft);
+  will-change: transform;
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  box-shadow:
+    0 10px 24px -14px rgb(10 30 26 / 0.3),
+    0 3px 8px -4px rgb(10 30 26 / 0.16);
+}
+
+.interactive-card:active {
+  transform: translateY(0);
+  transition-duration: var(--dur-fast);
+}
+
+.dark .interactive-card:hover {
+  box-shadow:
+    0 12px 28px -14px rgb(0 0 0 / 0.7),
+    0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* Arrows that advance on hover — direction follows the writing mode. */
+.hover-advance svg {
+  transition: transform var(--dur-base) var(--ease-out-soft);
+}
+
+.hover-advance:hover svg {
+  transform: translateX(3px);
+}
+
+html[dir="rtl"] .hover-advance:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Underline that wipes in from the leading edge. */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+  transform: scaleX(0);
+  transform-origin: var(--underline-origin, left);
+  transition: transform var(--dur-base) var(--ease-out-soft);
+}
+
+html[dir="rtl"] .link-underline::after {
+  --underline-origin: right;
+}
+
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-card,
+  .hover-advance svg,
+  .link-underline::after {
+    transition: none;
+  }
+  .interactive-card:hover {
+    transform: none;
+  }
+  .hover-advance:hover svg,
+  html[dir="rtl"] .hover-advance:hover svg {
+    transform: none;
   }
 }
