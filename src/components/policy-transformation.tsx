@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";
 import { SAMPLE_POLICY_RULES } from "@/lib/fixtures";
@@ -38,8 +38,40 @@ export function PolicyTransformation() {
   const approvedCount = approved.filter(Boolean).length;
   const published = approvedCount === DEMO_RULES.length;
   const sectionRef = useRef<HTMLElement>(null);
-  // True once the visitor has interacted directly; scroll stops overriding them.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const [canPin, setCanPin] = useState(false);
+  // Set while the visitor is driving directly, so scroll does not yank the
+  // panel out from under them. It releases on a timer — latching it forever
+  // meant one click or tab killed the scroll sequence for the whole visit,
+  // which is the entire point of the section.
   const userDriven = useRef(false);
+  const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdForUser = useCallback(() => {
+    userDriven.current = true;
+    if (releaseTimer.current) clearTimeout(releaseTimer.current);
+    releaseTimer.current = setTimeout(() => {
+      userDriven.current = false;
+    }, 2600);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (releaseTimer.current) clearTimeout(releaseTimer.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const pin = pinRef.current;
+    if (!pin) return;
+    const measure = () => setCanPin(!reduceMotion && window.innerWidth >= 1024 && pin.offsetHeight <= window.innerHeight - 88);
+    const observer = new ResizeObserver(measure);
+    observer.observe(pin);
+    window.addEventListener("resize", measure);
+    measure();
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, [reduceMotion]);
 
   /**
    * Scroll advances the active rule so the clause-to-rule link tells itself.
@@ -48,25 +80,22 @@ export function PolicyTransformation() {
    * is no source column to highlight against.
    */
   useEffect(() => {
-    const element = sectionRef.current;
-    if (!element || reduceMotion) return;
-    const desktop = window.matchMedia("(min-width: 1024px)");
-    if (!desktop.matches) return;
+    const element = trackRef.current;
+    if (!element || !canPin) return;
 
     let frame = 0;
     const update = () => {
       frame = 0;
       if (userDriven.current) return;
-      const pin = element.querySelector<HTMLElement>(".policy-scroll-pin");
+      const pin = pinRef.current;
       if (!pin) return;
       const rect = element.getBoundingClientRect();
       // The scrub runs only while the panel is pinned: from the moment the
       // section's top passes the heading, until its bottom reaches the
       // viewport. Measuring the whole section would start it too early.
-      const headingOffset = pin.offsetTop;
-      const span = rect.height - headingOffset - window.innerHeight;
+      const span = rect.height - pin.offsetHeight;
       if (span <= 0) return;
-      const travelled = -rect.top - headingOffset;
+      const travelled = 72 - rect.top;
       const progress = Math.min(1, Math.max(0, travelled / span));
       const step = Math.floor(progress * DEMO_RULES.length);
       const next = Math.min(DEMO_RULES.length - 1, Math.max(0, step));
@@ -84,10 +113,10 @@ export function PolicyTransformation() {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
-  }, [reduceMotion]);
+  }, [canPin]);
 
   const approve = (index: number) => {
-    userDriven.current = true;
+    holdForUser();
     if (approved[index]) return;
     const next = [...approved];
     next[index] = true;
@@ -119,7 +148,8 @@ export function PolicyTransformation() {
         </div>
       </div>
 
-      <div className="policy-scroll-pin">
+      <div ref={trackRef} className="policy-scroll-track" data-pinned={canPin || undefined}>
+      <div ref={pinRef} className="policy-scroll-pin">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-10">
         <div className="policy-workspace overflow-hidden rounded-[28px] border border-border/75 bg-card shadow-[0_30px_90px_-55px_rgba(8,42,34,.55)]">
           {/* Workspace bar: progress lives here, not in a separate panel. */}
@@ -214,8 +244,8 @@ export function PolicyTransformation() {
                         data-policy-rule={index + 1}
                         data-active={isActive}
                         data-approved={isApproved}
-                        onMouseEnter={() => { userDriven.current = true; setActive(index); }}
-                        onFocusCapture={() => { userDriven.current = true; setActive(index); }}
+                        onMouseEnter={() => { if (!canPin) setActive(index); }}
+                        onFocusCapture={() => { holdForUser(); setActive(index); }}
                         className="policy-rule-card rounded-2xl border border-border/70 bg-background p-4 sm:p-5"
                       >
                         <div className="flex items-start gap-3">
@@ -296,6 +326,7 @@ export function PolicyTransformation() {
           </motion.div>
         </div>
         </div>
+      </div>
       </div>
     </section>
   );

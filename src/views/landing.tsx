@@ -14,6 +14,7 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { OutcomeSequence } from "@/components/outcome-sequence";
 import { ReturnsCostCalculator } from "@/components/returns-cost-calculator";
 import { PolicyTransformation } from "@/components/policy-transformation";
+import { SpeedComparison } from "@/components/speed-comparison";
 import {
   PhoneFrame,
   WhatsAppThread,
@@ -222,6 +223,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      <SpeedComparison />
 
       {/* Problem */}
       <section id="product" className="scroll-mt-20">
@@ -611,4 +614,3 @@ function CaseEntrance({ index, children }: { index: number; children: React.Reac
     </div>
   );
 }
-

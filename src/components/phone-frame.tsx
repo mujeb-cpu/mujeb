@@ -388,3 +388,203 @@ export function WhatsAppThread({
     </div>
   );
 }
+
+/**
+ * Whether the refund-deposit card renders as money actually moved.
+ *
+ * Relod decides eligibility; it does not move funds yet. While this is
+ * "preview" the deposit card is labelled as the refund the customer is owed on
+ * an approved return — true today — instead of claiming a completed transfer.
+ * Flip to "live" when payouts ship and the wording follows.
+ */
+export const REFUND_PAYOUT_STATUS: "live" | "preview" = "preview";
+
+export interface ConversationStep {
+  id: string;
+  direction: "incoming" | "outgoing";
+  /** Clock label shown on the bubble, e.g. "10:02". */
+  time: string;
+  text?: string;
+  /** Renders the customer's product photo instead of text. */
+  photo?: boolean;
+}
+
+/**
+ * A full return conversation that plays out step by step.
+ *
+ * `WhatsAppThread` above is fixed at the two-bubble eligibility exchange the
+ * outcome cards need. This one takes an arbitrary sequence and reveals it on a
+ * timer, with a typing indicator before each incoming reply, so the thread
+ * reads as a conversation unfolding in real time.
+ */
+export function WhatsAppConversation({
+  steps,
+  refundLabel,
+  refundAmount,
+  caption,
+}: {
+  steps: ConversationStep[];
+  refundLabel: string;
+  refundAmount: string;
+  caption: string;
+}) {
+  const reduceMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.3, once: true });
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // -1 is "nothing yet"; steps.length means the refund card has landed too.
+  const [shown, setShown] = useState(-1);
+  const [typing, setTyping] = useState(false);
+
+  const done = shown >= steps.length;
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setShown(steps.length);
+      return;
+    }
+    if (!inView) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let at = 400;
+    steps.forEach((step, i) => {
+      // An incoming reply gets a typing indicator first — that pause is what
+      // makes the exchange feel like a person (or the engine) responding.
+      if (step.direction === "incoming") {
+        timers.push(setTimeout(() => setTyping(true), at));
+        at += 900;
+      }
+      timers.push(
+        setTimeout(() => {
+          setTyping(false);
+          setShown(i);
+        }, at),
+      );
+      at += step.photo ? 1100 : 1250;
+    });
+    timers.push(setTimeout(() => setShown(steps.length), at + 250));
+    return () => timers.forEach(clearTimeout);
+  }, [inView, reduceMotion, steps]);
+
+  // Keep the newest bubble in view as the thread grows past the screen.
+  useEffect(() => {
+    if (reduceMotion || !scrollRef.current) return;
+    scrollRef.current.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [shown, typing, reduceMotion]);
+
+  return (
+    <div ref={ref} data-conversation-complete={done || undefined}>
+      <div
+        className="phone-wa-header flex items-center gap-2 px-3 pb-3 pt-[2.65rem] text-white"
+        style={{ background: BRAND.header }}
+      >
+        <ChevronLeft className="size-4" aria-hidden="true" />
+        <StoreMark size="lg" className="ring-1 ring-white/25" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Nova Store</div>
+          <div className="text-[10px] text-white/75">business account</div>
+        </div>
+        <Video className="size-4" aria-hidden="true" />
+        <Phone className="ml-2 size-3.5" aria-hidden="true" />
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="phone-chat phone-chat-scroll relative flex h-[500px] flex-col gap-2.5 overflow-y-auto px-3 py-4 text-[13px] leading-relaxed"
+      >
+        <span className="mx-auto shrink-0 rounded-md bg-white/75 px-3 py-0.5 text-[10px] text-[#65756d]">
+          {caption}
+        </span>
+
+        {steps.map((step, i) =>
+          i <= shown ? (
+            <motion.div
+              key={step.id}
+              initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className={cn(
+                "phone-bubble relative z-10 shrink-0 rounded-xl shadow-sm",
+                step.photo ? "w-[62%] p-1.5" : "max-w-[82%] px-3 py-2.5",
+                step.direction === "outgoing"
+                  ? "ml-auto rounded-tr-none"
+                  : "mr-auto rounded-tl-none",
+              )}
+              data-direction={step.direction}
+            >
+              {step.photo ? (
+                <ProductPhoto />
+              ) : (
+                <p>{step.text}</p>
+              )}
+              <span
+                className={cn(
+                  "mt-1 flex items-center justify-end gap-1 text-[9px] text-[#65756d]",
+                  step.photo && "pe-1 pb-0.5",
+                )}
+              >
+                {step.time}
+                {step.direction === "outgoing" && (
+                  <CheckCheck className="size-3 text-[#34aadc]" aria-hidden="true" />
+                )}
+              </span>
+            </motion.div>
+          ) : null,
+        )}
+
+        {typing && !reduceMotion && (
+          <div className="shrink-0">
+            <TypingIndicator />
+          </div>
+        )}
+
+        {/* The payoff: the refund lands in the same thread the customer
+            already had open. */}
+        {done && (
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="phone-refund-card mt-1 shrink-0 rounded-xl px-3 py-2.5"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1f8a52]">
+              {refundLabel}
+            </p>
+            <p className="mt-0.5 text-[17px] font-bold text-[#0f2723]">
+              {refundAmount}
+            </p>
+          </motion.div>
+        )}
+      </div>
+
+      <div
+        className="phone-composer flex items-center gap-2 border-t border-[#dde4df]/80 bg-[#f7f8fa] px-3 py-2 text-[#72827a]"
+        aria-hidden="true"
+      >
+        <Plus className="size-5" />
+        <div className="flex h-8 min-w-0 flex-1 items-center justify-between rounded-full border border-[#dde4df] bg-white px-3 text-[11px]">
+          <span className="min-w-0 truncate">Message</span>
+          <Smile className="size-4" />
+        </div>
+        <Mic className="size-4" />
+      </div>
+    </div>
+  );
+}
+
+/** Stand-in for the photo the customer sends — drawn, not a stock image. */
+function ProductPhoto() {
+  return (
+    <div className="overflow-hidden rounded-lg" aria-label="Photo of the product">
+      <div className="relative aspect-square bg-gradient-to-b from-[#eef1f6] to-[#dfe5ee]">
+        {/* A shoebox, read at a glance: lid, body, and the shoe's silhouette. */}
+        <div className="absolute inset-x-[18%] bottom-[22%] top-[34%] rounded-[3px] bg-white shadow-sm" />
+        <div className="absolute inset-x-[14%] top-[28%] h-[13%] rounded-[3px] bg-[#f3f5f8] shadow-sm" />
+        <div className="absolute inset-x-[30%] bottom-[30%] h-[18%] rounded-b-full rounded-t-[4px] bg-[#e8ece6]" />
+        <div className="absolute inset-x-[34%] bottom-[38%] h-[5%] rounded-full bg-[#cdd6c6]" />
+      </div>
+    </div>
+  );
+}

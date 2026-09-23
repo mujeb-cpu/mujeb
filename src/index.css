@@ -1773,33 +1773,30 @@ html.dark .mode-toggle:active .mode-toggle-moon {
   .policy-rule-card::before { display: none; }
 }
 
-/* Desktop: the section is three viewports tall and its contents pin to the
-   screen, so each rule holds in place for a full scroll before the next one
-   takes over. Without the hold, the highlights flick past faster than anyone
-   can read them. Mobile keeps natural height — it is a plain stack there. */
+/* Desktop: the panel sticks while the track scrolls past beneath it, so each
+   rule holds in place before the next takes over. Without the hold, the
+   highlights flick past faster than anyone can read them. The scrub distance
+   is the track's padding, not a guessed multiple of the viewport, so it stays
+   correct however tall the panel turns out to be. Mobile keeps natural height
+   — it is a plain stack there, and `data-pinned` is simply absent. */
 @media (min-width: 1024px) {
-  /* Heading (normal flow) + three viewports of scrub for the pinned panel. */
-  .policy-scroll-section {
-    min-height: 300svh;
-    padding-bottom: 0;
+  .policy-scroll-track[data-pinned] {
+    padding-bottom: 120svh;
   }
 
-  .policy-scroll-pin {
+  .policy-scroll-track[data-pinned] .policy-scroll-pin {
     position: sticky;
-    top: 0;
-    display: flex;
-    min-height: 100svh;
-    align-items: center;
+    top: 72px;
   }
 }
 
 /* Reduced motion gets the plain, un-pinned layout. */
 @media (prefers-reduced-motion: reduce) {
-  .policy-scroll-section {
-    height: auto;
+  .policy-scroll-track[data-pinned] {
+    padding-bottom: 0;
   }
 
-  .policy-scroll-pin {
+  .policy-scroll-track[data-pinned] .policy-scroll-pin {
     position: static;
     min-height: 0;
   }
@@ -2360,4 +2357,457 @@ html[dir="rtl"] .link-underline::after {
   html[dir="rtl"] .hover-advance:hover svg {
     transform: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Speed comparison — manual returns timeline vs. Relod
+   Two cards argue by contrast: the manual one counts out its days on a dot
+   track, the Relod one shows the WhatsApp thread that collapses them.
+--------------------------------------------------------------------------- */
+.speed-section {
+  padding: clamp(4.5rem, 9vw, 7rem) 0;
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.speed-inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.speed-head {
+  max-width: 44ch;
+  margin-inline: auto;
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  text-align: center;
+}
+
+.speed-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.speed-sub {
+  margin-top: 0.85rem;
+  color: var(--muted-foreground);
+  font-size: clamp(0.975rem, 1.3vw, 1.075rem);
+  line-height: 1.6;
+}
+
+.speed-grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  align-items: start;
+}
+
+/* Side by side once there is room: the contrast should land in one glance.
+   Below that they stack, manual first, so the payoff still arrives second. */
+@media (min-width: 820px) {
+  .speed-grid {
+    grid-template-columns: 1fr 1.05fr;
+  }
+}
+
+.speed-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: clamp(16px, 1.6vw, 22px);
+  padding: clamp(1.5rem, 2.6vw, 2rem);
+}
+
+.speed-card-current {
+  border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  background: color-mix(in srgb, #f5efe3 70%, var(--card));
+}
+
+.speed-card-relod {
+  border: 1.5px solid var(--eligible, #1f8a52);
+  background: var(--card);
+  box-shadow: 0 20px 50px -34px rgb(8 14 12 / 0.4);
+}
+
+.speed-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: var(--muted-foreground);
+}
+
+/* No tile behind the brand mark — the box was competing with the logo it was
+   supposed to frame. The mark stands on its own, larger, with a soft drop so it
+   still lifts off the card. */
+.speed-brand-mark {
+  flex: none;
+  color: var(--eligible, #1f8a52);
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, #1f8a52 28%, transparent));
+}
+
+/* Icon and label share a row: the old stacked layout left the header floating
+   with nothing beside it, which is what read as unfinished. */
+.speed-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.speed-card-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.speed-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 0.15rem;
+}
+
+.speed-eyebrow-accent {
+  color: var(--eligible, #1f8a52);
+}
+
+.speed-phone {
+  margin-top: 1.75rem;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 300px;
+}
+
+.speed-figure {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  font-size: clamp(1.75rem, 3.4vw, 2.375rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.speed-figure-muted {
+  padding-top: 0.85rem;
+  font-size: clamp(1.125rem, 1.8vw, 1.3125rem);
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.speed-note {
+  max-width: 62ch;
+  margin: 2.25rem auto 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+  text-align: center;
+  font-size: 0.78125rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--muted-foreground) 82%, transparent);
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speed-stage {
+    transition: none;
+  }
+}
+
+/* Refund card inside the conversation thread — white, accented, distinct from
+   a chat bubble so it reads as a receipt rather than a message. */
+.phone-refund-card {
+  background: #fff;
+  border: 1.5px solid color-mix(in srgb, #1f8a52 45%, transparent);
+  box-shadow: 0 6px 16px -10px rgb(8 14 12 / 0.35);
+}
+
+/* The five-step thread outgrows the compact frame, so give this card's phone
+   a little more width than the outcome cards use. */
+.speed-phone {
+  max-width: 320px;
+}
+
+/* Manual-path stages. Vertical, so the card fills with the actual waiting
+   points rather than a void, and the connecting rail makes the queue legible. */
+.speed-stages {
+  position: relative;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.15rem;
+}
+
+.speed-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.85rem;
+  opacity: 0.38;
+  transform: translateY(5px);
+  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.speed-stage[data-filled] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.speed-stage-marker {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--foreground) 32%, transparent);
+  background: var(--card);
+}
+
+.speed-stage[data-filled] .speed-stage-marker {
+  background: color-mix(in srgb, var(--foreground) 42%, transparent);
+  border-color: color-mix(in srgb, var(--foreground) 42%, transparent);
+  animation: speed-marker-settle 650ms ease-out both;
+}
+
+@keyframes speed-marker-settle {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--foreground) 12%, transparent); }
+  100% { box-shadow: 0 0 0 7px transparent; }
+}
+
+/* Rail joining the markers, drawn behind them. */
+.speed-stage:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 5px;
+  top: calc(50% + 7px);
+  width: 1.5px;
+  height: calc(100% + 1.15rem - 14px);
+  background: color-mix(in srgb, var(--foreground) 16%, transparent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 420ms ease;
+}
+
+.speed-stage[data-filled]::before {
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speed-stage { opacity: 1; transform: none; transition: none; }
+  .speed-stage:not(:last-child)::before { transform: none; transition: none; }
+  .speed-stage[data-filled] .speed-stage-marker { animation: none; }
+}
+
+.speed-stage-label {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+
+.speed-stage-wait {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+/* Both figures sit on the card floor, so the two numbers line up across the
+   pair however tall each card is. Only the manual card gets a rule above it:
+   on the Relod side the tilted phone overhangs that line, and it read as a
+   stray mark crossing behind the device. */
+.speed-figure,
+.speed-figure-muted {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 1.35rem;
+}
+
+.speed-figure-muted {
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.speed-figure-muted {
+  margin-top: 2rem;
+}
+
+.speed-figure-num {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-figure-muted .speed-figure-num {
+  font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.speed-figure-unit {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* The comparison stated outright, so the reader does not have to divide. */
+.speed-figure-delta {
+  margin-inline-start: auto;
+  align-self: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--eligible, #1f8a52);
+  background: color-mix(in srgb, var(--eligible, #1f8a52) 11%, transparent);
+}
+
+/* The conversation outgrows the frame by design; hide the scrollbar so the
+   phone still reads as a screen rather than a scrolling div. */
+.phone-chat-scroll {
+  scrollbar-width: none;
+}
+.phone-chat-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- Depth behind the demo phone ------------------------------------------
+   The device sat flat on the card, which is what made the section feel static.
+   A perspective tilt plus a bloom and a receding grid put it in space. */
+.speed-phone {
+  position: relative;
+  perspective: 1400px;
+  perspective-origin: 50% 40%;
+}
+
+.speed-phone-glow {
+  position: absolute;
+  inset: 8% -14% 2%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    color-mix(in srgb, var(--eligible, #1f8a52) 26%, transparent) 0%,
+    color-mix(in srgb, var(--eligible, #1f8a52) 9%, transparent) 42%,
+    transparent 72%
+  );
+  filter: blur(26px);
+  pointer-events: none;
+}
+
+/* The tilt itself. Subtle — enough to catch the eye without making the thread
+   hard to read, and it eases flat when the section is fully in view. */
+.speed-phone-device {
+  position: relative;
+  z-index: 1;
+  transform: rotateX(9deg) rotateY(-11deg) rotateZ(0.6deg) translateZ(0);
+  transform-style: preserve-3d;
+  box-shadow:
+    -22px 30px 60px -32px rgb(8 14 12 / 0.55),
+    -8px 12px 24px -18px rgb(8 14 12 / 0.4);
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.speed-card-relod:hover .speed-phone-device {
+  transform: rotateX(4deg) rotateY(-5deg) rotateZ(0) translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speed-phone-device {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Hand-drawn circle around the headline figure -------------------------
+   Scribbled annotation, drawn by animating stroke-dashoffset so the pen
+   actually travels around the number when the section lands. */
+.speed-figure-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  isolation: isolate;
+}
+
+.speed-pencil {
+  position: absolute;
+  z-index: -1;
+  /* Generous overshoot: a real pen circle is looser than the thing it rings,
+     and it must clear "days" on the right rather than striking through it. */
+  top: 50%;
+  left: 50%;
+  width: calc(100% + 2rem);
+  height: calc(100% + 1.5rem);
+  transform: translate(-50%, -50%);
+  color: var(--eligible, #1f8a52);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.speed-pencil-path {
+  /* Normalized SVG lengths keep the drawing continuous at every size. */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.85;
+}
+
+.speed-pencil-path-2 {
+  opacity: 0.55;
+}
+
+/* The draw. Second pass starts before the first finishes, which is what sells
+   the doubled-back pen stroke. */
+.speed-pencil[data-active] .speed-pencil-path {
+  animation: speed-pencil-draw 1200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.speed-pencil[data-active] .speed-pencil-path-2 {
+  animation: speed-pencil-draw 700ms cubic-bezier(0.4, 0, 0.2, 1) 850ms forwards;
+}
+
+@keyframes speed-pencil-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Reduced motion: show the finished annotation, never the drawing. */
+.speed-pencil[data-instant] .speed-pencil-path,
+.speed-pencil[data-instant] .speed-pencil-path-2 {
+  stroke-dashoffset: 0;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speed-pencil-path,
+  .speed-pencil-path-2 {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+}
+
+/* The brand name carries the accent in the header, underlined with a drawn
+   stroke rather than text-decoration so it sits clear of the descender. */
+.speed-brand-name {
+  position: relative;
+  color: var(--eligible, #1f8a52);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.speed-brand-name::after {
+  content: "";
+  position: absolute;
+  inset-inline: -1px;
+  bottom: -3px;
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--eligible, #1f8a52) 55%, transparent);
 }
