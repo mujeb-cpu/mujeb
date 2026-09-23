@@ -2418,15 +2418,32 @@ html[dir="rtl"] .link-underline::after {
   padding: clamp(1.5rem, 2.6vw, 2rem);
 }
 
+/* The warm tint is mixed into --card rather than pinned to a literal, so dark
+   mode gets a warm *dark* slab instead of the cream one staying light while
+   the text on it goes light too. */
 .speed-card-current {
   border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
   background: color-mix(in srgb, #f5efe3 70%, var(--card));
+}
+
+.dark .speed-card-current {
+  background: color-mix(in srgb, #6b5a44 13%, var(--card));
+  border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 
 .speed-card-relod {
   border: 1.5px solid var(--eligible, #1f8a52);
   background: var(--card);
   box-shadow: 0 20px 50px -34px rgb(8 14 12 / 0.4);
+}
+
+/* On a dark ground a drop shadow is invisible; a faint brand glow reads as
+   lift instead, and the hard green rim is softened so it stops buzzing. */
+.dark .speed-card-relod {
+  border-color: color-mix(in srgb, var(--eligible) 55%, transparent);
+  box-shadow:
+    0 24px 60px -40px rgb(0 0 0 / 0.7),
+    0 0 0 1px color-mix(in srgb, var(--eligible) 12%, transparent);
 }
 
 .speed-icon {
@@ -2810,4 +2827,30 @@ html[dir="rtl"] .link-underline::after {
   height: 2px;
   border-radius: 2px;
   background: color-mix(in srgb, var(--eligible, #1f8a52) 55%, transparent);
+}
+
+/* The financing CTA sits on the dark results panel, where the default button
+   surface disappears. Solid brand fill so it reads as the section's payoff. */
+.financing-cta {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 12px 30px -16px rgb(0 0 0 / 0.6);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.financing-cta:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .financing-cta,
+  .financing-cta:hover {
+    transform: none;
+    transition: none;
+  }
 }
