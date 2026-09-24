@@ -28,6 +28,10 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const { t } = useLanguage();
   const isHome = pathname === "/";
+  const requestedReturnUrl = searchParams.get("returnUrl");
+  const authReturnUrl = requestedReturnUrl?.startsWith("/") && !requestedReturnUrl.startsWith("//")
+    ? requestedReturnUrl
+    : "/app";
   const activeSection = useSectionSpy(
     isHome ? ["product", "how-it-works", "returns-financing"] : [],
   );
@@ -314,7 +318,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         </main>
       </CurtainReveal>
       <ScrollToTop />
-      <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} />
+      <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} redirectTo={authReturnUrl} />
     </div>
   );
 }

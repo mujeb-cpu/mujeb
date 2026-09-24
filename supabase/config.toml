@@ -20,3 +20,15 @@ verify_jwt = false
 
 [functions.return-decide]
 verify_jwt = false
+
+[functions.financing-alert]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+
+[functions.whatsapp-connection]
+verify_jwt = true
+
+[functions.whatsapp-case-update]
+verify_jwt = false

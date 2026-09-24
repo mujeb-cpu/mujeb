@@ -22,9 +22,10 @@ import { useLanguage } from "@/components/language-provider";
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  redirectTo?: string;
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, redirectTo = "/app" }: AuthDialogProps) {
   const { t } = useLanguage();
   const googleAuthEnabled =
     process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
@@ -61,7 +62,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/app")}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
       },
     });
     if (oauthError) {
@@ -81,7 +82,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     const { error: magicLinkError } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/app")}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
         shouldCreateUser: true,
         data: { store_name: "My Store" },
       },

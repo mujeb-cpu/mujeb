@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -19,6 +20,7 @@ import {
   PhoneFrame,
   WhatsAppThread,
   WhatsAppChannel,
+  WhatsAppLogo,
   WHATSAPP_STATUS,
   type ThreadMessage,
 } from "@/components/phone-frame";
@@ -37,6 +39,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Lock,
+  FileCheck2,
+  MessageCircleMore,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { cn } from "@/lib/utils";
@@ -126,6 +130,15 @@ export function LandingPage() {
   // "Required for the live pilot" was an internal note, not a customer claim.
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Traced to your policy", "مرتبطة بسياستك"), t("Answers in seconds", "إجابات خلال ثوانٍ")];
   const examples = EXAMPLES.map((example) => isArabic ? ({ ...example, messages: [{ ...example.messages[0], text: `هل يمكنني إرجاع هذا المنتج؟ رقم طلبي ${example.facts.orderId}.` }, { ...example.messages[1], text: example.decision.outcome === "ELIGIBLE" ? "هذا المنتج مؤهل للإرجاع. تم استيفاء جميع شروط السياسة." : example.decision.outcome === "MANUAL_REVIEW" ? "لا يتوفر تاريخ التسليم، لذلك يحتاج المتجر إلى مراجعة الطلب." : "هذا المنتج خارج مدة الإرجاع المحددة في السياسة.", rule: example.decision.outcome === "MANUAL_REVIEW" ? "تاريخ التسليم غير متوفر · يلزم مراجعة التاجر" : "مدة الإرجاع 14 يومًا من تاريخ التسليم" }] }) : example);
+  const startWhatsAppSetup = () => {
+    router.push("/?auth=1&returnUrl=%2Fapp%2Fintegrations%3Fsetup%3Dwhatsapp");
+  };
+  const setupSteps = [
+    { label: t("Connect Salla", "اربط سلة"), icon: "salla" as const },
+    { label: t("Approve your policy", "اعتمد سياستك"), icon: FileCheck2 },
+    { label: t("Activate WhatsApp", "فعّل واتساب"), icon: "whatsapp" as const },
+    { label: t("Run your first test", "نفّذ أول اختبار"), icon: MessageCircleMore },
+  ];
 
   return (
     <div className="overflow-x-clip bg-background">
@@ -159,8 +172,9 @@ export function LandingPage() {
               animate={heroIntroDone ? "visible" : "hidden"}
               className="flex flex-wrap items-center justify-center gap-3"
             >
-              <Button size="lg" onClick={() => router.push("/app")} className="group">
-                {t("Explore returns financing", "اكتشف تمويل المرتجعات")}
+              <Button size="lg" onClick={startWhatsAppSetup} className="group">
+                <WhatsAppLogo className="size-4" />
+                {t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
                 <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
               </Button>
               <Button
@@ -169,7 +183,7 @@ export function LandingPage() {
                 onClick={() => router.push("/return")}
                 className="border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.1] hover:text-white"
               >
-                {t("See how it works", "شاهد كيف يعمل")}
+                {t("Try the return flow", "جرّب رحلة الإرجاع")}
               </Button>
             </motion.div>
 
@@ -188,8 +202,37 @@ export function LandingPage() {
                 {t("Evidence with every answer", "أدلة مع كل إجابة")}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <WhatsAppChannel />
+                <WhatsAppChannel showStatus={false} />
               </span>
+            </motion.div>
+
+            <motion.div
+              variants={heroItem}
+              initial="hidden"
+              animate={heroIntroDone ? "visible" : "hidden"}
+              className="grid w-full max-w-3xl grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.045] p-2.5 text-start backdrop-blur-sm sm:grid-cols-4"
+              aria-label={t("Merchant setup flow", "خطوات إعداد التاجر")}
+            >
+              {setupSteps.map((step, index) => {
+                const Icon = typeof step.icon === "string" ? null : step.icon;
+                return (
+                  <div key={step.label} className="group flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors duration-200 hover:bg-white/[0.07]">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.08] ring-1 ring-white/10 transition-transform duration-200 group-hover:-translate-y-0.5">
+                      {step.icon === "salla" ? (
+                        <Image src="/salla-logo.png" alt="" width={22} height={22} className="rounded-md" />
+                      ) : step.icon === "whatsapp" ? (
+                        <WhatsAppLogo className="size-5" />
+                      ) : Icon ? (
+                        <Icon className="size-4 text-primary" />
+                      ) : null}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-white/35">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="block text-xs font-medium leading-4 text-white/80">{step.label}</span>
+                    </span>
+                  </div>
+                );
+              })}
             </motion.div>
           </motion.div>
         </div>
@@ -558,7 +601,7 @@ export function LandingPage() {
                 {t("See a policy become an answer.", "شاهد السياسة تتحول إلى إجابة.")}
               </h2>
               <p className="max-w-md text-lg leading-relaxed text-muted-foreground text-pretty">
-                {t("Explore the merchant workspace or try a customer return. Explore with sample orders — no setup required.", "استكشف مساحة عمل التاجر أو جرّب رحلة إرجاع العميل باستخدام طلبات تجريبية، دون إعداد مسبق.")}
+                {t("Connect Salla, approve your policy, and test the WhatsApp return journey from one guided setup.", "اربط سلة، واعتمد سياستك، واختبر رحلة الإرجاع عبر واتساب من خلال إعداد واحد موجّه.")}
               </p>
               <a
                 href="#whatsapp"
@@ -575,10 +618,11 @@ export function LandingPage() {
               <div className="flex flex-wrap justify-center gap-3">
                 <Button
                   size="lg"
-                  onClick={() => router.push("/app")}
+                  onClick={startWhatsAppSetup}
                   className="group"
                 >
-                  {t("Explore returns financing", "اكتشف تمويل المرتجعات")}
+                  <WhatsAppLogo className="size-4" />
+                  {t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
                   <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
                 </Button>
                 <Button
@@ -586,7 +630,7 @@ export function LandingPage() {
                   size="lg"
                   onClick={() => router.push("/return")}
                 >
-                  {t("See how it works", "شاهد كيف يعمل")}
+                  {t("Try the return flow", "جرّب رحلة الإرجاع")}
                 </Button>
               </div>
             </div>
