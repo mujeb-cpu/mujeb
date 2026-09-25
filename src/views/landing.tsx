@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { cn } from "@/lib/utils";
+import { getWhatsAppStartUrl } from "@/lib/whatsapp";
 
 const HERO_STEPS: TraceStep[] = [
   {
@@ -131,7 +132,7 @@ export function LandingPage() {
   const productPrinciples = [t("Human-approved rules", "قواعد يعتمدها التاجر"), t("Frozen evidence", "أدلة محفوظة"), t("Deterministic engine", "محرك قواعد حتمي"), t("Store-isolated data", "بيانات معزولة لكل متجر"), t("Traced to your policy", "مرتبطة بسياستك"), t("Answers in seconds", "إجابات خلال ثوانٍ")];
   const examples = EXAMPLES.map((example) => isArabic ? ({ ...example, messages: [{ ...example.messages[0], text: `هل يمكنني إرجاع هذا المنتج؟ رقم طلبي ${example.facts.orderId}.` }, { ...example.messages[1], text: example.decision.outcome === "ELIGIBLE" ? "هذا المنتج مؤهل للإرجاع. تم استيفاء جميع شروط السياسة." : example.decision.outcome === "MANUAL_REVIEW" ? "لا يتوفر تاريخ التسليم، لذلك يحتاج المتجر إلى مراجعة الطلب." : "هذا المنتج خارج مدة الإرجاع المحددة في السياسة.", rule: example.decision.outcome === "MANUAL_REVIEW" ? "تاريخ التسليم غير متوفر · يلزم مراجعة التاجر" : "مدة الإرجاع 14 يومًا من تاريخ التسليم" }] }) : example);
   const startWhatsAppSetup = () => {
-    router.push("/?auth=1&returnUrl=%2Fapp%2Fintegrations%3Fsetup%3Dwhatsapp");
+    window.open(getWhatsAppStartUrl(), "_blank", "noopener,noreferrer");
   };
   const setupSteps = [
     { label: t("Connect Salla", "اربط سلة"), icon: "salla" as const },
@@ -174,7 +175,7 @@ export function LandingPage() {
             >
               <Button size="lg" onClick={startWhatsAppSetup} className="group">
                 <WhatsAppLogo className="size-4" />
-                {t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
+                {t("Start on WhatsApp", "ابدأ عبر واتساب")}
                 <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
               </Button>
               <Button
@@ -622,7 +623,7 @@ export function LandingPage() {
                   className="group"
                 >
                   <WhatsAppLogo className="size-4" />
-                  {t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
+                  {t("Start on WhatsApp", "ابدأ عبر واتساب")}
                   <ArrowRight className={cn("size-4 transition-transform group-hover:translate-x-1", isArabic && "rotate-180")} />
                 </Button>
                 <Button

@@ -18,7 +18,7 @@ import { StoreMark } from "@/components/store-identity";
 import type { EligibilityDecision } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
-export const WHATSAPP_STATUS: "live" | "coming-soon" = "coming-soon";
+export const WHATSAPP_STATUS: "live" | "coming-soon" = "live";
 const BRAND = {
   green: "#25D366",
   header: "#075E54",

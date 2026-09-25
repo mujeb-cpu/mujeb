@@ -17,6 +17,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { useSectionSpy } from "@/hooks/use-section-spy";
+import { getWhatsAppStartUrl } from "@/lib/whatsapp";
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
@@ -28,6 +29,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const { t } = useLanguage();
   const isHome = pathname === "/";
+  const whatsappStartUrl = getWhatsAppStartUrl();
   const requestedReturnUrl = searchParams.get("returnUrl");
   const authReturnUrl = requestedReturnUrl?.startsWith("/") && !requestedReturnUrl.startsWith("//")
     ? requestedReturnUrl
@@ -180,12 +182,15 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-1.5">
               <div className="hidden items-center gap-1 md:flex">
-                <Link
-                  href="/#whatsapp"
+                <a
+                  href={whatsappStartUrl}
+                  target="_blank"
+                  rel="noreferrer"
                   className="nav-ghost hidden rounded-full px-3 py-2 lg:inline-flex"
+                  aria-label={t("Start a WhatsApp conversation", "ابدأ محادثة عبر واتساب")}
                 >
                   <WhatsAppChannel showStatus={false} />
-                </Link>
+                </a>
                 {auth.user ? (
                   <Button
                     size="sm"
@@ -263,14 +268,16 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               {link.label}
             </button>
           ))}
-          <Link
-            href="/#whatsapp"
+          <a
+            href={whatsappStartUrl}
+            target="_blank"
+            rel="noreferrer"
             onClick={() => setMenuOpen(false)}
             style={{ ["--i" as string]: String(navLinks.length) }}
             className="mobile-menu-item flex items-center border-b border-border/70 py-4 text-[17px] font-medium text-foreground"
           >
             <WhatsAppChannel className="text-[17px] font-medium text-foreground" />
-          </Link>
+          </a>
         </nav>
 
         <div className="mt-auto flex flex-col gap-2 px-6 pb-10 pt-8">
@@ -318,14 +325,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         </main>
       </CurtainReveal>
       {isHome && (
-        <button
-          type="button"
-          onClick={() => {
-            router.push("/?auth=1&returnUrl=%2Fapp%2Fintegrations%3Fsetup%3Dwhatsapp");
-            setAuthOpen(true);
-          }}
+        <a
+          href={whatsappStartUrl}
+          target="_blank"
+          rel="noreferrer"
           className="whatsapp-float group"
-          aria-label={t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
+          aria-label={t("Start a WhatsApp conversation", "ابدأ محادثة عبر واتساب")}
         >
           <span className="whatsapp-float-copy">
             <span className="whatsapp-float-title">
@@ -339,7 +344,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <WhatsAppLogo className="size-6 !text-white" />
             <span className="whatsapp-float-pulse" aria-hidden="true" />
           </span>
-        </button>
+        </a>
       )}
       <ScrollToTop />
       <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} redirectTo={authReturnUrl} />
