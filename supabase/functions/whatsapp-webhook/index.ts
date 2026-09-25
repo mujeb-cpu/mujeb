@@ -152,7 +152,10 @@ async function processFlow(admin: Admin, store: Store, conversation: Conversatio
   let language: "ar" | "en" = conversation.language === "en" ? "en" : "ar";
   const normalized = input.trim().toLowerCase();
   const flow = await getFlow(admin, conversation.id);
-  if (["start", "restart", "start over", "ابدأ", "ابدأ من جديد"].includes(normalized)) {
+  const isWelcomeMessage =
+    /^(start|restart|start over)(\s|$)/i.test(normalized) ||
+    ["hello", "hi", "hey", "مرحبا", "مرحباً", "هلا", "السلام عليكم", "ابدأ", "ابدأ من جديد"].includes(normalized);
+  if (isWelcomeMessage) {
     await setFlow(admin, conversation.id, "AWAITING_LANGUAGE");
     return languagePrompt(to, profileName);
   }
