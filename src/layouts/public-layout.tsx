@@ -10,7 +10,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WhatsAppChannel } from "@/components/phone-frame";
+import { WhatsAppChannel, WhatsAppLogo } from "@/components/phone-frame";
 import { AuthDialog } from "@/components/auth-dialog";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -317,6 +317,30 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </CurtainReveal>
+      {isHome && (
+        <button
+          type="button"
+          onClick={() => {
+            router.push("/?auth=1&returnUrl=%2Fapp%2Fintegrations%3Fsetup%3Dwhatsapp");
+            setAuthOpen(true);
+          }}
+          className="whatsapp-float group"
+          aria-label={t("Set up WhatsApp returns", "إعداد الإرجاع عبر واتساب")}
+        >
+          <span className="whatsapp-float-copy">
+            <span className="whatsapp-float-title">
+              {t("Start on WhatsApp", "ابدأ عبر واتساب")}
+            </span>
+            <span className="whatsapp-float-note">
+              {t("Guided pilot setup", "إعداد تجريبي بخطوات واضحة")}
+            </span>
+          </span>
+          <span className="whatsapp-float-icon">
+            <WhatsAppLogo className="size-6 !text-white" />
+            <span className="whatsapp-float-pulse" aria-hidden="true" />
+          </span>
+        </button>
+      )}
       <ScrollToTop />
       <AuthDialog open={authOpen} onOpenChange={handleAuthOpenChange} redirectTo={authReturnUrl} />
     </div>

@@ -32,11 +32,13 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
       // one (absolutely positioned, so it is not part of offsetHeight).
       const needed = height * 1.07 + 76;
       // Allow slight upscaling on roomy viewports so the group fills the stage.
-      setFit(Math.min(1.16, element.clientWidth / 1020, element.clientHeight / needed));
+      const nextFit = Math.min(1.16, element.clientWidth / 1020, element.clientHeight / needed);
+      // Ignore compositor-level sub-pixel changes so React does not rebuild
+      // the scroll effect while the phones are actively moving.
+      setFit((current) => Math.abs(current - nextFit) > 0.005 ? nextFit : current);
     };
     const observer = new ResizeObserver(measure);
     observer.observe(element);
-    element.querySelectorAll('.outcome-sequence-card').forEach(card => observer.observe(card));
     measure();
     return () => observer.disconnect();
   }, []);
@@ -48,11 +50,20 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
     const cards = [...viewport.querySelectorAll<HTMLElement>(".outcome-sequence-card")];
     const heading = element.querySelector<HTMLElement>(".outcome-sequence-heading");
     let frame = 0;
+    let sectionTop = 0;
+    let distance = 1;
+
+    const measure = () => {
+      const pin = element.querySelector<HTMLElement>(".outcome-sequence-pin");
+      sectionTop = element.getBoundingClientRect().top + window.scrollY;
+      distance = Math.max(1, element.offsetHeight - (pin?.clientHeight ?? window.innerHeight));
+    };
+
     const update = () => {
       frame = 0;
-      const pin = element.querySelector<HTMLElement>(".outcome-sequence-pin");
-      const distance = Math.max(1, element.offsetHeight - (pin?.clientHeight ?? window.innerHeight));
-      const progress = reducedMotion ? 1 : Math.max(0, Math.min(1, -element.getBoundingClientRect().top / distance));
+      // Keep the hot path free of layout reads. Mixing getBoundingClientRect
+      // with transform writes forced synchronous layouts during scroll.
+      const progress = reducedMotion ? 1 : Math.max(0, Math.min(1, (window.scrollY - sectionTop) / distance));
       const p = progress * progress * (3 - 2 * progress);
       const fan = 1 - Math.pow(1 - p, 4);
       cards.forEach((card, i) => {
@@ -60,7 +71,12 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
         const lift = slot === 0 ? -18 - 10 * p : -18 + 4 * p;
         const depth = slot === 0 ? 54 * p : -30 * p;
         const scale = 0.96 + ((slot === 0 ? 1.07 : 0.9) - 0.96) * p;
-        card.style.transform = `translate(-50%, -50%) translateX(${slot * 360 * fan * fit}px) translateY(${lift * fit}px) translateZ(${depth * fit}px) rotateY(${slot * -7 * p + (1 - p) * -14}deg) rotateZ(${slot * 1.25 * p}deg) scale(${scale * fit})`;
+        const x = (slot * 360 * fan * fit).toFixed(2);
+        const y = (lift * fit).toFixed(2);
+        const z = (depth * fit).toFixed(2);
+        const rotateY = (slot * -7 * p + (1 - p) * -14).toFixed(2);
+        const rotateZ = (slot * 1.25 * p).toFixed(2);
+        card.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${y}px), ${z}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${(scale * fit).toFixed(4)})`;
         card.style.opacity = String(slot === 0 ? 1 : 0.78 + 0.22 * p);
         card.style.setProperty("--label-opacity", String(Math.max(0, Math.min(1, (fan - 0.45) / 0.35))));
       });
@@ -71,13 +87,27 @@ export function OutcomeSequence({ children }: { children: ReactNode }) {
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const handleResize = () => {
+      measure();
+      schedule();
+    };
+    const positionObserver = new IntersectionObserver(
+      () => {
+        measure();
+        schedule();
+      },
+      { rootMargin: "100% 0px 100% 0px" },
+    );
+    positionObserver.observe(element);
+    measure();
     update();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", handleResize);
     return () => {
       cancelAnimationFrame(frame);
+      positionObserver.disconnect();
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", handleResize);
     };
   }, [reducedMotion, fit]);
 
