@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Check, Clock, Copy, ExternalLink, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
+import { ArrowRight, Check, Clock, Copy, ExternalLink, Link2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -42,6 +42,7 @@ export function IntegrationsPage() {
   const [action, setAction] = useState<"connect" | "test" | "disconnect" | null>(null);
   const [whatsAppAction, setWhatsAppAction] = useState<"connect" | "disconnect" | null>(null);
   const [returnCode, setReturnCode] = useState<string | null>(null);
+  const onboardingToken = searchParams.get("onboarding");
 
   const loadConnection = useCallback(async () => {
     if (!supabase || !workspace) return setLoading(false);
@@ -68,15 +69,19 @@ export function IntegrationsPage() {
     if (result === "connected") toast.success(t("Salla store connected successfully.", "تم ربط متجر سلة بنجاح."));
     else if (result === "cancelled") toast.info(t("Salla connection was cancelled.", "تم إلغاء ربط سلة."));
     else toast.error(t("Salla could not be connected. Please try again.", "تعذّر ربط سلة. يرجى المحاولة مرة أخرى."));
-    router.replace("/app/integrations");
+    router.replace(onboardingToken ? `/app/integrations?onboarding=${encodeURIComponent(onboardingToken)}` : "/app/integrations");
     void loadConnection();
-  }, [loadConnection, router, searchParams, t]);
+  }, [loadConnection, onboardingToken, router, searchParams, t]);
 
   const connect = async () => {
     if (!supabase || !workspace || !user) return;
     setAction("connect");
     const { data, error } = await supabase.functions.invoke("salla-oauth-start", {
-      body: { storeId: workspace.storeId, redirectPath: "/app/integrations" },
+      body: {
+        storeId: workspace.storeId,
+        redirectPath: onboardingToken ? `/app/integrations?onboarding=${encodeURIComponent(onboardingToken)}` : "/app/integrations",
+        onboardingToken,
+      },
     });
     if (error || !data?.authorizationUrl) {
       toast.error(t("Could not start Salla authorization.", "تعذّر بدء عملية التفويض مع سلة."));
@@ -122,6 +127,17 @@ export function IntegrationsPage() {
     setWhatsAppAction(null);
   };
 
+  const continueOnboarding = async () => {
+    if (!supabase || !onboardingToken) return;
+    setAction("test");
+    const { error } = await supabase.functions.invoke("whatsapp-onboarding", {
+      body: { token: onboardingToken, action: "salla_connected" },
+    });
+    setAction(null);
+    if (error) return toast.error(t("This setup link has expired. Start again from WhatsApp.", "انتهت صلاحية رابط الإعداد. ابدأ من واتساب مرة أخرى."));
+    router.push(`/app/policies/new?onboarding=${encodeURIComponent(onboardingToken)}&discover=1`);
+  };
+
   if (loading) {
     return <IntegrationsPageSkeleton />;
   }
@@ -165,6 +181,7 @@ export function IntegrationsPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-5" aria-busy={action !== null}>
                 {connected ? <>
+                  {onboardingToken && <Button onClick={() => void continueOnboarding()} disabled={action !== null}>{action === "test" ? <Spinner /> : <ArrowRight className="size-4" />}{t("Continue policy setup", "متابعة إعداد السياسة")}</Button>}
                   <Button variant="outline" onClick={() => void runAction("test")} disabled={action !== null}>{action === "test" ? <Spinner /> : <RefreshCw className="size-4" />} {t("Check connection", "فحص الربط")}</Button>
                   <Button variant="ghost" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ms-auto" onClick={() => void runAction("disconnect")} disabled={action !== null}>{action === "disconnect" ? <Spinner /> : <Unplug className="size-4" />} {t("Disconnect", "فصل الربط")}</Button>
                 </> : <Button onClick={() => void connect()} disabled={loading || action !== null}>{action === "connect" ? <Spinner /> : <Link2 className="size-4" />} {t("Connect Salla", "ربط سلة")}</Button>}

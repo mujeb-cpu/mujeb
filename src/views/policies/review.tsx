@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowRight, Check, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
@@ -18,6 +18,7 @@ type Draft = { id: string; name: string; rules: PolicyRule[] };
 export function PolicyReviewPage() {
   const { draftId } = useParams<{ draftId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, isArabic } = useLanguage();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,13 @@ export function PolicyReviewPage() {
     setPublishing(false);
     const version = data?.[0]?.version_label as string | undefined;
     if (error || !version) return toast.error(t("Could not publish this policy.", "تعذّر نشر هذه السياسة."));
+    const onboardingToken = searchParams.get("onboarding");
+    if (onboardingToken) {
+      const { error: notifyError } = await supabase.functions.invoke("whatsapp-onboarding", {
+        body: { token: onboardingToken, action: "policy_published" },
+      });
+      if (notifyError) toast.info(t("The policy is live, but WhatsApp confirmation could not be delivered.", "تم نشر السياسة، لكن تعذّر إرسال التأكيد عبر واتساب."));
+    }
     setPublishedVersion(version);
     toast.success(t(`Policy ${version} published`, `تم نشر السياسة ${version}`));
   };

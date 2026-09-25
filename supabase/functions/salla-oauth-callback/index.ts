@@ -1,6 +1,7 @@
 import { encrypt, sha256 } from "../_shared/crypto.ts";
 import { env } from "../_shared/http.ts";
 import { adminClient } from "../_shared/supabase.ts";
+import { sendWhatsAppText } from "../_shared/whatsapp.ts";
 
 function redirect(path: string, status: string) {
   const target = new URL(path, env("APP_URL"));
@@ -55,6 +56,7 @@ Deno.serve(async (request) => {
     const externalStoreId = String(merchant.id ?? data.merchant_id ?? "");
     if (!externalStoreId) throw new Error("user_info_missing_store_id");
     const externalStoreName = String(merchant.name ?? merchant.username ?? data.name ?? "Salla Store");
+    const publicStoreUrl = String(merchant.domain ?? merchant.url ?? merchant.website ?? "").trim();
     const scopes = String(token.scope ?? "orders.read offline_access").split(/[\s,]+/).filter(Boolean);
     const expiresAt = new Date(Date.now() + Number(token.expires_in ?? 1_209_600) * 1000).toISOString();
 
@@ -68,6 +70,27 @@ Deno.serve(async (request) => {
       p_refresh_token_ciphertext: typeof token.refresh_token === "string" ? await encrypt(token.refresh_token) : null,
     });
     if (saveError) throw saveError;
+    if (publicStoreUrl) await admin.from("commerce_connections").update({ public_store_url: publicStoreUrl }).eq("store_id", savedState.store_id).eq("platform", "salla");
+    const redirectUrl = new URL(savedState.redirect_path, env("APP_URL"));
+    const onboardingToken = redirectUrl.searchParams.get("onboarding");
+    if (onboardingToken) {
+      const { data: advanced } = await admin.rpc("advance_whatsapp_onboarding_token", {
+        p_token_hash: await sha256(onboardingToken), p_expected_stage: "SALLA_PENDING", p_next_stage: "POLICY_PENDING",
+        p_extend_until: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
+      });
+      const context = advanced?.[0];
+      if (context) {
+        const { data: conversation } = await admin.from("whatsapp_conversations").select("language,whatsapp_contacts!inner(wa_id)").eq("id", context.conversation_id).maybeSingle();
+        const contact = Array.isArray(conversation?.whatsapp_contacts) ? conversation.whatsapp_contacts[0] : conversation?.whatsapp_contacts;
+        if (contact?.wa_id) {
+          const policyLink = `${env("APP_URL").replace(/\/$/, "")}/app/policies/new?onboarding=${encodeURIComponent(onboardingToken)}&discover=1`;
+          const message = conversation?.language === "en"
+            ? `${externalStoreName} is connected successfully ✅\n\nRelod can now verify orders. Next, review your return policy:\n${policyLink}`
+            : `تم ربط ${externalStoreName} بنجاح ✅\n\nريلود جاهز الآن للتحقق من الطلبات. الخطوة التالية: مراجعة سياسة الإرجاع:\n${policyLink}`;
+          await sendWhatsAppText(contact.wa_id, message);
+        }
+      }
+    }
     return redirect(savedState.redirect_path, "connected");
   } catch (error) {
     console.error("salla_oauth_callback_failed", errorMessage(error));

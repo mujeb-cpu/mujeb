@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ type InputMethod = "paste" | "url" | "manual";
 
 export function PolicyNewPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, isArabic } = useLanguage();
   const { workspace } = useAuth();
   const [method, setMethod] = useState<InputMethod>("paste");
@@ -36,16 +37,16 @@ export function PolicyNewPage() {
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [sourceLoading, setSourceLoading] = useState(false);
+  const [discoveryMessage, setDiscoveryMessage] = useState<string | null>(null);
+  const [returnWindow, setReturnWindow] = useState("14");
+  const discoveryStarted = useRef(false);
+  const onboardingToken = searchParams.get("onboarding");
 
 
   const sampleText = useMemo(() => services.getSamplePolicyText(), []);
 
-  const handleExtract = async () => {
-    if (method !== "paste") {
-      toast.info(t("Paste the policy text to use live extraction.", "الصق نص السياسة لاستخدام الاستخراج الفعلي."));
-      return;
-    }
-    const text = sourceText;
+  const extractText = async (text = sourceText) => {
     if (!text.trim()) {
       toast.error(t("Please enter policy text first", "يرجى إدخال نص السياسة أولًا"));
       return;
@@ -75,6 +76,34 @@ export function PolicyNewPage() {
     toast.success(t("Proposed rules are ready for review", "القواعد المقترحة جاهزة للمراجعة"));
   };
 
+  const fetchPolicySource = async (action: "fetch" | "discover") => {
+    if (!supabase || !workspace) return;
+    setSourceLoading(true); setDiscoveryMessage(null);
+    const { data, error } = await supabase.functions.invoke("policy-source", { body: { storeId: workspace.storeId, action, url: action === "fetch" ? url : undefined } });
+    setSourceLoading(false);
+    if (error || !data?.found || typeof data.sourceText !== "string") {
+      setDiscoveryMessage(t("We couldn’t find a clear public return policy. Paste its URL or text, or create a starter draft.", "لم نعثر على سياسة إرجاع عامة وواضحة. الصق رابطها أو نصها، أو أنشئ مسودة مبدئية."));
+      return;
+    }
+    setUrl(data.url ?? url); setSourceText(data.sourceText); setMethod("paste");
+    setDiscoveryMessage(t("We found a policy source. Review the imported text before extracting rules.", "عثرنا على مصدر للسياسة. راجع النص المستورد قبل استخراج القواعد."));
+  };
+
+  useEffect(() => {
+    if (searchParams.get("discover") !== "1" || !workspace || discoveryStarted.current) return;
+    discoveryStarted.current = true;
+    void fetchPolicySource("discover");
+  }, [workspace, searchParams]);
+
+  const createStarterDraft = () => {
+    const days = Math.min(365, Math.max(1, Number.parseInt(returnWindow, 10) || 14));
+    const text = isArabic
+      ? `سياسة الإرجاع\n\nيمكن للعميل طلب إرجاع المنتجات المؤهلة خلال ${days} يومًا من تاريخ التسليم. تُقبل طلبات الإرجاع إذا كان المنتج معيبًا، أو تم استلام منتج غير صحيح، أو كان المنتج غير مطابق للوصف، أو تضرر أثناء الشحن. يجب أن يكون المنتج جديدًا وغير مفتوح، أو مفتوحًا من دون استخدام مع التغليف والملحقات الأصلية. يجب أن تكون حالة الطلب «تم التسليم». إذا تعذر التحقق من تاريخ التسليم أو حالة الطلب، يُحال الطلب إلى المراجعة اليدوية.`
+      : `Return Policy\n\nCustomers may request a return for eligible items within ${days} days of delivery. Returns are accepted when an item is defective, the wrong item was received, the item is not as described, or it was damaged in transit. The item must be new and unopened, or opened but unused with its original packaging and accessories. The order must have delivered status. If the delivery date or order status cannot be verified, the request is held for manual review.`;
+    setSourceText(text); setMethod("paste");
+    setDiscoveryMessage(t("Starter draft created. Edit it so it matches your store before extracting rules.", "تم إنشاء مسودة مبدئية. عدّلها لتطابق سياسة متجرك قبل استخراج القواعد."));
+  };
+
   const handleApprove = (ruleId: string) => {
     setRules((prev) => prev.map((r) => r.id === ruleId ? { ...r, approvalState: "approved" } : r));
   };
@@ -99,7 +128,7 @@ export function PolicyNewPage() {
       toast.error(t("Could not save your review. Please try again.", "تعذّر حفظ المراجعة. يرجى المحاولة مرة أخرى."));
       return;
     }
-    router.push(`/app/policies/review/${draftId}`);
+    router.push(`/app/policies/review/${draftId}${onboardingToken ? `?onboarding=${encodeURIComponent(onboardingToken)}` : ""}`);
   };
 
   const pendingCount = rules.filter((r) => r.approvalState === "pending").length;
@@ -125,16 +154,17 @@ export function PolicyNewPage() {
       </div>
 
       <div className="grid gap-4">
+        {discoveryMessage && <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-6 text-muted-foreground">{discoveryMessage}</div>}
         <div className="flex flex-col gap-2">
           <Label htmlFor="policy-name">{t("Policy name", "اسم السياسة")}</Label>
           <Input id="policy-name" value={policyName} onChange={(e) => setPolicyName(e.target.value)} placeholder={t("Returns Policy", "سياسة الإرجاع")} className="max-w-md" />
         </div>
 
-        <Tabs dir={isArabic ? "rtl" : "ltr"} defaultValue="paste" onValueChange={(v) => setMethod(v as InputMethod)}>
+        <Tabs dir={isArabic ? "rtl" : "ltr"} value={method} onValueChange={(v) => setMethod(v as InputMethod)}>
           <TabsList className="h-auto flex-wrap">
             <TabsTrigger value="paste"><FileText className="size-3.5" /> {t("Paste text", "لصق النص")}</TabsTrigger>
-            <TabsTrigger value="url" disabled><Link2 className="size-3.5" /> {t("Policy URL · soon", "رابط السياسة · قريبًا")}</TabsTrigger>
-            <TabsTrigger value="manual" disabled><PencilLine className="size-3.5" /> {t("Manual rules · soon", "إدخال القواعد · قريبًا")}</TabsTrigger>
+            <TabsTrigger value="url"><Link2 className="size-3.5" /> {t("Policy URL", "رابط السياسة")}</TabsTrigger>
+            <TabsTrigger value="manual"><PencilLine className="size-3.5" /> {t("No policy yet", "لا توجد سياسة بعد")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="paste">
@@ -153,7 +183,7 @@ export function PolicyNewPage() {
                     <Button variant="outline" size="sm" onClick={() => setSourceText(sampleText)}>
                       {t("Use sample policy", "استخدام سياسة نموذجية")}
                     </Button>
-                    <Button onClick={handleExtract} disabled={extracting || !sourceText.trim()}>
+                    <Button onClick={() => void extractText()} disabled={extracting || !sourceText.trim()}>
                       {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
                       {t("Extract rules", "استخراج القواعد")}
                     </Button>
@@ -170,11 +200,11 @@ export function PolicyNewPage() {
                   <Label htmlFor="url">{t("Policy URL", "رابط السياسة")}</Label>
                   <Input id="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourstore.sa/policies/returns" />
                   <p className="text-xs text-muted-foreground">
-                    {t("This is a simulated preview. No real URL is fetched.", "هذه معاينة تجريبية. لا يتم جلب محتوى الرابط فعليًا.")}
+                    {t("Relod securely imports the public page, then shows you the text before AI proposes any rules.", "يستورد ريلود الصفحة العامة بأمان، ثم يعرض النص عليك قبل أن يقترح الذكاء الاصطناعي أي قواعد.")}
                   </p>
-                  <Button onClick={handleExtract} disabled={extracting} className="self-start">
-                    {extracting ? <Spinner className="me-1" /> : <Sparkles className="size-4" />}
-                    {t("Preview extraction", "معاينة الاستخراج")}
+                  <Button onClick={() => void fetchPolicySource("fetch")} disabled={sourceLoading || !url.trim()} className="self-start">
+                    {sourceLoading ? <Spinner className="me-1" /> : <Link2 className="size-4" />}
+                    {t("Import policy", "استيراد السياسة")}
                   </Button>
                 </div>
               </CardContent>
@@ -184,9 +214,10 @@ export function PolicyNewPage() {
           <TabsContent value="manual">
             <Card>
               <CardContent className="pt-6">
-                <div className="flex flex-col items-center gap-3 py-8 text-center">
-                  <PencilLine className="size-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{t("Manual rule creation will be available after extraction. Start with paste or URL to get AI-proposed rules, then edit them manually.", "يمكنك تعديل القواعد يدويًا بعد استخراجها. ابدأ بلصق النص أو إدخال رابط، ثم راجع القواعد المقترحة وعدّلها.")}</p>
+                <div className="mx-auto flex max-w-lg flex-col gap-4 py-4">
+                  <div><h3 className="font-display text-lg font-semibold">{t("Create a starter draft", "إنشاء مسودة مبدئية")}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{t("Start with the minimum policy needed for a controlled pilot. You can edit every sentence before AI proposes rules.", "ابدأ بالحد الأدنى المطلوب للتجربة الأولية. يمكنك تعديل كل جملة قبل أن يقترح الذكاء الاصطناعي القواعد.")}</p></div>
+                  <div className="space-y-2"><Label htmlFor="return-window">{t("Return window", "مدة الإرجاع")}</Label><div className="flex items-center gap-2"><Input id="return-window" inputMode="numeric" value={returnWindow} onChange={(event) => setReturnWindow(event.target.value.replace(/\D/g, "").slice(0, 3))} className="max-w-28" /><span className="text-sm text-muted-foreground">{t("days from delivery", "يومًا من التسليم")}</span></div></div>
+                  <Button onClick={createStarterDraft} className="self-start"><PencilLine className="size-4" />{t("Create editable draft", "إنشاء مسودة قابلة للتعديل")}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -215,7 +246,7 @@ export function PolicyNewPage() {
             <Card className="overflow-hidden">
               <CardContent className="max-h-[500px] overflow-y-auto p-4">
                 <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {(method === "paste" ? sourceText : sampleText)}
+                  {sourceText}
                 </div>
               </CardContent>
             </Card>

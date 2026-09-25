@@ -14,7 +14,7 @@ Deno.serve(async (request) => {
     const { data: { user }, error: userError } = await client.auth.getUser();
     if (userError || !user) return json({ error: "authentication_required" }, 401);
 
-    const { storeId, redirectPath = "/app/integrations" } = await request.json();
+    const { storeId, redirectPath = "/app/integrations", onboardingToken } = await request.json();
     if (!storeId || typeof storeId !== "string") return json({ error: "store_required" }, 400);
 
     const { data: membership } = await client
@@ -25,6 +25,10 @@ Deno.serve(async (request) => {
       .in("role", ["owner", "admin"])
       .maybeSingle();
     if (!membership) return json({ error: "insufficient_permission" }, 403);
+    if (typeof onboardingToken === "string" && onboardingToken) {
+      const { data: onboarding } = await adminClient().rpc("get_whatsapp_onboarding_token", { p_token_hash: await sha256(onboardingToken) });
+      if (!onboarding?.[0] || onboarding[0].store_id !== storeId || onboarding[0].stage !== "SALLA_PENDING") return json({ error: "onboarding_link_invalid" }, 409);
+    }
 
     const state = crypto.randomUUID() + crypto.randomUUID();
     const stateHash = await sha256(state);

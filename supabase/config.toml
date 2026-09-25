@@ -32,3 +32,9 @@ verify_jwt = true
 
 [functions.whatsapp-case-update]
 verify_jwt = false
+
+[functions.whatsapp-onboarding]
+verify_jwt = true
+
+[functions.policy-source]
+verify_jwt = true

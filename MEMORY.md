@@ -41,6 +41,8 @@ One merchant can connect one Salla store, turn a real policy into approved rules
 - Live Salla order lookup, signed order facts, server-side deterministic evaluation, saved decision evidence, and idempotent case creation are deployed.
 - Live Ollama policy extraction, Supabase draft review, and immutable publishing are deployed.
 - WhatsApp Cloud API shared sender, signed webhook endpoint, delivery tracking, duplicate-event handling, bilingual menu, merchant Salla link, customer order/item/reason/condition capture, deterministic evaluation, automatic case creation, and in-window case-status notifications are implemented for testing.
+- WhatsApp merchant onboarding now uses a hashed, expiring handoff token that survives authentication and Salla OAuth, returns connection confirmation to the originating conversation, and continues into policy setup.
+- Policy setup supports automatic storefront discovery, secure public URL import, pasted/written text, and an editable starter draft. Every path creates an unpublished AI proposal that still requires merchant review.
 - Financing requests persist under RLS and asynchronously queue internal WhatsApp alerts; notification failure cannot roll back the lead.
 
 ## Current implementation boundary
@@ -65,13 +67,12 @@ One merchant can connect one Salla store, turn a real policy into approved rules
 
 ## Immediate sequence
 
-1. Add the Meta App Secret, register the deployed webhook callback, and subscribe to the WhatsApp `messages` field.
-2. Bind the Meta test phone to the merchant workspace from Integrations.
-3. Test financing alert delivery and the inbound bilingual menu with a verified test recipient.
-4. Run a controlled WhatsApp return against a real Salla order whose customer phone matches the test recipient.
-5. Verify eligible, not-eligible, manual-review, replay, invalid-order, and delivery-status paths.
-6. Confirm merchant status changes send customer updates, including final refund confirmation.
-7. Invite the pilot merchant only after the full controlled flow passes.
+1. Run the WhatsApp merchant handoff through sign-in, Salla authorization, policy discovery/review, and publication confirmation.
+2. Run a controlled WhatsApp return against a real Salla order whose customer phone matches the test recipient.
+3. Verify eligible, not-eligible, manual-review, replay, invalid-order, and delivery-status paths.
+4. Confirm merchant status changes send customer updates, including final refund confirmation.
+5. Add OTP delegation only after the primary owner-phone verification flow passes.
+6. Invite the pilot merchant only after the full controlled flow passes.
 
 ## Required server secrets
 
