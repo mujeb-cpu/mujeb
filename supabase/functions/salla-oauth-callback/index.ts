@@ -1,7 +1,7 @@
 import { encrypt, sha256 } from "../_shared/crypto.ts";
 import { env } from "../_shared/http.ts";
 import { adminClient } from "../_shared/supabase.ts";
-import { sendWhatsAppText } from "../_shared/whatsapp.ts";
+import { sendWhatsAppButtons } from "../_shared/whatsapp.ts";
 
 function redirect(path: string, status: string) {
   const target = new URL(path, env("APP_URL"));
@@ -83,15 +83,18 @@ Deno.serve(async (request) => {
         const { data: conversation } = await admin.from("whatsapp_conversations").select("language,whatsapp_contacts!inner(wa_id)").eq("id", context.conversation_id).maybeSingle();
         const contact = Array.isArray(conversation?.whatsapp_contacts) ? conversation.whatsapp_contacts[0] : conversation?.whatsapp_contacts;
         if (contact?.wa_id) {
-          const policyLink = `${env("APP_URL").replace(/\/$/, "")}/app/policies/new?onboarding=${encodeURIComponent(onboardingToken)}&discover=1`;
+          await admin.rpc("set_whatsapp_flow_state", { p_conversation_id: context.conversation_id, p_step: "POLICY_READY", p_context: { onboardingToken } });
           const message = conversation?.language === "en"
-            ? `${externalStoreName} is connected successfully ✅\n\nRelod can now verify orders. Next, review your return policy:\n${policyLink}`
-            : `تم ربط ${externalStoreName} بنجاح ✅\n\nريلود جاهز الآن للتحقق من الطلبات. الخطوة التالية: مراجعة سياسة الإرجاع:\n${policyLink}`;
-          await sendWhatsAppText(contact.wa_id, message);
+            ? `${externalStoreName} is connected successfully ✅\n\nYou can close the browser now—we’ll continue right here. Next, let’s set up the return policy your customers will be checked against.`
+            : `تم ربط ${externalStoreName} بنجاح ✅\n\nتقدر تقفل المتصفح الآن، ونكمل من هنا. الخطوة الجاية: نجهّز سياسة الإرجاع اللي بنراجع على أساسها طلبات عملائك.`;
+          await sendWhatsAppButtons(contact.wa_id, message, conversation?.language === "en"
+            ? [{ id: "policy_continue", title: "Continue" }, { id: "onboarding_later", title: "Do this later" }]
+            : [{ id: "policy_continue", title: "متابعة" }, { id: "onboarding_later", title: "أكمل لاحقًا" }]);
         }
       }
     }
-    return redirect(savedState.redirect_path, "connected");
+    const destination = onboardingToken ? `${savedState.redirect_path}${savedState.redirect_path.includes("?") ? "&" : "?"}continue=whatsapp` : savedState.redirect_path;
+    return redirect(destination, "connected");
   } catch (error) {
     console.error("salla_oauth_callback_failed", errorMessage(error));
     return redirect("/app/integrations", "error");

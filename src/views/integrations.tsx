@@ -42,6 +42,7 @@ export function IntegrationsPage() {
   const [action, setAction] = useState<"connect" | "test" | "disconnect" | null>(null);
   const [whatsAppAction, setWhatsAppAction] = useState<"connect" | "disconnect" | null>(null);
   const [returnCode, setReturnCode] = useState<string | null>(null);
+  const [continuedInWhatsApp] = useState(() => searchParams.get("continue") === "whatsapp");
   const onboardingToken = searchParams.get("onboarding");
 
   const loadConnection = useCallback(async () => {
@@ -135,7 +136,7 @@ export function IntegrationsPage() {
     });
     setAction(null);
     if (error) return toast.error(t("This setup link has expired. Start again from WhatsApp.", "انتهت صلاحية رابط الإعداد. ابدأ من واتساب مرة أخرى."));
-    router.push(`/app/policies/new?onboarding=${encodeURIComponent(onboardingToken)}&discover=1`);
+    toast.success(t("Continue in WhatsApp. Your next step is waiting there.", "تابع في واتساب. الخطوة التالية بانتظارك هناك."));
   };
 
   if (loading) {
@@ -144,6 +145,15 @@ export function IntegrationsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-7 animate-fade-in">
+      {continuedInWhatsApp && (
+        <div className="flex items-start gap-3 rounded-2xl border border-eligible/25 bg-eligible-muted p-4 sm:p-5">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-eligible text-eligible-foreground"><Check className="size-5" /></span>
+          <div>
+            <p className="text-sm font-semibold text-foreground">{t("Your Salla store is connected", "تم ربط متجرك في سلة")}</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t("You can close this page now. We’ve continued your setup in WhatsApp.", "تقدر تقفل هذه الصفحة الآن. أرسلنا لك الخطوة التالية في واتساب.")}</p>
+          </div>
+        </div>
+      )}
       <ScrollReveal>
         <div>
           <Badge variant="outline" className="mb-3">{t("Commerce", "التجارة الإلكترونية")}</Badge>

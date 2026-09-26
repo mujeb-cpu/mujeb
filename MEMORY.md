@@ -81,3 +81,11 @@ Supabase Edge Function secrets: `OLLAMA_API_KEY`, Salla credentials, `INTEGRATIO
 ## Validation expectations
 
 Run TypeScript checks, production build, focused browser checks in English/Arabic and mobile/desktop, and controlled API tests. Before the real merchant pilot, prove: Salla authorization, refresh, valid order verification, invalid verifier rejection, three decision outcomes, immutable policy version evidence, persisted cases, and safe failure behavior.
+
+## 2026-09-26 — WhatsApp-first policy onboarding and product reports
+- Merchant onboarding returns to WhatsApp after Salla OAuth. New and already-connected stores receive a verified success message with Continue / Do this later.
+- Policy discovery, exact URL import, pasted policy text, and starter-policy creation run inside WhatsApp.
+- AI-proposed rules are reviewed one at a time in WhatsApp; merchant approval/editing is required before service-side publication. Drafts and published versions use the same Supabase tables as the web workspace.
+- WhatsApp supports Report a problem and Send feedback with preview/edit/cancel confirmation. Reports are stored in `product_reports` with safe workflow context.
+- Workspace route `/app/reports` lists and resolves reports. Resolving a WhatsApp report sends a WhatsApp confirmation.
+- Migration: `202609260001_whatsapp_policy_and_reports.sql`. Functions: `whatsapp-webhook`, `salla-oauth-callback`, `whatsapp-onboarding`, `product-report-update`.

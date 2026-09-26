@@ -34,6 +34,7 @@ import {
   ChevronRight,
   Link2,
   Globe,
+  MessageSquareWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { services } from "@/lib/services";
@@ -78,6 +79,11 @@ export function MerchantLayout({ children }: { children: ReactNode }) {
       href: "/app/cases",
       icon: Package,
       badge: openCaseCount > 0 ? openCaseCount : undefined,
+    },
+    {
+      label: t("Feedback", "الملاحظات"),
+      href: "/app/reports",
+      icon: MessageSquareWarning,
     },
   ];
   const secondaryNav = [
@@ -273,6 +279,7 @@ function WorkspaceBreadcrumb({ pathname }: { pathname: string }) {
     new: t("New", "جديد"),
     review: t("Review", "مراجعة"),
     cases: t("Cases", "الحالات"),
+    reports: t("Feedback", "الملاحظات"),
     integrations: t("Integrations", "التكاملات"),
     settings: t("Settings", "الإعدادات"),
   };

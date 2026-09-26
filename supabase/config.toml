@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.policy-source]
 verify_jwt = true
+
+[functions.product-report-update]
+verify_jwt = true

@@ -2,11 +2,12 @@ import { sha256 } from "../_shared/crypto.ts";
 import { env, json } from "../_shared/http.ts";
 import { adminClient } from "../_shared/supabase.ts";
 import { sendWhatsAppButtons, sendWhatsAppList, sendWhatsAppText, sentMessageId, verifyWhatsAppSignature, type WhatsAppSendResult } from "../_shared/whatsapp.ts";
+import { discoverPolicy, extractPolicy, fetchPolicyUrl } from "../_shared/policy.ts";
 
 type Admin = ReturnType<typeof adminClient>;
 type MetaMessage = { id?: string; from?: string; timestamp?: string; type?: string; text?: { body?: string }; interactive?: { button_reply?: { id?: string }; list_reply?: { id?: string } } };
 type Item = { id: string; name: string; sku: string; quantity: number; price: number };
-type Context = { verificationToken?: string; order?: { orderId: string; customerName: string; items: Item[] }; itemId?: string; quantity?: number; reason?: string; condition?: string; decisionId?: string };
+type Context = { verificationToken?: string; order?: { orderId: string; customerName: string; items: Item[] }; itemId?: string; quantity?: number; reason?: string; condition?: string; decisionId?: string; onboardingToken?: string; draftId?: string; ruleIndex?: number; policyUrl?: string; policyText?: string; reportType?: "BUG" | "FEEDBACK"; reportMessage?: string };
 type Conversation = { id: string; language: string; contact_id: string; return_case_id: string | null };
 type Store = { id: string; name: string; return_code: string };
 
@@ -93,11 +94,15 @@ async function menu(to: string, language: "ar" | "en", profileName?: string) {
     { id: "check_status", title: "متابعة طلب سابق", description: "اعرف آخر تحديث على طلبك" },
     { id: "merchant_setup", title: "ربط متجر", description: "إعداد ريلود لمتجرك" },
     { id: "human_help", title: "التحدث مع الفريق", description: "نحوّل المحادثة لأحد أفراد الفريق" },
+    { id: "report_bug", title: "الإبلاغ عن مشكلة", description: "أرسل لنا ما واجهته" },
+    { id: "send_feedback", title: "إرسال ملاحظة", description: "شاركنا رأيك أو اقتراحك" },
   ] : [
     { id: "start_return", title: "Start a return", description: "Check your order against store policy" },
     { id: "check_status", title: "Track a return", description: "See the latest update on your case" },
     { id: "merchant_setup", title: "Connect a store", description: "Set up Relod for your business" },
     { id: "human_help", title: "Talk to our team", description: "Hand this conversation to a person" },
+    { id: "report_bug", title: "Report a problem", description: "Tell us what went wrong" },
+    { id: "send_feedback", title: "Send feedback", description: "Share an idea or suggestion" },
   ];
   return { body, result: await sendWhatsAppList(to, body, language === "ar" ? "اختر الخدمة" : "Choose an option", rows), type: "INTERACTIVE" as const };
 }
@@ -148,6 +153,55 @@ async function itemPrompt(to: string, language: "ar" | "en", order: NonNullable<
   return { body, result: await sendWhatsAppList(to, body, language === "ar" ? "اختيار المنتج" : "Choose item", order.items.slice(0, 10).map((item) => ({ id: `item:${item.id}`, title: item.name, description: `${item.sku || "SKU —"} · Qty ${item.quantity}` }))), type: "INTERACTIVE" as const };
 }
 
+function policyMethodPrompt(to: string, language: "ar" | "en", foundUrl?: string) {
+  const body = foundUrl
+    ? language === "ar" ? `لقينا سياسة إرجاع منشورة في متجرك:\n${foundUrl}\n\nتبغى نستخدمها؟ ما راح ننشر أي قاعدة قبل موافقتك.` : `We found a return policy on your store:\n${foundUrl}\n\nWould you like us to use it? Nothing becomes active without your approval.`
+    : language === "ar" ? "ما لقينا سياسة إرجاع واضحة في المتجر، ولا راح نخمن. اختر الطريقة الأنسب لك ونكمل من هنا." : "We couldn’t find a readable return policy, so we won’t guess. Choose the easiest way to continue.";
+  const rows = foundUrl
+    ? language === "ar" ? [{ id: "policy_import_found", title: "استخدام السياسة", description: "نحوّلها لمسودة للمراجعة" }, { id: "policy_url", title: "إرسال رابط آخر" }, { id: "policy_text", title: "لصق نص السياسة" }, { id: "policy_starter", title: "إنشاء سياسة مبدئية" }]
+      : [{ id: "policy_import_found", title: "Use this policy", description: "Turn it into a draft for review" }, { id: "policy_url", title: "Send another URL" }, { id: "policy_text", title: "Paste policy text" }, { id: "policy_starter", title: "Create a starter policy" }]
+    : language === "ar" ? [{ id: "policy_url", title: "إرسال رابط السياسة" }, { id: "policy_text", title: "لصق نص السياسة" }, { id: "policy_starter", title: "إنشاء سياسة مبدئية" }]
+      : [{ id: "policy_url", title: "Send policy URL" }, { id: "policy_text", title: "Paste policy text" }, { id: "policy_starter", title: "Create starter policy" }];
+  return { body, rows };
+}
+
+async function createPolicyDraft(admin: Admin, storeId: string, sourceText: string, language: "ar" | "en") {
+  const extracted = await extractPolicy(sourceText);
+  const { data: owner } = await admin.from("memberships").select("user_id").eq("store_id", storeId).in("role", ["owner", "admin"]).order("created_at", { ascending: true }).limit(1).maybeSingle();
+  if (!owner?.user_id) throw new Error("store_owner_required");
+  const { data: draft, error } = await admin.from("policy_drafts").insert({ store_id: storeId, name: language === "ar" ? "سياسة الإرجاع" : "Returns Policy", source_text: sourceText, rules: extracted.rules, extraction_state: "ready", created_by: owner.user_id }).select("id,rules").single();
+  if (error) throw error;
+  return { draftId: draft.id as string, rules: draft.rules as Array<Record<string, unknown>>, publisherId: owner.user_id as string };
+}
+
+async function rulePrompt(admin: Admin, to: string, language: "ar" | "en", conversationId: string, context: Context) {
+  const { data: draft } = await admin.from("policy_drafts").select("rules").eq("id", context.draftId).maybeSingle();
+  const rules = (draft?.rules ?? []) as Array<Record<string, unknown>>;
+  const index = Math.max(0, context.ruleIndex ?? 0);
+  const rule = rules[index];
+  if (!rule) {
+    await setFlow(admin, conversationId, "AWAITING_POLICY_PUBLISH", { ...context, ruleIndex: rules.length });
+    const body = language === "ar" ? `راجعنا ${rules.length} قواعد معك. كل شيء جاهز للنشر. بعد النشر، تصبح هذه القواعد هي المرجع الفعلي لقرارات الإرجاع.` : `You’ve reviewed all ${rules.length} rules. Everything is ready to publish. Once published, these rules become the source used for return decisions.`;
+    return { body, result: await sendWhatsAppButtons(to, body, language === "ar" ? [{ id: "policy_publish", title: "نشر السياسة" }, { id: "policy_review_again", title: "مراجعة مرة أخرى" }, { id: "onboarding_later", title: "أكمل لاحقًا" }] : [{ id: "policy_publish", title: "Publish policy" }, { id: "policy_review_again", title: "Review again" }, { id: "onboarding_later", title: "Do this later" }]), type: "INTERACTIVE" as const };
+  }
+  const body = language === "ar" ? `القاعدة ${index + 1} من ${rules.length}\n\n*${String(rule.name)}*\n${String(rule.description)}\n\nمن نص سياستك:\n“${String(rule.sourceExcerpt)}”` : `Rule ${index + 1} of ${rules.length}\n\n*${String(rule.name)}*\n${String(rule.description)}\n\nFrom your policy:\n“${String(rule.sourceExcerpt)}”`;
+  return { body, result: await sendWhatsAppButtons(to, body, language === "ar" ? [{ id: "rule_approve", title: "اعتماد" }, { id: "rule_edit", title: "تعديل" }, { id: "onboarding_later", title: "أكمل لاحقًا" }] : [{ id: "rule_approve", title: "Approve" }, { id: "rule_edit", title: "Change" }, { id: "onboarding_later", title: "Do this later" }]), type: "INTERACTIVE" as const };
+}
+
+function editedRuleValue(category: string, input: string) {
+  const text = input.trim().toLowerCase();
+  if (category === "window" || category === "quantity") return text.match(/\d{1,4}/)?.[0] ?? null;
+  if (category === "fallback") return "manual_review";
+  if (category === "exclusions") return input.split(",").map((part) => part.trim()).filter(Boolean).join(",") || null;
+  const maps: Record<string, Array<[RegExp, string]>> = {
+    reasons: [[/defect|عيب|معيب/, "defective"], [/wrong|خطأ|غير صحيح/, "wrong_item"], [/describ|وصف|مطابق/, "not_as_described"], [/mind|رأي/, "changed_mind"], [/damage|تلف|تضرر/, "damaged_in_transit"]],
+    conditions: [[/unopened|غير مفتوح|جديد/, "new_unopened"], [/unused|دون استخدام|غير مستخدم/, "opened_unused"], [/used|مستخدم/, "used"]],
+    order_status: [[/deliver|تسليم|تم التوصيل/, "delivered"], [/ship|شحن/, "shipped"], [/process|تجهيز/, "processing"], [/cancel|إلغاء|ملغي/, "cancelled"]],
+  };
+  const values = (maps[category] ?? []).filter(([pattern]) => pattern.test(text)).map(([, value]) => value);
+  return [...new Set(values)].join(",") || null;
+}
+
 async function processFlow(admin: Admin, store: Store, conversation: Conversation, to: string, input: string, profileName?: string) {
   let language: "ar" | "en" = conversation.language === "en" ? "en" : "ar";
   const normalized = input.trim().toLowerCase();
@@ -171,6 +225,46 @@ async function processFlow(admin: Admin, store: Store, conversation: Conversatio
     await setFlow(admin, conversation.id, "MENU");
     return menu(to, language, profileName);
   }
+  if (["report_bug", "send_feedback"].includes(normalized)) {
+    const reportType = normalized === "report_bug" ? "BUG" : "FEEDBACK";
+    await setFlow(admin, conversation.id, "AWAITING_REPORT_MESSAGE", { reportType });
+    const body = language === "ar"
+      ? reportType === "BUG" ? "أكيد. اكتب لنا وش صار، وفي أي خطوة توقفت. ما تحتاج ترسل أي بيانات سرية أو معلومات طلب كاملة." : "يسعدنا نسمع منك. اكتب ملاحظتك أو اقتراحك بطريقتك، وبنعرضه عليك قبل الإرسال."
+      : reportType === "BUG" ? "Tell us what happened and where you got stuck. Please don’t include passwords, access tokens, or full order details." : "We’d love to hear it. Write your feedback in your own words and we’ll show it back before sending.";
+    return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+  }
+  if (flow.step === "AWAITING_REPORT_MESSAGE") {
+    if (input.trim().length < 2) {
+      const body = language === "ar" ? "اكتب تفاصيل أكثر شوي عشان نقدر نفهمها ونتابعها." : "Please add a little more detail so the team can understand and follow up.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    const context = { ...flow.context, reportMessage: input.trim().slice(0, 4000) };
+    await setFlow(admin, conversation.id, "AWAITING_REPORT_CONFIRMATION", context);
+    const body = language === "ar" ? `هذا اللي بنرسله لفريق ريلود:\n\n“${context.reportMessage}”\n\nتأكد أنه ما يحتوي على كلمة مرور أو بيانات حساسة.` : `Here’s what we’ll send to the Relod team:\n\n“${context.reportMessage}”\n\nPlease check that it contains no passwords or sensitive information.`;
+    return { body, result: await sendWhatsAppButtons(to, body, language === "ar" ? [{ id: "report_send", title: "إرسال" }, { id: "report_edit", title: "تعديل" }, { id: "report_cancel", title: "إلغاء" }] : [{ id: "report_send", title: "Send" }, { id: "report_edit", title: "Edit" }, { id: "report_cancel", title: "Cancel" }]), type: "INTERACTIVE" as const };
+  }
+  if (flow.step === "AWAITING_REPORT_CONFIRMATION") {
+    if (normalized === "report_edit") {
+      await setFlow(admin, conversation.id, "AWAITING_REPORT_MESSAGE", { reportType: flow.context.reportType });
+      const body = language === "ar" ? "تمام، اكتب الرسالة المعدّلة." : "Of course—send the updated message.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized === "report_cancel") {
+      await setFlow(admin, conversation.id, "MENU");
+      const body = language === "ar" ? "تم الإلغاء، وما أرسلنا شيء." : "Cancelled. Nothing was sent.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized !== "report_send") {
+      const body = language === "ar" ? "اختر «إرسال» أو «تعديل» أو «إلغاء»." : "Choose Send, Edit, or Cancel.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    const { data: report, error } = await admin.from("product_reports").insert({ store_id: store.id, conversation_id: conversation.id, report_type: flow.context.reportType, message: flow.context.reportMessage, source_channel: "WHATSAPP", context: { flow_step: flow.step, language, conversation_state: "ACTIVE" } }).select("id").single();
+    if (error) throw error;
+    await setFlow(admin, conversation.id, "MENU");
+    const reference = `RL-${String(report.id).slice(0, 8).toUpperCase()}`;
+    const body = language === "ar" ? `وصلت، شكرًا لك ✅\n\nرقم المتابعة: ${reference}\nسجّلناها عند الفريق وبنراجعها مع سياق الخطوة اللي كنت فيها.` : `Received—thank you ✅\n\nReference: ${reference}\nIt’s saved for the team with the step you were on, so you won’t need to explain everything again.`;
+    return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+  }
   if (normalized === "human_help") {
     await admin.from("whatsapp_conversations").update({ state: "HANDED_TO_HUMAN" }).eq("id", conversation.id);
     const body = language === "ar" ? "وصلنا طلبك للفريق. بيراجعون المحادثة ويردون عليك هنا خلال ساعات العمل." : "We’ve passed this conversation to our team. Someone will reply here during business hours.";
@@ -186,6 +280,146 @@ async function processFlow(admin: Admin, store: Store, conversation: Conversatio
     const link = `${env("APP_URL").replace(/\/$/, "")}/?auth=1&returnUrl=${encodeURIComponent(destination)}`;
     const body = language === "ar" ? `أكيد. هذا رابط آمن لربط متجرك في سلة:\n${link}\n\nالرابط صالح لمدة 10 دقائق، وما نطلب كلمة مرور متجرك.` : `Of course. Use this secure link to connect your Salla store:\n${link}\n\nThe link is valid for 10 minutes. Relod never asks for your store password.`;
     return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+  }
+  if (normalized === "onboarding_later") {
+    await setFlow(admin, conversation.id, "ONBOARDING_PAUSED", flow.context);
+    const body = language === "ar" ? "تم حفظ تقدمك. لما تكون جاهز، اكتب «متابعة الإعداد» ونرجع لنفس الخطوة." : "Your progress is saved. When you’re ready, type CONTINUE SETUP and we’ll pick up here.";
+    return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+  }
+  if (["policy_continue", "continue setup", "متابعة الإعداد"].includes(normalized)) {
+    const { data: connection } = await admin.from("commerce_connections").select("public_store_url,status").eq("store_id", store.id).eq("platform", "salla").maybeSingle();
+    if (connection?.status !== "CONNECTED") {
+      const body = language === "ar" ? "قبل إعداد السياسة، نحتاج نربط متجرك في سلة. اختر «ربط متجر» من القائمة." : "Before setting up the policy, connect your Salla store from the main menu.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    let found: { url: string; sourceText: string } | null = null;
+    try { if (connection.public_store_url) found = await discoverPolicy(connection.public_store_url); } catch { /* offer safe fallbacks */ }
+    const context = { ...flow.context, policyUrl: found?.url, policyText: found?.sourceText };
+    await setFlow(admin, conversation.id, "AWAITING_POLICY_METHOD", context);
+    const prompt = policyMethodPrompt(to, language, found?.url);
+    return { body: prompt.body, result: await sendWhatsAppList(to, prompt.body, language === "ar" ? "اختر الطريقة" : "Choose a method", prompt.rows), type: "INTERACTIVE" as const };
+  }
+  if (flow.step === "AWAITING_POLICY_METHOD") {
+    if (normalized === "policy_url") {
+      await setFlow(admin, conversation.id, "AWAITING_POLICY_URL", flow.context);
+      const body = language === "ar" ? "أرسل رابط صفحة سياسة الإرجاع. لازم يكون رابطًا عامًا يبدأ بـ https://" : "Send the public return-policy page URL. It should begin with https://";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized === "policy_text") {
+      await setFlow(admin, conversation.id, "AWAITING_POLICY_TEXT", flow.context);
+      const body = language === "ar" ? "الصق نص سياسة الإرجاع هنا. بنحوّله إلى مسودة، وبعدها تراجع كل قاعدة قبل النشر." : "Paste your return-policy text here. We’ll create a draft, then you’ll review every rule before anything is published.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized === "policy_starter") {
+      await setFlow(admin, conversation.id, "AWAITING_POLICY_WINDOW", flow.context);
+      const body = language === "ar" ? "نبدأ بالأساس: كم يوم تسمح بالإرجاع بعد تسليم الطلب؟ أرسل رقمًا مثل 14." : "Let’s start with the essential rule. How many days after delivery can a customer request a return? Send a number such as 14.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized === "policy_import_found" && flow.context.policyText) {
+      try {
+        const draft = await createPolicyDraft(admin, store.id, flow.context.policyText, language);
+        const context = { ...flow.context, draftId: draft.draftId, ruleIndex: 0, policyText: undefined };
+        await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+        return rulePrompt(admin, to, language, conversation.id, context);
+      } catch { /* handled below */ }
+    }
+    const body = language === "ar" ? "ما قدرنا نجهّز المسودة من هذا المصدر. اختر رابطًا آخر، الصق النص، أو أنشئ سياسة مبدئية." : "We couldn’t prepare a draft from that source. Try another URL, paste the text, or create a starter policy.";
+    const prompt = policyMethodPrompt(to, language);
+    return { body, result: await sendWhatsAppList(to, body, language === "ar" ? "طريقة أخرى" : "Another method", prompt.rows), type: "INTERACTIVE" as const };
+  }
+  if (flow.step === "AWAITING_POLICY_URL") {
+    try {
+      const source = await fetchPolicyUrl(input);
+      const draft = await createPolicyDraft(admin, store.id, source.sourceText, language);
+      const context = { ...flow.context, draftId: draft.draftId, ruleIndex: 0, policyUrl: source.url };
+      await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+      return rulePrompt(admin, to, language, conversation.id, context);
+    } catch {
+      const body = language === "ar" ? "ما قدرنا نقرأ هذا الرابط. تأكد أنه عام ويبدأ بـ https://، أو اكتب «القائمة» واختر لصق النص." : "We couldn’t read that page. Check that it’s public and begins with https://, or type MENU and choose to paste the text.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+  }
+  if (flow.step === "AWAITING_POLICY_TEXT" || flow.step === "AWAITING_POLICY_WINDOW") {
+    let sourceText = input.trim();
+    if (flow.step === "AWAITING_POLICY_WINDOW") {
+      const days = Number(input.match(/\d{1,3}/)?.[0]);
+      if (!Number.isInteger(days) || days < 1 || days > 365) {
+        const body = language === "ar" ? "أرسل عدد الأيام بين 1 و365، مثل 14." : "Send a number from 1 to 365, such as 14.";
+        return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+      }
+      sourceText = language === "ar" ? `يمكن للعميل طلب إرجاع المنتجات المؤهلة خلال ${days} يومًا من تاريخ التسليم. إذا كانت بيانات التسليم غير متوفرة، تتم مراجعة الطلب يدويًا.` : `Customers may request a return for eligible items within ${days} days of delivery. If delivery information is unavailable, the request must be reviewed manually.`;
+    }
+    if (sourceText.length < 40) {
+      const body = language === "ar" ? "النص قصير جدًا. أرسل بند السياسة كاملًا عشان نستخرج القواعد بدقة." : "That text is too short. Send the complete policy wording so we can propose accurate rules.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    try {
+      const draft = await createPolicyDraft(admin, store.id, sourceText, language);
+      const context = { ...flow.context, draftId: draft.draftId, ruleIndex: 0 };
+      await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+      return rulePrompt(admin, to, language, conversation.id, context);
+    } catch {
+      const body = language === "ar" ? "تعذّر تحليل السياسة الآن، لكن ما فقدنا محادثتك. جرّب مرة ثانية أو اكتب «القائمة» لاختيار طريقة أخرى." : "We couldn’t analyse the policy just now, but your conversation is safe. Try again or type MENU to choose another method.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+  }
+  if (flow.step === "REVIEWING_POLICY_RULE") {
+    if (normalized === "rule_edit") {
+      await setFlow(admin, conversation.id, "AWAITING_RULE_EDIT", flow.context);
+      const body = language === "ar" ? "اكتب القيمة الصحيحة لهذه القاعدة. مثال: «30 يومًا» لمدة الإرجاع، أو اكتب الأسباب المقبولة مفصولة بفواصل." : "Send the corrected value. For example, “30 days” for a return window, or list the accepted reasons separated by commas.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    if (normalized !== "rule_approve") return rulePrompt(admin, to, language, conversation.id, flow.context);
+    const { data: draft } = await admin.from("policy_drafts").select("rules").eq("id", flow.context.draftId).maybeSingle();
+    const rules = [...((draft?.rules ?? []) as Array<Record<string, unknown>>)];
+    const index = flow.context.ruleIndex ?? 0;
+    if (!rules[index]) throw new Error("policy_rule_missing");
+    rules[index] = { ...rules[index], approvalState: "approved" };
+    const { error } = await admin.from("policy_drafts").update({ rules, updated_at: new Date().toISOString() }).eq("id", flow.context.draftId);
+    if (error) throw error;
+    const context = { ...flow.context, ruleIndex: index + 1 };
+    await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+    return rulePrompt(admin, to, language, conversation.id, context);
+  }
+  if (flow.step === "AWAITING_RULE_EDIT") {
+    const { data: draft } = await admin.from("policy_drafts").select("rules").eq("id", flow.context.draftId).maybeSingle();
+    const rules = [...((draft?.rules ?? []) as Array<Record<string, unknown>>)];
+    const index = flow.context.ruleIndex ?? 0;
+    const rule = rules[index];
+    if (!rule) throw new Error("policy_rule_missing");
+    const value = editedRuleValue(String(rule.category), input);
+    if (!value) {
+      const body = language === "ar" ? "ما قدرنا نفهم القيمة بشكل آمن. جرّب صياغة أوضح، أو اكتب «القائمة» واحفظ الإعداد لوقت لاحق." : "We couldn’t interpret that safely. Try a clearer value, or type MENU and continue later.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    rules[index] = { ...rule, value, description: input.trim().slice(0, 500), approvalState: "edited", creator: "merchant" };
+    const { error } = await admin.from("policy_drafts").update({ rules, updated_at: new Date().toISOString() }).eq("id", flow.context.draftId);
+    if (error) throw error;
+    const context = { ...flow.context, ruleIndex: index + 1 };
+    await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+    return rulePrompt(admin, to, language, conversation.id, context);
+  }
+  if (flow.step === "AWAITING_POLICY_PUBLISH") {
+    if (normalized === "policy_review_again") {
+      const context = { ...flow.context, ruleIndex: 0 };
+      await setFlow(admin, conversation.id, "REVIEWING_POLICY_RULE", context);
+      return rulePrompt(admin, to, language, conversation.id, context);
+    }
+    if (normalized !== "policy_publish") {
+      const body = language === "ar" ? "اختر «نشر السياسة» لما تكون جاهز، أو «مراجعة مرة أخرى»." : "Choose Publish policy when you’re ready, or Review again.";
+      return { body, result: await sendWhatsAppText(to, body), type: "TEXT" as const };
+    }
+    const { data: owner } = await admin.from("memberships").select("user_id").eq("store_id", store.id).in("role", ["owner", "admin"]).order("created_at", { ascending: true }).limit(1).maybeSingle();
+    if (!owner?.user_id) throw new Error("store_owner_required");
+    const { data: published, error } = await admin.rpc("publish_policy_draft_as_service", { p_draft_id: flow.context.draftId, p_published_by: owner.user_id });
+    if (error || !published?.[0]) throw error ?? new Error("policy_publish_failed");
+    if (flow.context.onboardingToken) {
+      await admin.rpc("advance_whatsapp_onboarding_token", { p_token_hash: await sha256(flow.context.onboardingToken), p_expected_stage: "POLICY_PENDING", p_next_stage: "TEST_PENDING", p_extend_until: new Date(Date.now() + 24 * 60 * 60_000).toISOString() });
+    }
+    await setFlow(admin, conversation.id, "MENU");
+    const version = published[0].version_label;
+    const body = language === "ar" ? `تم نشر سياسة الإرجاع ${version} ✅\n\nأصبحت القواعد معتمدة ومزامنة مع مساحة العمل. ريلود جاهز الآن للتحقق من الطلبات وإعطاء قرارات إرجاع واضحة.` : `Return policy ${version} is now live ✅\n\nThe approved rules are synced with your workspace. Relod is ready to verify orders and give customers clear return decisions.`;
+    return { body, result: await sendWhatsAppButtons(to, body, language === "ar" ? [{ id: "start_return", title: "بدء أول تجربة" }, { id: "menu", title: "القائمة الرئيسية" }] : [{ id: "start_return", title: "Run first test" }, { id: "menu", title: "Main menu" }]), type: "INTERACTIVE" as const };
   }
   if (normalized === "check_status") {
     if (!conversation.return_case_id) {

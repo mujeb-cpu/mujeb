@@ -35,9 +35,12 @@ Deno.serve(async (request) => {
       const contact = Array.isArray(conversation?.whatsapp_contacts) ? conversation.whatsapp_contacts[0] : conversation?.whatsapp_contacts;
       if (contact?.wa_id) {
         const name = connection.external_store_name || (conversation?.language === "en" ? "Your store" : "متجرك");
-        await sendWhatsAppText(contact.wa_id, conversation?.language === "en"
-          ? `${name} is connected successfully ✅\n\nRelod can now verify orders. Continue with your return policy in the open setup page.`
-          : `تم ربط ${name} بنجاح ✅\n\nريلود جاهز الآن للتحقق من الطلبات. أكمل إعداد سياسة الإرجاع من صفحة الإعداد المفتوحة.`);
+        await admin.rpc("set_whatsapp_flow_state", { p_conversation_id: current.conversation_id, p_step: "POLICY_READY", p_context: { onboardingToken: token } });
+        await sendWhatsAppButtons(contact.wa_id, conversation?.language === "en"
+          ? `${name} is already connected ✅\n\nYou can close this page—we’ll continue right here. Next, let’s set up your return policy.`
+          : `${name} مرتبط بالفعل ✅\n\nتقدر تقفل الصفحة، ونكمل من هنا. الخطوة الجاية: نجهّز سياسة الإرجاع.`, conversation?.language === "en"
+          ? [{ id: "policy_continue", title: "Continue" }, { id: "onboarding_later", title: "Do this later" }]
+          : [{ id: "policy_continue", title: "متابعة" }, { id: "onboarding_later", title: "أكمل لاحقًا" }]);
       }
       return json({ stage: "POLICY_PENDING", notified: Boolean(contact?.wa_id) });
     }
